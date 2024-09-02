@@ -1,11 +1,37 @@
 import requests
 from tqdm import tqdm
-import json
+import os, json
 
-def get_ncbi_abstracts(search_term,debug_nb_abstracts_by_search=-1):
+def save_results(search_term, results):
+    """
+    Sauvegarde les résultats dans un fichier JSON.
+    """
+    filename = f"results_{search_term}.json"
+    with open(filename, 'w') as f:
+        json.dump(results, f)
+    print(f"Résultats sauvegardés dans {filename}")
+
+def load_results(search_term):
+    """
+    Charge les résultats depuis un fichier JSON s'il existe.
+    """
+    filename = f"results_{search_term}.json"
+    if os.path.exists(filename):
+        with open(filename, 'r') as f:
+            return json.load(f)
+    return None
+
+
+def get_ncbi_abstracts(search_term,debug_nb_req=-1):
     base_url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/"
-    search_term = "plants+AND+metabolomics+AND+spring"
     search_url = f"{base_url}esearch.fcgi?db=pubmed&term={search_term}&retmax=100&retmode=json"
+
+    # Essayer de charger les résultats existants
+    results = load_results(search_term)
+    
+    if results is not None:
+        print(f"Résultats chargés pour '{search_term}' et '{search_url}'")
+        return results
 
     response = requests.get(search_url)
     search_results = response.json()
@@ -45,8 +71,13 @@ def get_ncbi_abstracts(search_term,debug_nb_abstracts_by_search=-1):
                 'doi': doi
             })
 
-        if i==debug_nb_abstracts_by_search:
+        if i==debug_nb_req:
             break
     #json.dumps(abstracts, indent=4)
-    return [v for v in abstracts 
+    results = [v for v in abstracts 
             if len(v['abstract'].strip()) > 0 and len(v['title'].strip()) > 0] 
+    
+    # Sauvegarder les nouveaux résultats
+    save_results(search_term, results)
+
+    return results
