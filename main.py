@@ -17,6 +17,7 @@ ontologies = {
         }
     }
 debug_nb_terms_by_ontology=5
+debug_nb_abstracts_by_search=5
 selected_term = "plants+AND+metabolomics+AND+spring"
 
 # Charger le modèle BERT et le tokenizer
@@ -45,10 +46,10 @@ def encode_text(text):
     return outputs.last_hidden_state.mean(dim=1)
 
 tags = get_corpus(ontologies, debug_nb_terms_by_ontology)
-chunks = get_ncbi_abstracts(selected_term)
+chunks = get_ncbi_abstracts(selected_term,debug_nb_abstracts_by_search)
+print(chunks)
 
-import code
-code.interact(local=locals()) 
+raise Exception("test")
 
 print("tags embeddings")
 # Encoder les descriptions des tags

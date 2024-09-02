@@ -1,5 +1,6 @@
 from rdflib import Graph, Namespace, URIRef
 import json,os
+import re
 
 def get_corpus(ontologies, debug_nb_terms_by_ontology=-1):
     tags = {}
@@ -14,17 +15,23 @@ def download_ontologies(list_ontologies):
     import wget
     
     for ontology,values in list_ontologies.items():
-        print(ontology)
-        print(values)
         list_ontologies[ontology]['filepath'] = os.path.basename(values['url'])
-        print(list_ontologies[ontology])
-        if not os.path.exists(values['url']):
+        
+        if not os.path.exists(list_ontologies[ontology]['filepath']):
             print("Downloading ontology: ",ontology)
             wget.download(values['url'])
         
     
     return list_ontologies
     
+
+
+def remove_prefix_tags(prefix_tag,text):
+    escaped_prefix = re.escape(prefix_tag.upper())
+    pattern = rf'{escaped_prefix}:\d+'
+
+    # Remplacer toutes les occurrences par une chaîne vide
+    return re.sub(pattern, '', text)
 
 def build_corpus(ontology, ontology_config,debug_nb_terms_by_ontology):
     # Charger le fichier OWL local
@@ -50,8 +57,6 @@ def build_corpus(ontology, ontology_config,debug_nb_terms_by_ontology):
     results = g.query(query_base)
 
     for i,row in enumerate(results):
-        print("---------------------")
-        print(i,row)
         term = row.term
         descriptionLeaf = row.descriptionLeaf
         labelLeaf = row.labelLeaf
@@ -59,7 +64,7 @@ def build_corpus(ontology, ontology_config,debug_nb_terms_by_ontology):
         # Requête SPARQL
         query = """
         PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-        PREFIX peco: <http://purl.obolibrary.org/obo/PECO_>
+        PREFIX """+ontology+""": <http://purl.obolibrary.org/obo/PECO_>
         SELECT ?labelS WHERE { 
             ?s rdfs:subClassOf* """+ontology+":"+term.split("_").pop()+""" .
             ?s rdfs:label ?labelS .
@@ -73,13 +78,13 @@ def build_corpus(ontology, ontology_config,debug_nb_terms_by_ontology):
         for row2 in results:
             label = row2.labelS
             
-            if label.contains("obsolete"):
+            if "obsolete" in label:
                 continue
 
             formatted_label = "__"+ontology+"__" + str(label.lower()).replace(" ", "_")
             if not formatted_label in tags:
                 tags[formatted_label] = []
-            tags[formatted_label].append(descriptionLeaf)
+            tags[formatted_label].append(remove_prefix_tags(ontology,descriptionLeaf))
         
         if i > debug_nb_terms_by_ontology:
             break
