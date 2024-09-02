@@ -1,5 +1,6 @@
 from tqdm import tqdm
 import torch
+import os
 from build_corpus import get_corpus
 from abstract_preparation import get_ncbi_abstracts
 from torch_utils import encode_text, best_similarity_for_tag
@@ -16,6 +17,11 @@ ontologies = {
         'prefix' : "http://purl.obolibrary.org/obo/PO_",
         'format' : 'xml'
     },
+    'pso' : {
+        'url' : "http://purl.obolibrary.org/obo/pso.owl",
+        'prefix' : "http://purl.obolibrary.org/obo/PSO_",
+        'format' : 'xml'
+    },
     'to' : {
         'url' : "http://purl.obolibrary.org/obo/to.owl",
         'prefix' : "http://purl.obolibrary.org/obo/TO_",
@@ -24,8 +30,8 @@ ontologies = {
 }
 description_uri="<http://purl.obolibrary.org/obo/IAO_0000115>"
 threshold = 0.74  # Seuil de similarité
-debug_nb_terms_by_ontology=200
-debug_nb_abstracts_by_search=20
+debug_nb_terms_by_ontology=-1
+debug_nb_abstracts_by_search=-1
 #selected_term = "plants+AND+metabolomics+AND+glucosinolate"
 selected_term = "abiotic+AND+metabolomics+AND+plant+AND+stress+AND+brassicaceae"
 
@@ -38,17 +44,38 @@ list_of_dicts_to_csv(chunks, "chunks.csv")
 print("tags embeddings")
 # Encoder les descriptions des tags
 tag_embeddings = {}
+if os.path.exists('tags.pth'):
+    tag_embeddings = torch.load('tags.pth')
+
+change = False
+
 for item in tqdm(tags):
-    embeddings = encode_text(item['description'])
-    tag_embeddings[item['label']] = embeddings
+    if not item['label'] in tag_embeddings:
+        embeddings = encode_text(item['description'])
+        tag_embeddings[item['label']] = embeddings
+        change = True
+
+# Sauvegarder le dictionnaire dans un fichier
+if change:
+    torch.save(tag_embeddings, 'tags.pth')
 
 print("chunks embeddings")
-# Encoder les chunks de texte
-chunk_embeddings = []
-for chunk in tqdm(chunks):
-    chunk_embeddings.append(encode_text(chunk['abstract']))
+# Encoder les descriptions des tags
+chunk_embeddings = {}
+if os.path.exists('chunks.pth'):
+    chunk_embeddings = torch.load('chunks.pth')
 
-#    idx = embedding.numpy().tostring()
+change = False
+
+# Encoder les chunks de texte
+
+for chunk in tqdm(chunks):
+    if not chunk['doi'] in chunk_embeddings:
+        chunk_embeddings[chunk['doi']] = encode_text(chunk['abstract'])
+        change = True
+
+if change:
+    torch.save(chunk_embeddings, 'chunks.pth')
 
 
 # Comparer chaque chunk avec les tags
@@ -56,8 +83,7 @@ for chunk in tqdm(chunks):
 results = []
 results_complete_similarities = []
 
-for chunk_embedding in tqdm(chunk_embeddings):
-    
+for doi,chunk_embedding in tqdm(chunk_embeddings.items()):
     # Convertir le tensor en une forme serialisable pour le dictionnaire
     chunk_embedding_key = chunk_embedding.numpy().tobytes()
     tag_similarities = {}
