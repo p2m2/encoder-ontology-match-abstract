@@ -1,6 +1,7 @@
 from rdflib import Graph, Namespace, URIRef
-import json,os
+import os
 import re
+from tqdm import tqdm
 
 def get_corpus(ontologies, debug_nb_terms_by_ontology=-1):
     tags = {}
@@ -55,8 +56,8 @@ def build_corpus(ontology, ontology_config,debug_nb_terms_by_ontology):
 
     # Exécuter la requête SPARQL
     results = g.query(query_base)
-
-    for i,row in enumerate(results):
+    nb_record=0
+    for i,row in tqdm(enumerate(results)):
         term = row.term
         descriptionLeaf = row.descriptionLeaf
         labelLeaf = row.labelLeaf
@@ -74,7 +75,6 @@ def build_corpus(ontology, ontology_config,debug_nb_terms_by_ontology):
         # Exécuter la requête SPARQL
         results = g.query(query)
 
-
         for row2 in results:
             label = row2.labelS
             
@@ -85,10 +85,15 @@ def build_corpus(ontology, ontology_config,debug_nb_terms_by_ontology):
             if not formatted_label in tags:
                 tags[formatted_label] = []
             tags[formatted_label].append(remove_prefix_tags(ontology,descriptionLeaf))
-        
-        if i > debug_nb_terms_by_ontology:
+            
+            nb_record += 1
+            if nb_record == debug_nb_terms_by_ontology:
+                break
+        if nb_record == debug_nb_terms_by_ontology:
             break
-
+            
+        
+    print(len(tags))
     return tags
 
 

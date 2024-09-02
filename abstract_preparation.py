@@ -45,7 +45,7 @@ def get_ncbi_abstracts(search_term,debug_nb_abstracts_by_search=-1):
                 'doi': doi
             })
 
-        if i>1:
+        if i==debug_nb_abstracts_by_search:
             break
     #json.dumps(abstracts, indent=4)
     return [v for v in abstracts 
