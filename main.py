@@ -23,11 +23,11 @@ ontologies = {
     }
 }
 description_uri="<http://purl.obolibrary.org/obo/IAO_0000115>"
-threshold = 0.69  # Seuil de similarité
-debug_nb_terms_by_ontology=50
-debug_nb_abstracts_by_search=30
+threshold = 0.74  # Seuil de similarité
+debug_nb_terms_by_ontology=200
+debug_nb_abstracts_by_search=20
 #selected_term = "plants+AND+metabolomics+AND+glucosinolate"
-selected_term = "abiotic+AND+metabolomics+AND+plant+AND+stress"
+selected_term = "abiotic+AND+metabolomics+AND+plant+AND+stress+AND+brassicaceae"
 
 tags = get_corpus(ontologies, description_uri=description_uri, debug_nb_terms_by_ontology=debug_nb_terms_by_ontology)
 chunks = get_ncbi_abstracts(selected_term,1)[0:debug_nb_abstracts_by_search]
@@ -79,7 +79,6 @@ for chunk_embedding in tqdm(chunk_embeddings):
 
 # Afficher les résultats
 for i, tuple in enumerate(results):
-    print(tuple)
     tag = tuple[0]
     similarity = tuple[1]
     print(chunks[i])
