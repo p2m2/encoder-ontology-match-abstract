@@ -2,7 +2,7 @@ from rdflib import Graph, Namespace, URIRef
 import os
 import re
 from tqdm import tqdm
-
+import warnings
 
 def get_corpus(ontologies, description_uri="<http://purl.obolibrary.org/obo/IAO_0000115>",debug_nb_terms_by_ontology=-1):
     tags = []
@@ -17,11 +17,12 @@ def download_ontologies(list_ontologies):
     import wget
     
     for ontology,values in list_ontologies.items():
-        list_ontologies[ontology]['filepath'] = os.path.basename(values['url'])
+        filepath= ontology+"."+values['format']
+        list_ontologies[ontology]['filepath'] = filepath
         
         if not os.path.exists(list_ontologies[ontology]['filepath']):
             print("Downloading ontology: ",ontology)
-            wget.download(values['url'])
+            wget.download(values['url'],filepath)
         
     
     return list_ontologies
@@ -47,16 +48,26 @@ def build_corpus(
     # Namespace pour rdfs
     RDFS = Namespace("http://www.w3.org/2000/01/rdf-schema#")
 
+    if 'properties' not in ontology_config or len(ontology_config['properties'])<=0:
+        warnings.warn("'properties' is not defined ["+ontology+"]", UserWarning)
+        return []
+
+    varProperties = []
+    sparqlProperties = []
+
+    for i,prop in enumerate(ontology_config['properties']):
+        varProperties.append("?prop"+str(i))
+        sparqlProperties.append("?term "+prop+" ?prop"+str(i)+" .")
+    
     query_base = """
     PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 
-    SELECT ?descriptionLeaf ?labelLeaf WHERE { 
-        ?term """+description_uri+""" ?descriptionLeaf .
+    SELECT ?labelLeaf """ + " ".join(varProperties) + """ WHERE { 
+        """+"\n".join(sparqlProperties)+"""
         ?term rdfs:label ?labelLeaf .
     }
     """
-    # label -> description1,description2, ....
-
+    print(query_base)
     tags = []
 
     # Exécuter la requête SPARQL
@@ -65,7 +76,7 @@ def build_corpus(
 
     for row in tqdm(results):
 
-        descriptionLeaf = row.descriptionLeaf
+        descriptionLeaf = '\n'.join([ row.get(prop.replace('?',''), '') for prop in varProperties ])
         labelLeaf = row.labelLeaf
         
         formatted_label = "__"+ontology+"__" + str(labelLeaf.lower()).replace(" ", "_")

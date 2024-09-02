@@ -10,32 +10,43 @@ ontologies = {
     'peco' : {
         'url' : "http://purl.obolibrary.org/obo/peco.owl",
         'prefix' : "http://purl.obolibrary.org/obo/PECO_",
-        'format' : 'xml'
+        'format' : 'xml',
+        'properties' : [ "<http://purl.obolibrary.org/obo/IAO_0000115>" ]
         },
     'po' : {
         'url' : "http://purl.obolibrary.org/obo/po.owl",
         'prefix' : "http://purl.obolibrary.org/obo/PO_",
-        'format' : 'xml'
+        'format' : 'xml',
+        'properties' : [ "<http://purl.obolibrary.org/obo/IAO_0000115>" ]
     },
     'pso' : {
         'url' : "http://purl.obolibrary.org/obo/pso.owl",
         'prefix' : "http://purl.obolibrary.org/obo/PSO_",
-        'format' : 'xml'
+        'format' : 'xml',
+        'properties' : [ "<http://purl.obolibrary.org/obo/IAO_0000115>" ]
     },
     'to' : {
         'url' : "http://purl.obolibrary.org/obo/to.owl",
         'prefix' : "http://purl.obolibrary.org/obo/TO_",
-        'format' : 'xml'
+        'format' : 'xml',
+        'properties' : [ "<http://purl.obolibrary.org/obo/IAO_0000115>" ]
+    },
+    'ms' : {
+        'url' : 'http://purl.obolibrary.org/obo/ms.owl',
+        'prefix' : "http://purl.obolibrary.org/obo/MS_",
+        'format' : 'xml',
+        'properties' : [ "<http://purl.obolibrary.org/obo/IAO_0000115>" ]
     }
 }
-description_uri="<http://purl.obolibrary.org/obo/IAO_0000115>"
+
+
 threshold = 0.74  # Seuil de similarité
 debug_nb_terms_by_ontology=-1
 debug_nb_abstracts_by_search=-1
 #selected_term = "plants+AND+metabolomics+AND+glucosinolate"
 selected_term = "abiotic+AND+metabolomics+AND+plant+AND+stress+AND+brassicaceae"
 
-tags = get_corpus(ontologies, description_uri=description_uri, debug_nb_terms_by_ontology=debug_nb_terms_by_ontology)
+tags = get_corpus(ontologies, debug_nb_terms_by_ontology=debug_nb_terms_by_ontology)
 chunks = get_ncbi_abstracts(selected_term,1)[0:debug_nb_abstracts_by_search]
 
 list_of_dicts_to_csv(tags, "tags.csv")
