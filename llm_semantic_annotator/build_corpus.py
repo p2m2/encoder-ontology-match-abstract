@@ -22,7 +22,7 @@ def get_corpus(ontologies,debug_nb_terms_by_ontology):
 # Charger le fichier OWL local
 def download_ontologies(list_ontologies):
     import wget
-    
+   
     for ontology,values in list_ontologies.items():
         filepath= retention_dir+"/"+ontology+"."+values['format']
         list_ontologies[ontology]['filepath'] = filepath
@@ -105,23 +105,22 @@ def build_corpus(
     return tags
 
 
-def manage_tags(ontologies,debug_nb_terms_by_ontology):
-    # get vocabulary from ontologies selected
-    tags = get_corpus(ontologies, debug_nb_terms_by_ontology)
-
+def manage_tags(ontologies_by_link,debug_nb_terms_by_ontology):
     # Encoder les descriptions des tags
     tag_embeddings = {}
     if os.path.exists(retention_dir+'/tags.pth'):
         print("load tags embeddings")
         tag_embeddings = torch.load(retention_dir+'/tags.pth')
-
     change = False
 
-    for item in tqdm(tags):
-        if not item['label'] in tag_embeddings:
-            embeddings = encode_text(item['description'])
-            tag_embeddings[item['label']] = embeddings
-            change = True
+    for link_name,ontologies in ontologies_by_link.items():
+        # get vocabulary from ontologies selected
+        tags = get_corpus(ontologies, debug_nb_terms_by_ontology)
+        for item in tqdm(tags):
+            if not item['label'] in tag_embeddings:
+                embeddings = encode_text(item['description'])
+                tag_embeddings[item['label']] = embeddings
+                change = True
 
     # Sauvegarder le dictionnaire dans un fichier
     if change:

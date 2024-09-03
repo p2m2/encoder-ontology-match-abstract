@@ -1,16 +1,33 @@
 {
-    "threshold_similarity_tag_chunk" : 0.20,
-    "debug_nb_ncbi_request" : 1,
-    "debug_nb_terms_by_ontology" : 1,
-    "debug_nb_abstracts_by_search" : 20,
-    "debug_nb_similarity_compute" : 100,
-    
-    "ontologies": {
-        "peco": {
-            "url": "http://purl.obolibrary.org/obo/peco.owl",
-            "prefix": "http://purl.obolibrary.org/obo/PECO_",
-            "format": "xml",
-            "properties": ["<http://purl.obolibrary.org/obo/IAO_0000115>"]
-        }
+    "populate_tag_embeddings" : {
+        "ontologies": {
+            "planteome_link" : {
+                "peco": {
+                    "url": "http://purl.obolibrary.org/obo/peco.owl",
+                    "prefix": "http://purl.obolibrary.org/obo/PECO_",
+                    "format": "xml",
+                    "properties": ["<http://purl.obolibrary.org/obo/IAO_0000115>"]
+                }
+            },
+            "technology_link" : {
+                "ms": {
+                    "url": "http://purl.obolibrary.org/obo/ms.owl",
+                    "prefix": "http://purl.obolibrary.org/obo/MS_",
+                    "format": "xml",
+                    "properties": ["<http://purl.obolibrary.org/obo/IAO_0000115>"]
+                }
+            }
+        },
+        "debug_nb_terms_by_ontology" : 20
+    },
+
+    "populate_ncbi_abstract_embeddings" : {
+        "debug_nb_ncbi_request" : 1,
+        "debug_nb_abstracts_by_search" : 20
+    },
+
+    "compute_tag_chunk_similarities" : {
+        "threshold_similarity_tag_chunk" : 0.25,
+        "debug_nb_similarity_compute" : 100
     }
 }

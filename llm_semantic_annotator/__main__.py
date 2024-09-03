@@ -3,42 +3,10 @@ import json, sys
 from llm_semantic_annotator import manage_tags, get_tags_embeddings
 from llm_semantic_annotator import manage_abstracts, get_abstracts_embeddings
 from llm_semantic_annotator import compare_tags_with_chunks
-#from llm_semantic_annotator import ontologies_distribution
+from llm_semantic_annotator import ontologies_distribution
 
 from rich import print
-from collections import Counter
 import argparse
-def ontologies_distribution(data):
-    # Extraire les préfixes des clés
-    ontologies = []
-    labels = []
-    for doi, item in data.items():
-        for key in item.keys():
-            ontology = key.split('__')[1]  # Extraire le préfixe entre les doubles underscores
-            ontologies.append(ontology)
-            labels.append(key)
-
-    # Compter la distribution des préfixes
-    distributionOntologies = Counter(ontologies)
-    distributionLabels = Counter(labels)
-
-    print(f"nb abstracts : {len(data)}")
-    annoted_abstracts = map(lambda item: 1 if len(item[1])>0 else 0, data.items())
-    print(f"nb abstracts annoted : {sum(annoted_abstracts)}")
-    # Afficher la distribution
-    print("Distribution des ontologies :")
-    for prefix, count in distributionOntologies.items():
-        print(f"{prefix}: {count}")
-
-    print("Distribution des labels :")
-    sorted_distribution = sorted(distributionLabels.items(), key=lambda x: x[1], reverse=True)
-    
-    for prefix, count in sorted_distribution:
-        print(f"{prefix}: {count}")
-        if count == 1:
-            break
-
-# Listes des ontologies du projet Planteome
 
 def load_config(config_file):
     """Charge la configuration à partir d'un fichier JSON."""
@@ -52,21 +20,21 @@ def load_config(config_file):
         print(f"Erreur de décodage JSON dans le fichier {config_file}.")
         sys.exit(1)
 
-def main_populate_tag_embeddings(config):
+def main_populate_tag_embeddings(config_all):
     """Fonction principale pour générer et stocker les embeddings de tags dans une base."""
+    config = config_all['populate_tag_embeddings']
     # Utilisez les paramètres de config ici
     print(f"Ontologies : {config['ontologies']}")
     print(f"Nb terms to compute : {config['debug_nb_terms_by_ontology']}")
     manage_tags(config['ontologies'],config['debug_nb_terms_by_ontology'])
 
-def main_populate_ncbi_abstract_embeddings(config,selected_term):
-    manage_abstracts(selected_term,
-                     config['debug_nb_ncbi_request'],
-                     config['debug_nb_abstracts_by_search'])
+def main_populate_ncbi_abstract_embeddings(config_all,selected_term):
+    config = config_all['populate_ncbi_abstract_embeddings']
+    manage_abstracts(selected_term,config['debug_nb_ncbi_request'],config['debug_nb_abstracts_by_search'])
 
-def main_compute_tag_chunk_similarities(config):
+def main_compute_tag_chunk_similarities(config_all):
     """Fonction principale pour calculer la similarité entre tous les tags et chunks."""
-    
+    config = config_all['compute_tag_chunk_similarities']
     tag_embeddings = get_tags_embeddings()
     chunk_embeddings = get_abstracts_embeddings()
    
