@@ -1,2 +1,5 @@
-pip install -U sentence-transformers
+# LLMSemanticAnnotator
+
+pip install -r requirements.txt
+
 

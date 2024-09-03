@@ -1,10 +1,13 @@
 from tqdm import tqdm
-import torch
-import os
-from build_corpus import get_corpus
-from abstract_preparation import get_ncbi_abstracts
-from torch_utils import encode_text, best_similarity_for_tag
-from csv_utils import list_of_dicts_to_csv
+import os, torch
+from llm_semantic_annotator import build_corpus, manage_tags
+from llm_semantic_annotator import abstract_preparation, manage_abstracts
+from llm_semantic_annotator import torch_utils, best_similarity_for_tag
+
+from rich import print
+
+import argparse
+
 # Listes des ontologies du projet Planteome
 ontologies = { 
     'peco' : {
@@ -39,55 +42,15 @@ ontologies = {
     }
 }
 
-
 threshold = 0.74  # Seuil de similarité
+debug_nb_ncbi_request=1
 debug_nb_terms_by_ontology=-1
 debug_nb_abstracts_by_search=-1
 #selected_term = "plants+AND+metabolomics+AND+glucosinolate"
 selected_term = "abiotic+AND+metabolomics+AND+plant+AND+stress+AND+brassicaceae"
 
-tags = get_corpus(ontologies, debug_nb_terms_by_ontology=debug_nb_terms_by_ontology)
-chunks = get_ncbi_abstracts(selected_term,1)[0:debug_nb_abstracts_by_search]
-
-list_of_dicts_to_csv(tags, "tags.csv")
-list_of_dicts_to_csv(chunks, "chunks.csv")
-
-print("tags embeddings")
-# Encoder les descriptions des tags
-tag_embeddings = {}
-if os.path.exists('tags.pth'):
-    tag_embeddings = torch.load('tags.pth')
-
-change = False
-
-for item in tqdm(tags):
-    if not item['label'] in tag_embeddings:
-        embeddings = encode_text(item['description'])
-        tag_embeddings[item['label']] = embeddings
-        change = True
-
-# Sauvegarder le dictionnaire dans un fichier
-if change:
-    torch.save(tag_embeddings, 'tags.pth')
-
-print("chunks embeddings")
-# Encoder les descriptions des tags
-chunk_embeddings = {}
-if os.path.exists('chunks.pth'):
-    chunk_embeddings = torch.load('chunks.pth')
-
-change = False
-
-# Encoder les chunks de texte
-
-for chunk in tqdm(chunks):
-    if not chunk['doi'] in chunk_embeddings:
-        chunk_embeddings[chunk['doi']] = encode_text(chunk['abstract'])
-        change = True
-
-if change:
-    torch.save(chunk_embeddings, 'chunks.pth')
-
+tag_embeddings = manage_tags(ontologies,debug_nb_terms_by_ontology)
+chunk_embeddings = manage_abstracts(selected_term,debug_nb_ncbi_request)
 
 # Comparer chaque chunk avec les tags
 
@@ -118,7 +81,7 @@ for doi,chunk_embedding in tqdm(chunk_embeddings.items()):
 for i, tuple in enumerate(results):
     tag = tuple[0]
     similarity = tuple[1]
-    print(chunks[i])
+    #print(chunks[i])
     print(results_complete_similarities[i])
     if tag:
         print(f"Tag: {tag}\nSimilarity: {similarity:.4f}\n")

@@ -1,6 +1,9 @@
-import requests
+import os, json, torch, requests
 from tqdm import tqdm
-import os, json
+from rich import print
+
+from llm_semantic_annotator import utils , list_of_dicts_to_csv
+from llm_semantic_annotator import torch_utils, encode_text
 
 def save_results(search_term, results):
     """
@@ -22,7 +25,7 @@ def load_results(search_term):
     return None
 
 
-def get_ncbi_abstracts(search_term,debug_nb_req=-1):
+def get_ncbi_abstracts(search_term,debug_nb_req):
     base_url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/"
     search_url = f"{base_url}esearch.fcgi?db=pubmed&term={search_term}&retmax=100&retmode=json"
 
@@ -81,3 +84,26 @@ def get_ncbi_abstracts(search_term,debug_nb_req=-1):
     save_results(search_term, results)
 
     return results
+
+def manage_abstracts(selected_term,debug_nb_req=-1,debug_nb_abstracts_by_search=-1):
+    chunks = get_ncbi_abstracts(selected_term,1)[0:debug_nb_abstracts_by_search]
+    list_of_dicts_to_csv(chunks, "chunks.csv")
+    print("chunks embeddings")
+    # Encoder les descriptions des tags
+    chunk_embeddings = {}
+    if os.path.exists('chunks.pth'):
+        chunk_embeddings = torch.load('chunks.pth')
+
+    change = False
+
+    # Encoder les chunks de texte
+
+    for chunk in tqdm(chunks):
+        if not chunk['doi'] in chunk_embeddings:
+            chunk_embeddings[chunk['doi']] = encode_text(chunk['abstract'])
+            change = True
+
+    if change:
+        torch.save(chunk_embeddings, 'chunks.pth')
+    
+    return chunk_embeddings

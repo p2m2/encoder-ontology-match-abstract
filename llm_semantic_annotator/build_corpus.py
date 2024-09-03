@@ -1,8 +1,10 @@
+import os, re, warnings, torch
 from rdflib import Graph, Namespace, URIRef
-import os
-import re
 from tqdm import tqdm
-import warnings
+from rich import print
+from llm_semantic_annotator import utils, list_of_dicts_to_csv
+from llm_semantic_annotator import torch_utils, encode_text
+
 
 def get_corpus(ontologies, description_uri="<http://purl.obolibrary.org/obo/IAO_0000115>",debug_nb_terms_by_ontology=-1):
     tags = []
@@ -96,5 +98,33 @@ def build_corpus(
         nb_record+=1
     
     return tags
+
+
+def manage_tags(ontologies,debug_nb_terms_by_ontology):
+    # get vocabulary from ontologies selected
+    tags = get_corpus(ontologies, debug_nb_terms_by_ontology)
+    # get embeddings compudted for each tag from last sessions
+    list_of_dicts_to_csv(tags, "tags.csv")
+
+    # Encoder les descriptions des tags
+    tag_embeddings = {}
+    if os.path.exists('tags.pth'):
+        print("load tags embeddings")
+        tag_embeddings = torch.load('tags.pth')
+
+    change = False
+
+    for item in tqdm(tags):
+        if not item['label'] in tag_embeddings:
+            embeddings = encode_text(item['description'])
+            tag_embeddings[item['label']] = embeddings
+            change = True
+
+    # Sauvegarder le dictionnaire dans un fichier
+    if change:
+        print("save tags embeddings")
+        torch.save(tag_embeddings, 'tags.pth')
+
+    return tag_embeddings
 
 
