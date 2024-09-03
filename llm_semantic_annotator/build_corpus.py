@@ -2,15 +2,20 @@ import os, re, warnings, torch
 from rdflib import Graph, Namespace, URIRef
 from tqdm import tqdm
 from rich import print
-from llm_semantic_annotator import utils, list_of_dicts_to_csv
+from llm_semantic_annotator import utils , list_of_dicts_to_csv,save_results,load_results, get_retention_dir
 from llm_semantic_annotator import torch_utils, encode_text
 
+retention_dir = get_retention_dir()
 
-def get_corpus(ontologies, description_uri="<http://purl.obolibrary.org/obo/IAO_0000115>",debug_nb_terms_by_ontology=-1):
+def get_corpus(ontologies,debug_nb_terms_by_ontology):
     tags = []
 
     for ontology in download_ontologies(ontologies):
-        tags.extend(build_corpus(ontology, ontologies[ontology],description_uri,debug_nb_terms_by_ontology))
+        if os.path.exists(retention_dir+"/"+ontology+".json"):
+            tags.extend(load_results(ontology))
+        else:
+            tags.extend(build_corpus(ontology, ontologies[ontology],debug_nb_terms_by_ontology))
+            save_results(ontology,tags)
     
     return tags
 
@@ -19,7 +24,7 @@ def download_ontologies(list_ontologies):
     import wget
     
     for ontology,values in list_ontologies.items():
-        filepath= ontology+"."+values['format']
+        filepath= retention_dir+"/"+ontology+"."+values['format']
         list_ontologies[ontology]['filepath'] = filepath
         
         if not os.path.exists(list_ontologies[ontology]['filepath']):
@@ -41,7 +46,6 @@ def remove_prefix_tags(prefix_tag,text):
 def build_corpus(
         ontology, 
         ontology_config,
-        description_uri,
         debug_nb_terms_by_ontology):
     # Charger le fichier OWL local
     g = Graph()
@@ -94,7 +98,7 @@ def build_corpus(
             })
         
         if nb_record == debug_nb_terms_by_ontology:
-                break
+            break
         nb_record+=1
     
     return tags
@@ -104,13 +108,14 @@ def manage_tags(ontologies,debug_nb_terms_by_ontology):
     # get vocabulary from ontologies selected
     tags = get_corpus(ontologies, debug_nb_terms_by_ontology)
     # get embeddings compudted for each tag from last sessions
-    list_of_dicts_to_csv(tags, "tags.csv")
+    list_of_dicts_to_csv(tags, retention_dir+"/tags.csv")
+
 
     # Encoder les descriptions des tags
     tag_embeddings = {}
-    if os.path.exists('tags.pth'):
+    if os.path.exists(retention_dir+'/tags.pth'):
         print("load tags embeddings")
-        tag_embeddings = torch.load('tags.pth')
+        tag_embeddings = torch.load(retention_dir+'/tags.pth')
 
     change = False
 
@@ -123,8 +128,12 @@ def manage_tags(ontologies,debug_nb_terms_by_ontology):
     # Sauvegarder le dictionnaire dans un fichier
     if change:
         print("save tags embeddings")
-        torch.save(tag_embeddings, 'tags.pth')
+        torch.save(tag_embeddings, retention_dir+'/tags.pth')
 
     return tag_embeddings
 
-
+def get_tags_embeddings():
+    if os.path.exists(retention_dir+'/tags.pth'):
+        return torch.load(retention_dir+'/tags.pth')
+    else:
+        return {}

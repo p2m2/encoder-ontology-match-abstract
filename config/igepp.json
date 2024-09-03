@@ -1,0 +1,39 @@
+{
+    "threshold_similarity_tag_chunk" : 0.74,
+    "debug_nb_ncbi_request" : 1,
+    "debug_nb_terms_by_ontology" : -1,
+    "debug_nb_abstracts_by_search" : -1,
+    
+    "ontologies": {
+        "peco": {
+            "url": "http://purl.obolibrary.org/obo/peco.owl",
+            "prefix": "http://purl.obolibrary.org/obo/PECO_",
+            "format": "xml",
+            "properties": ["<http://purl.obolibrary.org/obo/IAO_0000115>"]
+        },
+        "po": {
+            "url": "http://purl.obolibrary.org/obo/po.owl",
+            "prefix": "http://purl.obolibrary.org/obo/PO_",
+            "format": "xml",
+            "properties": ["<http://purl.obolibrary.org/obo/IAO_0000115>"]
+        },
+        "pso": {
+            "url": "http://purl.obolibrary.org/obo/pso.owl",
+            "prefix": "http://purl.obolibrary.org/obo/PSO_",
+            "format": "xml",
+            "properties": ["<http://purl.obolibrary.org/obo/IAO_0000115>"]
+        },
+        "to": {
+            "url": "http://purl.obolibrary.org/obo/to.owl",
+            "prefix": "http://purl.obolibrary.org/obo/TO_",
+            "format": "xml",
+            "properties": ["<http://purl.obolibrary.org/obo/IAO_0000115>"]
+        },
+        "ms": {
+            "url": "http://purl.obolibrary.org/obo/ms.owl",
+            "prefix": "http://purl.obolibrary.org/obo/MS_",
+            "format": "xml",
+            "properties": ["<http://purl.obolibrary.org/obo/IAO_0000115>"]
+        }
+    }
+}

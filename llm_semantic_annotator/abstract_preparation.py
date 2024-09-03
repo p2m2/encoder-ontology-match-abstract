@@ -1,29 +1,10 @@
 import os, json, torch, requests
 from tqdm import tqdm
 from rich import print
-
-from llm_semantic_annotator import utils , list_of_dicts_to_csv
+from llm_semantic_annotator import utils , list_of_dicts_to_csv,save_results,load_results,get_retention_dir
 from llm_semantic_annotator import torch_utils, encode_text
 
-def save_results(search_term, results):
-    """
-    Sauvegarde les résultats dans un fichier JSON.
-    """
-    filename = f"results_{search_term}.json"
-    with open(filename, 'w') as f:
-        json.dump(results, f)
-    print(f"Résultats sauvegardés dans {filename}")
-
-def load_results(search_term):
-    """
-    Charge les résultats depuis un fichier JSON s'il existe.
-    """
-    filename = f"results_{search_term}.json"
-    if os.path.exists(filename):
-        with open(filename, 'r') as f:
-            return json.load(f)
-    return None
-
+retention_dir = get_retention_dir()
 
 def get_ncbi_abstracts(search_term,debug_nb_req):
     base_url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/"
@@ -87,12 +68,12 @@ def get_ncbi_abstracts(search_term,debug_nb_req):
 
 def manage_abstracts(selected_term,debug_nb_req=-1,debug_nb_abstracts_by_search=-1):
     chunks = get_ncbi_abstracts(selected_term,1)[0:debug_nb_abstracts_by_search]
-    list_of_dicts_to_csv(chunks, "chunks.csv")
+    list_of_dicts_to_csv(chunks, retention_dir+"/chunks.csv")
     print("chunks embeddings")
     # Encoder les descriptions des tags
     chunk_embeddings = {}
-    if os.path.exists('chunks.pth'):
-        chunk_embeddings = torch.load('chunks.pth')
+    if os.path.exists(retention_dir+'/chunks.pth'):
+        chunk_embeddings = torch.load(retention_dir+'/chunks.pth')
 
     change = False
 
@@ -104,6 +85,12 @@ def manage_abstracts(selected_term,debug_nb_req=-1,debug_nb_abstracts_by_search=
             change = True
 
     if change:
-        torch.save(chunk_embeddings, 'chunks.pth')
+        torch.save(chunk_embeddings, retention_dir+'/chunks.pth')
     
     return chunk_embeddings
+
+def get_abstracts_embeddings():
+    if os.path.exists(retention_dir+'/chunks.pth'):
+        return torch.load(retention_dir+'/chunks.pth')
+    else:
+        return {}
