@@ -2,39 +2,38 @@ import os, re, warnings, torch
 from rdflib import Graph, Namespace, URIRef
 from tqdm import tqdm
 from rich import print
+import wget
 from llm_semantic_annotator import dict_to_csv,save_results,load_results, get_retention_dir
 from llm_semantic_annotator import encode_text
 
-retention_dir = get_retention_dir()
+def get_corpus(ontologies,config):
+    debug_nb_terms_by_ontology = config['debug_nb_terms_by_ontology']
+    retention_dir = config['retention_dir']
 
-def get_corpus(ontologies,debug_nb_terms_by_ontology):
     tags = []
 
-    for ontology in download_ontologies(ontologies):
-        if os.path.exists(retention_dir+"/"+ontology+".json"):
-            tags.extend(load_results(ontology))
+    for ontology in download_ontologies(ontologies,config):
+        filename = retention_dir+"/tag_"+ontology+".json"
+        if os.path.exists(filename):
+            tags.extend(load_results(filename))
         else:
             tags.extend(build_corpus(ontology, ontologies[ontology],debug_nb_terms_by_ontology))
-            save_results(ontology,tags)
+            save_results(tags,filename)
     
     return tags
 
 # Charger le fichier OWL local
-def download_ontologies(list_ontologies):
-    import wget
-   
+def download_ontologies(list_ontologies,config):
+    
     for ontology,values in list_ontologies.items():
-        filepath= retention_dir+"/"+ontology+"."+values['format']
+        filepath= config['retention_dir']+"/"+ontology+"."+values['format']
         list_ontologies[ontology]['filepath'] = filepath
         
         if not os.path.exists(list_ontologies[ontology]['filepath']):
             print("Downloading ontology: ",ontology)
             wget.download(values['url'],filepath)
         
-    
     return list_ontologies
-    
-
 
 def remove_prefix_tags(prefix_tag,text):
     escaped_prefix = re.escape(prefix_tag.upper())
@@ -105,7 +104,10 @@ def build_corpus(
     return tags
 
 
-def manage_tags(ontologies_by_link,debug_nb_terms_by_ontology):
+def manage_tags(config):
+    ontologies_by_link = config['ontologies']
+    retention_dir = config['retention_dir']
+
     # Encoder les descriptions des tags
     tag_embeddings = {}
     if os.path.exists(retention_dir+'/tags.pth'):
@@ -115,7 +117,7 @@ def manage_tags(ontologies_by_link,debug_nb_terms_by_ontology):
 
     for link_name,ontologies in ontologies_by_link.items():
         # get vocabulary from ontologies selected
-        tags = get_corpus(ontologies, debug_nb_terms_by_ontology)
+        tags = get_corpus(ontologies, config)
         for item in tqdm(tags):
             if not item['label'] in tag_embeddings:
                 embeddings = encode_text(item['description'])
@@ -131,22 +133,17 @@ def manage_tags(ontologies_by_link,debug_nb_terms_by_ontology):
     return tag_embeddings
 
 # Return tag embeddings in JSON format where the key is the DOI and the value is the embedding
-def get_tags_embeddings():
-    if os.path.exists(retention_dir+'/tags.pth'):
-        return torch.load(retention_dir+'/tags.pth')
-    else:
-        return {}
-
-# Return tag in JSON format where the key is the DOI and the value is the embedding
-def get_tags_embeddings():
+def get_tags_embeddings(retention_dir):
     if os.path.exists(retention_dir+'/tags.pth'):
         return torch.load(retention_dir+'/tags.pth')
     else:
         return {}
 
 # Return a tags list where element is an object containing the term, label and description 
-def get_tags():
-    if os.path.exists(retention_dir+'/tags.pth'):
-        return torch.load(retention_dir+'/tags.pth')
-    else:
-        return {}
+def get_tags(config):
+    for filename in os.listdir(config['retention_dir']):
+        results = []
+        if filename.startswith('tag_') and filename.endswith('.json'):
+            results.append(load_results(os.path.join(config['retention_dir'], filename)))
+    # Remove duplicates
+    return [dict(t) for t in {tuple(d.items()) for d in results}]

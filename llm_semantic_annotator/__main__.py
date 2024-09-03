@@ -3,7 +3,7 @@ import json, sys
 from llm_semantic_annotator import manage_tags, get_tags_embeddings
 from llm_semantic_annotator import manage_abstracts, get_abstracts_embeddings
 from llm_semantic_annotator import compare_tags_with_chunks
-from llm_semantic_annotator import ontologies_distribution
+from llm_semantic_annotator import ontologies_distribution,get_retention_dir
 
 from rich import print
 import argparse
@@ -23,25 +23,29 @@ def load_config(config_file):
 def main_populate_tag_embeddings(config_all):
     """Fonction principale pour générer et stocker les embeddings de tags dans une base."""
     config = config_all['populate_tag_embeddings']
+    config['retention_dir'] = config_all['retention_dir']
+
     # Utilisez les paramètres de config ici
     print(f"Ontologies : {config['ontologies']}")
     print(f"Nb terms to compute : {config['debug_nb_terms_by_ontology']}")
-    manage_tags(config['ontologies'],config['debug_nb_terms_by_ontology'])
+    
+    manage_tags(config)
 
 def main_populate_ncbi_abstract_embeddings(config_all,selected_term):
     config = config_all['populate_ncbi_abstract_embeddings']
-    manage_abstracts(selected_term,config['debug_nb_ncbi_request'],config['debug_nb_abstracts_by_search'])
+    config['retention_dir'] = config_all['retention_dir']
+    manage_abstracts(selected_term,config)
 
 def main_compute_tag_chunk_similarities(config_all):
     """Fonction principale pour calculer la similarité entre tous les tags et chunks."""
     config = config_all['compute_tag_chunk_similarities']
-    tag_embeddings = get_tags_embeddings()
-    chunk_embeddings = get_abstracts_embeddings()
+    config['retention_dir'] = config_all['retention_dir']
+
+    tag_embeddings = get_tags_embeddings(config['retention_dir'])
+    chunk_embeddings = get_abstracts_embeddings(config['retention_dir'])
    
     results_complete_similarities = compare_tags_with_chunks(
-        tag_embeddings, chunk_embeddings,
-        config['threshold_similarity_tag_chunk'],
-        config['debug_nb_similarity_compute'])
+        tag_embeddings, chunk_embeddings,config)
 
     ontologies_distribution(results_complete_similarities)
 
@@ -69,6 +73,8 @@ if __name__ == "__main__":
     args = parse_arguments()
     config = load_config(args.config_file)
     
+    config['retention_dir'] = get_retention_dir(args.config_file)
+
     if args.execution_type == "populate_tag_embeddings":
         main_populate_tag_embeddings(config)
     elif args.execution_type == "populate_ncbi_abstract_embeddings":

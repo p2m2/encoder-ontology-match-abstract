@@ -4,15 +4,18 @@ from rich import print
 from llm_semantic_annotator import dict_to_csv,save_results,load_results,get_retention_dir
 from llm_semantic_annotator import encode_text
 
-retention_dir = get_retention_dir()
-
 # return json with element containing title, pmid, abstract and doi
-def get_ncbi_abstracts(search_term,debug_nb_req):
+def get_ncbi_abstracts(search_term,config):
+    debug_nb_req = config['debug_nb_ncbi_request']
+    retmax = config['retmax']
+
     base_url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/"
-    search_url = f"{base_url}esearch.fcgi?db=pubmed&term={search_term}&retmax=10000&retmode=json"
+    search_url = f"{base_url}esearch.fcgi?db=pubmed&term={search_term}&retmax={retmax}&retmode=json"
+    
+    filename = config['retention_dir'] + f"/abstract_{search_term}.json"
 
     # Essayer de charger les résultats existants
-    results = load_results(search_term)
+    results = load_results(filename)
     
     if results is not None:
         print(f"Résultats chargés pour '{search_term}' et '{search_url}'")
@@ -63,12 +66,16 @@ def get_ncbi_abstracts(search_term,debug_nb_req):
             if len(v['abstract'].strip()) > 0 and len(v['title'].strip()) > 0] 
     
     # Sauvegarder les nouveaux résultats
-    save_results(search_term, results)
+    
+    save_results(results, filename)
 
     return results
 
-def manage_abstracts(selected_term,debug_nb_req=-1,debug_nb_abstracts_by_search=-1):
-    chunks = get_ncbi_abstracts(selected_term,debug_nb_req)
+def manage_abstracts(selected_term,config):
+    debug_nb_abstracts_by_search = config['debug_nb_abstracts_by_search']
+    retention_dir = config['retention_dir']
+
+    chunks = get_ncbi_abstracts(selected_term,config)
     
     if debug_nb_abstracts_by_search>0:
         chunks = chunks[:debug_nb_abstracts_by_search]
@@ -91,11 +98,20 @@ def manage_abstracts(selected_term,debug_nb_req=-1,debug_nb_abstracts_by_search=
     if change:
         torch.save(chunk_embeddings, retention_dir+'/chunks.pth')
         dict_to_csv(chunk_embeddings, retention_dir+'/chunks.csv')
-    
+        
+
     return chunk_embeddings
 
-def get_abstracts_embeddings():
+def get_abstracts_embeddings(retention_dir):
     if os.path.exists(retention_dir+'/chunks.pth'):
         return torch.load(retention_dir+'/chunks.pth')
     else:
         return {}
+    
+def get_abstracts(config):
+    for filename in os.listdir(config['retention_dir']):
+        results = []
+        if filename.startswith('abstract_') and filename.endswith('.json'):
+            results.append(load_results(os.path.join(config['retention_dir'], filename)))
+    # Remove duplicates
+    return [dict(t) for t in {tuple(d.items()) for d in results}]

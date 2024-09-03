@@ -42,8 +42,10 @@ def best_similarity_for_tag(chunk_embedding, tag_embeddings):
                 best_similarity = similarity
     return best_similarity
 
-def compare_tags_with_chunks(tag_embeddings, chunk_embeddings, threshold, debug_nb_similarity_compute):
-    
+def compare_tags_with_chunks(tag_embeddings, chunk_embeddings,config):
+    threshold = config['threshold_similarity_tag_chunk']
+    debug_nb_similarity_compute = config['debug_nb_similarity_compute']
+
     results_complete_similarities = {}
 
     record=0

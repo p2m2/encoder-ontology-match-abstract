@@ -23,7 +23,8 @@
 
     "populate_ncbi_abstract_embeddings" : {
         "debug_nb_ncbi_request" : 1,
-        "debug_nb_abstracts_by_search" : 20
+        "debug_nb_abstracts_by_search" : 20,
+        "retmax":20
     },
 
     "compute_tag_chunk_similarities" : {
