@@ -21,6 +21,9 @@ python -m llm_semantic_annotator config/test.json populate_tag_embeddings
 ```bash
 python -m llm_semantic_annotator config/test.json populate_ncbi_abstract_embeddings --selected_term "abiotic+AND+metabolomics+AND+plant+AND+stress+AND+brassicaceae"
 ```
+```bash
+python -m llm_semantic_annotator config/igepp.json populate_ncbi_abstract_embeddings --selected_term "mass+AND+spectrometry+AND+glucosinolate"
+```
 
 ```bash
 python -m llm_semantic_annotator config/test.json compute_tag_chunk_similarities

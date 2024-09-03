@@ -1,14 +1,15 @@
 import os, json, torch, requests
 from tqdm import tqdm
 from rich import print
-from llm_semantic_annotator import utils , list_of_dicts_to_csv,save_results,load_results,get_retention_dir
-from llm_semantic_annotator import torch_utils, encode_text
+from llm_semantic_annotator import dict_to_csv,save_results,load_results,get_retention_dir
+from llm_semantic_annotator import encode_text
 
 retention_dir = get_retention_dir()
 
+# return json with element containing title, pmid, abstract and doi
 def get_ncbi_abstracts(search_term,debug_nb_req):
     base_url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/"
-    search_url = f"{base_url}esearch.fcgi?db=pubmed&term={search_term}&retmax=100&retmode=json"
+    search_url = f"{base_url}esearch.fcgi?db=pubmed&term={search_term}&retmax=10000&retmode=json"
 
     # Essayer de charger les résultats existants
     results = load_results(search_term)
@@ -20,7 +21,7 @@ def get_ncbi_abstracts(search_term,debug_nb_req):
     response = requests.get(search_url)
     search_results = response.json()
     id_list = search_results['esearchresult']['idlist']
-
+    print("nb abstract:",len(id_list))
     import xml.etree.ElementTree as ET
 
     abstracts = []
@@ -67,8 +68,11 @@ def get_ncbi_abstracts(search_term,debug_nb_req):
     return results
 
 def manage_abstracts(selected_term,debug_nb_req=-1,debug_nb_abstracts_by_search=-1):
-    chunks = get_ncbi_abstracts(selected_term,1)[0:debug_nb_abstracts_by_search]
-    list_of_dicts_to_csv(chunks, retention_dir+"/chunks.csv")
+    chunks = get_ncbi_abstracts(selected_term,debug_nb_req)
+    
+    if debug_nb_abstracts_by_search>0:
+        chunks = chunks[:debug_nb_abstracts_by_search]
+    
     print("chunks embeddings")
     # Encoder les descriptions des tags
     chunk_embeddings = {}
@@ -86,6 +90,7 @@ def manage_abstracts(selected_term,debug_nb_req=-1,debug_nb_abstracts_by_search=
 
     if change:
         torch.save(chunk_embeddings, retention_dir+'/chunks.pth')
+        dict_to_csv(chunk_embeddings, retention_dir+'/chunks.csv')
     
     return chunk_embeddings
 

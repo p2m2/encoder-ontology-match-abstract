@@ -2,8 +2,8 @@ import os, re, warnings, torch
 from rdflib import Graph, Namespace, URIRef
 from tqdm import tqdm
 from rich import print
-from llm_semantic_annotator import utils , list_of_dicts_to_csv,save_results,load_results, get_retention_dir
-from llm_semantic_annotator import torch_utils, encode_text
+from llm_semantic_annotator import dict_to_csv,save_results,load_results, get_retention_dir
+from llm_semantic_annotator import encode_text
 
 retention_dir = get_retention_dir()
 
@@ -68,7 +68,7 @@ def build_corpus(
     query_base = """
     PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 
-    SELECT ?labelLeaf """ + " ".join(varProperties) + """ WHERE { 
+    SELECT ?term ?labelLeaf """ + " ".join(varProperties) + """ WHERE { 
         """+"\n".join(sparqlProperties)+"""
         ?term rdfs:label ?labelLeaf .
     }
@@ -89,10 +89,11 @@ def build_corpus(
         
         if "obsolete" in formatted_label:
             continue
-        if 'obsolete' in descriptionLeaf:
+        if 'obsolete' in descriptionLeaf.lower():
             continue
         
         tags.append({
+                'term': row.term,
                 'label': formatted_label,
                 'description' : remove_prefix_tags(ontology,descriptionLeaf)
             })
@@ -107,9 +108,6 @@ def build_corpus(
 def manage_tags(ontologies,debug_nb_terms_by_ontology):
     # get vocabulary from ontologies selected
     tags = get_corpus(ontologies, debug_nb_terms_by_ontology)
-    # get embeddings compudted for each tag from last sessions
-    list_of_dicts_to_csv(tags, retention_dir+"/tags.csv")
-
 
     # Encoder les descriptions des tags
     tag_embeddings = {}
@@ -129,10 +127,26 @@ def manage_tags(ontologies,debug_nb_terms_by_ontology):
     if change:
         print("save tags embeddings")
         torch.save(tag_embeddings, retention_dir+'/tags.pth')
+        dict_to_csv(tag_embeddings, retention_dir+'/tags.csv')
 
     return tag_embeddings
 
+# Return tag embeddings in JSON format where the key is the DOI and the value is the embedding
 def get_tags_embeddings():
+    if os.path.exists(retention_dir+'/tags.pth'):
+        return torch.load(retention_dir+'/tags.pth')
+    else:
+        return {}
+
+# Return tag in JSON format where the key is the DOI and the value is the embedding
+def get_tags_embeddings():
+    if os.path.exists(retention_dir+'/tags.pth'):
+        return torch.load(retention_dir+'/tags.pth')
+    else:
+        return {}
+
+# Return a tags list where element is an object containing the term, label and description 
+def get_tags():
     if os.path.exists(retention_dir+'/tags.pth'):
         return torch.load(retention_dir+'/tags.pth')
     else:

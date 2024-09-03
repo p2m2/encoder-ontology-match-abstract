@@ -42,14 +42,14 @@ def best_similarity_for_tag(chunk_embedding, tag_embeddings):
                 best_similarity = similarity
     return best_similarity
 
-def compare_tags_with_chunks(tag_embeddings, chunk_embeddings, threshold):
-    results = []
-    results_complete_similarities = []
-    print(len(tag_embeddings))
-    print(len(chunk_embeddings))
+def compare_tags_with_chunks(tag_embeddings, chunk_embeddings, threshold, debug_nb_similarity_compute):
+    
+    results_complete_similarities = {}
+
+    record=0
     for doi,chunk_embedding in tqdm(chunk_embeddings.items()):
         # Convertir le tensor en une forme serialisable pour le dictionnaire
-        chunk_embedding_key = chunk_embedding.numpy().tobytes()
+        
         tag_similarities = {}
         complete_similarities = {}
         for tag, descriptions_embeddings in tag_embeddings.items():
@@ -57,13 +57,12 @@ def compare_tags_with_chunks(tag_embeddings, chunk_embeddings, threshold):
             tag_similarities[tag] = similarity
             if similarity>=threshold :
                 complete_similarities[tag] = similarity
-        
-        results_complete_similarities.append(complete_similarities)
+            
+        if doi not in results_complete_similarities:
+            results_complete_similarities[doi] = complete_similarities
+        #results_complete_similarities.append(complete_similarities)
+        if record == debug_nb_similarity_compute:
+            break
+        record+=1
 
-        # Associer le tag avec la similarité la plus élevée si au-dessus du seuil
-        best_tag = max(tag_similarities, key=tag_similarities.get)
-        if tag_similarities[best_tag] >= threshold:
-            results.append((best_tag, tag_similarities[best_tag]))
-        else:
-            results.append((None, None))
-    return results, results_complete_similarities
+    return results_complete_similarities
