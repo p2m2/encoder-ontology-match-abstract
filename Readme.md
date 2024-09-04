@@ -2,15 +2,17 @@
 
 [![Tests](https://github.com/p2m2/encoder-ontology-match-abstract/actions/workflows/ci.yml/badge.svg)](https://github.com/p2m2/encoder-ontology-match-abstract/actions/workflows/ci.yml)
 
+## Installation
+
 ```bash
 python -m venv env
 source env/bin/activate
 pip install -r requirements.txt
 ```
 
-### Configuratipon
+## Configuration
 
-                |
+check exemple on [config](./config) directory
 
 <table style="font-size: 10px;">
     <tr>
