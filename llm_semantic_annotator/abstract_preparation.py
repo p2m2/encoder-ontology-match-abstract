@@ -23,7 +23,12 @@ def get_ncbi_abstracts(search_term,config):
 
     response = requests.get(search_url)
     search_results = response.json()
-    id_list = search_results['esearchresult']['idlist']
+    
+    if 'idlist' in search_results['esearchresult']:
+        id_list = search_results['esearchresult']['idlist']
+    else:
+        return []
+    
     print("nb abstract:",len(id_list))
     import xml.etree.ElementTree as ET
 
