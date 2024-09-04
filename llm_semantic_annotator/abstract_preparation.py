@@ -30,6 +30,9 @@ def get_ncbi_abstracts(config):
         response = requests.get(search_url)
         search_results = response.json()
         
+        if 'esearchresult' not in search_results:
+            continue
+        
         if 'idlist' in search_results['esearchresult']:
             id_list = search_results['esearchresult']['idlist']
         else:
