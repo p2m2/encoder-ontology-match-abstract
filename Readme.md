@@ -10,19 +10,76 @@ pip install -r requirements.txt
 
 ### Configuratipon
 
-| Action                          | Description                                       | Parameter                     | Description                                                |
-|---------------------------------|---------------------------------------------------|-------------------------------|------------------------------------------------------------|
-| populate_tag_embeddings         | Populate the corpus of tags                       |                               |                                                            |
-|                                 |                                                   | debug_nb_terms_by_ontology    | Number of terms per ontology for debugging.                |
-| populate_ncbi_abstract_embeddings | Populate the database with scientific articles    |                               |                                                            |
-|                                 |                                                   | debug_nb_ncbi_request         | Number of NCBI requests for debugging.                     |
-|                                 |                                                   | debug_nb_abstracts_by_search  | Number of abstracts per search for debugging.              |
-|                                 |                                                   | retmax                        | Maximum number of articles per search term.                |
-|                                 |                                                   | selected_term                 | Selected term to find relevant scientific articles.        |
-| compute_tag_chunk_similarities  | Compute the similarity using cosine score         |                               |                                                            |
-|                                 |                                                   | threshold_similarity_tag_chunk | Similarity threshold for tagging chunks.                   |
-|                                 |                                                   | debug_nb_similarity_compute   | Maximum number of similarities computed.                   |
+                |
 
+<table style="font-size: 10px;">
+    <tr>
+        <th>Action</th>
+        <th>Description</th>
+        <th>Parameter</th>
+        <th>Description</th>
+    </tr>
+    <tr>
+        <td>populate_tag_embeddings</td>
+        <td>Populate the corpus of tags</td>
+        <td></td>
+        <td></td>
+    </tr>
+    <tr>
+        <td></td>
+        <td></td>
+        <td>debug_nb_terms_by_ontology</td>
+        <td>Number of terms per ontology for debugging.</td>
+    </tr>
+    <tr>
+        <td>populate_ncbi_abstract_embeddings</td>
+        <td>Populate the database with scientific articles</td>
+        <td></td>
+        <td></td>
+    </tr>
+    <tr>
+        <td></td>
+        <td></td>
+        <td>debug_nb_ncbi_request</td>
+        <td>Number of NCBI requests for debugging.</td>
+    </tr>
+    <tr>
+        <td></td>
+        <td></td>
+        <td>debug_nb_abstracts_by_search</td>
+        <td>Number of abstracts per search for debugging.</td>
+    </tr>
+    <tr>
+        <td></td>
+        <td></td>
+        <td>retmax</td>
+        <td>Maximum number of articles per search term.</td>
+    </tr>
+    <tr>
+        <td></td>
+        <td></td>
+        <td>selected_term</td>
+        <td>Selected term to find relevant scientific articles.</td>
+    </tr>
+    <tr>
+        <td>compute_tag_chunk_similarities</td>
+        <td>Compute the similarity using cosine score</td>
+        <td></td>
+        <td></td>
+    </tr>
+    <tr>
+        <td></td>
+        <td></td>
+        <td>threshold_similarity_tag_chunk</td>
+        <td>Similarity threshold for tagging chunks.</td>
+    </tr>
+    <tr>
+        <td></td>
+        <td></td>
+        <td>debug_nb_similarity_compute</td>
+        <td>Maximum number of similarities computed.</td>
+    </tr>
+</table>
 
     
     
