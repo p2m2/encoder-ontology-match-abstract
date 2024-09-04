@@ -10,10 +10,24 @@ pip install -r requirements.txt
 
 ### Configuratipon
 
-    "threshold_similarity_tag_chunk" : Seuil de similarité pour le tagging des chunks.
-    "debug_nb_ncbi_request" : Nombre de requêtes NCBI pour le débogage.
-    "debug_nb_terms_by_ontology" : Nombre de termes par ontologie pour le débogage.
-    "debug_nb_abstracts_by_search" : Nombre d'abstracts par recherche pour le débogage.
+| Action                          | Description                                       | Parameter                     | Description                                                |
+|---------------------------------|---------------------------------------------------|-------------------------------|------------------------------------------------------------|
+| populate_tag_embeddings         | Populate the corpus of tags                       |                               |                                                            |
+|                                 |                                                   | debug_nb_terms_by_ontology    | Number of terms per ontology for debugging.                |
+| populate_ncbi_abstract_embeddings | Populate the database with scientific articles    |                               |                                                            |
+|                                 |                                                   | debug_nb_ncbi_request         | Number of NCBI requests for debugging.                     |
+|                                 |                                                   | debug_nb_abstracts_by_search  | Number of abstracts per search for debugging.              |
+|                                 |                                                   | retmax                        | Maximum number of articles per search term.                |
+|                                 |                                                   | selected_term                 | Selected term to find relevant scientific articles.        |
+| compute_tag_chunk_similarities  | Compute the similarity using cosine score         |                               |                                                            |
+|                                 |                                                   | threshold_similarity_tag_chunk | Similarity threshold for tagging chunks.                   |
+|                                 |                                                   | debug_nb_similarity_compute   | Maximum number of similarities computed.                   |
+
+
+    
+    
+    
+
 
 
 ### Execution
