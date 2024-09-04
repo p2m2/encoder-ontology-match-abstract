@@ -31,10 +31,10 @@ def main_populate_tag_embeddings(config_all):
     
     manage_tags(config)
 
-def main_populate_ncbi_abstract_embeddings(config_all,selected_term):
+def main_populate_ncbi_abstract_embeddings(config_all):
     config = config_all['populate_ncbi_abstract_embeddings']
     config['retention_dir'] = config_all['retention_dir']
-    manage_abstracts(selected_term,config)
+    manage_abstracts(config)
 
 def main_compute_tag_chunk_similarities(config_all):
     """Fonction principale pour calculer la similarité entre tous les tags et chunks."""
@@ -61,11 +61,7 @@ def parse_arguments():
         choices=["populate_tag_embeddings", "populate_ncbi_abstract_embeddings", "compute_tag_chunk_similarities"],
         help="Type d'exécution à effectuer."
     )
-    parser.add_argument(
-        "--selected_term",
-        required=False,  # Par défaut, non requis
-        help="expression pour la recherche d'abstract avec ncbi/eutils"
-    )
+
     return parser.parse_args()
 
 if __name__ == "__main__":
@@ -81,7 +77,7 @@ if __name__ == "__main__":
         if not args.selected_term:
             print("L'option --selected_term est requise pour compute_similarities.")
             sys.exit(1)
-        main_populate_ncbi_abstract_embeddings(config,args.selected_term)
+        main_populate_ncbi_abstract_embeddings(config)
     elif args.execution_type == "compute_tag_chunk_similarities":
         main_compute_tag_chunk_similarities(config)
 

@@ -16,22 +16,37 @@ class TestAbstractPreparation(unittest.TestCase):
             'debug_nb_ncbi_request': 1,
             'debug_nb_abstracts_by_search' : 1,
             'retmax':n,
+            'selected_term' : [''],
             'retention_dir': self.temp_dir,
         }
         # "" give an idList empty
-        resultat = get_ncbi_abstracts("", config)
+        resultat = get_ncbi_abstracts(config)
+        self.assertEqual(len(resultat), 0)
+    
+    def test_get_ncbi_abstracts_zero_request(self):
+        n = 5
+        config = {
+            'debug_nb_ncbi_request': 0,
+            'debug_nb_abstracts_by_search' : 1,
+            'retmax':n,
+            'selected_term' : [''],
+            'retention_dir': self.temp_dir,
+        }
+        # "" give an idList empty
+        resultat = get_ncbi_abstracts(config)
         self.assertEqual(len(resultat), 0)
 
     def test_get_ncbi_abstracts(self):
-        n = 5
+        n = 1
         config = {
             'debug_nb_ncbi_request': 1,
             'debug_nb_abstracts_by_search' : 1,
             'retmax':n,
+            'selected_term' : ['gluco'],
             'retention_dir': self.temp_dir,
         }
 
-        resultat = get_ncbi_abstracts("gluco", config)
+        resultat = get_ncbi_abstracts(config)
         self.assertEqual(len(resultat), n)
 
 if __name__ == '__main__':

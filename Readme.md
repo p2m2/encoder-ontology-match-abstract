@@ -1,5 +1,7 @@
 # LLMSemanticAnnotator
 
+[![Tests](https://github.com/p2m2/encoder-ontology-match-abstract/actions/workflows/ci.yml/badge.svg)](https://github.com/p2m2/encoder-ontology-match-abstract/actions/workflows/ci.yml)
+
 ```bash
 python -m venv env
 source env/bin/activate
@@ -21,10 +23,10 @@ python -m llm_semantic_annotator config/test.json populate_tag_embeddings
 ```
 
 ```bash
-python -m llm_semantic_annotator config/test.json populate_ncbi_abstract_embeddings --selected_term "abiotic+AND+metabolomics+AND+plant+AND+stress+AND+brassicaceae"
+python -m llm_semantic_annotator config/test.json populate_ncbi_abstract_embeddings
 ```
 ```bash
-python -m llm_semantic_annotator config/igepp.json populate_ncbi_abstract_embeddings --selected_term "mass+AND+spectrometry+AND+glucosinolate"
+python -m llm_semantic_annotator config/igepp.json populate_ncbi_abstract_embeddings
 ```
 
 ```bash

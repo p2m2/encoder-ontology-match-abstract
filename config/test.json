@@ -10,21 +10,18 @@
                 }
             },
             "technology_link" : {
-                "ms": {
-                    "url": "http://purl.obolibrary.org/obo/ms.owl",
-                    "prefix": "http://purl.obolibrary.org/obo/MS_",
-                    "format": "xml",
-                    "properties": ["<http://purl.obolibrary.org/obo/IAO_0000115>"]
-                }
             }
         },
-        "debug_nb_terms_by_ontology" : 20
+        "debug_nb_terms_by_ontology" : 2
     },
 
     "populate_ncbi_abstract_embeddings" : {
         "debug_nb_ncbi_request" : 1,
-        "debug_nb_abstracts_by_search" : 20,
-        "retmax":20
+        "debug_nb_abstracts_by_search" : 1,
+        "retmax":2,
+        "selected_term" : [
+            "abiotic+AND+metabolomics+AND+plant+AND+stress+AND+brassicaceae"
+        ]
     },
 
     "compute_tag_chunk_similarities" : {

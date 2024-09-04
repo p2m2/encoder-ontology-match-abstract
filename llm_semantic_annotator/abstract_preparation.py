@@ -5,82 +5,90 @@ from llm_semantic_annotator import dict_to_csv,save_results,load_results,get_ret
 from llm_semantic_annotator import encode_text
 
 # return json with element containing title, pmid, abstract and doi
-def get_ncbi_abstracts(search_term,config):
+def get_ncbi_abstracts(config):
     debug_nb_req = config['debug_nb_ncbi_request']
     retmax = config['retmax']
-
+    search_term_list = config['selected_term']
     base_url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/"
-    search_url = f"{base_url}esearch.fcgi?db=pubmed&term={search_term}&retmax={retmax}&retmode=json"
     
-    filename = config['retention_dir'] + f"/abstract_{search_term}.json"
+    nrecord = 0
+    results = []
 
-    # Essayer de charger les résultats existants
-    results = load_results(filename)
-    
-    if results is not None:
-        print(f"Résultats chargés pour '{search_term}' et '{search_url}'")
-        return results
-
-    response = requests.get(search_url)
-    search_results = response.json()
-    
-    if 'idlist' in search_results['esearchresult']:
-        id_list = search_results['esearchresult']['idlist']
-    else:
-        return []
-    
-    print("nb abstract:",len(id_list))
-    import xml.etree.ElementTree as ET
-
-    abstracts = []
-    chunk_size = 20  # Nombre d'IDs à traiter par requête
-
-    for i in tqdm(range(0, len(id_list), chunk_size)):
-        chunk = id_list[i:i+chunk_size]
-        ids = ",".join(chunk)
-        fetch_url = f"{base_url}efetch.fcgi?db=pubmed&id={ids}&rettype=abstract&retmode=xml"
+    for search_term in search_term_list:  
+        search_url = f"{base_url}esearch.fcgi?db=pubmed&term={search_term}&retmax={retmax}&retmode=json"
         
-        fetch_response = requests.get(fetch_url)
-        
-        root = ET.fromstring(fetch_response.content)
-        
-        for article in root.findall('.//PubmedArticle'):
-            abstract_text = ""
-            
-            for abstract in article.findall('.//AbstractText'):
-                abstract_text += abstract.text or ""
-            
-            doi = None
-            for id_elem in article.findall(".//ArticleId"):
-                if id_elem.get("IdType") == "doi":
-                    doi = id_elem.text
-                    break
+        filename = config['retention_dir'] + f"/abstract_{search_term}_{debug_nb_req}_{retmax}.json"
 
-            
-            abstracts.append({
-                'title' : article.findtext(".//ArticleTitle"),
-                'pmid': article.find('.//PMID').text,
-                'abstract': abstract_text,
-                'doi': doi
-            })
+        # Essayer de charger les résultats existants
+        results_cur = load_results(filename)
+        # if results exist in the file, we don't need to do the request
+        if results_cur is not None:
+            print(f"Résultats chargés pour '{search_term}' et '{search_url}'")
+            results.extend(results_cur)
+            continue
 
-        if i==debug_nb_req:
-            break
-    #json.dumps(abstracts, indent=4)
-    results = [v for v in abstracts 
-            if len(v['abstract'].strip()) > 0 and len(v['title'].strip()) > 0] 
-    
-    # Sauvegarder les nouveaux résultats
-    
-    save_results(results, filename)
+        response = requests.get(search_url)
+        search_results = response.json()
+        
+        if 'idlist' in search_results['esearchresult']:
+            id_list = search_results['esearchresult']['idlist']
+        else:
+            continue
+        
+        print("nb abstract:",len(id_list))
+        import xml.etree.ElementTree as ET
+
+        abstracts = []
+        chunk_size = 20  # Nombre d'IDs à traiter par requête
+
+        for i in tqdm(range(0, len(id_list), chunk_size)):
+            chunk = id_list[i:i+chunk_size]
+            ids = ",".join(chunk)
+            fetch_url = f"{base_url}efetch.fcgi?db=pubmed&id={ids}&rettype=abstract&retmode=xml"
+            
+            fetch_response = requests.get(fetch_url)
+            
+            root = ET.fromstring(fetch_response.content)
+            
+            for article in root.findall('.//PubmedArticle'):
+                abstract_text = ""
+                
+                for abstract in article.findall('.//AbstractText'):
+                    abstract_text += abstract.text or ""
+                
+                doi = None
+                for id_elem in article.findall(".//ArticleId"):
+                    if id_elem.get("IdType") == "doi":
+                        doi = id_elem.text
+                        break
+
+                
+                abstracts.append({
+                    'title' : article.findtext(".//ArticleTitle"),
+                    'pmid': article.find('.//PMID').text,
+                    'abstract': abstract_text,
+                    'doi': doi
+                })
+
+            if nrecord==debug_nb_req:
+                break
+            nrecord += 1
+
+        results_cur = [v for v in abstracts 
+                if len(v['abstract'].strip()) > 0 and len(v['title'].strip()) > 0] 
+        
+        # Sauvegarder les nouveaux résultats
+        save_results(results_cur, filename)
+        
+        results.extend(results_cur)
 
     return results
 
-def manage_abstracts(selected_term,config):
+def manage_abstracts(config):
     debug_nb_abstracts_by_search = config['debug_nb_abstracts_by_search']
     retention_dir = config['retention_dir']
 
-    chunks = get_ncbi_abstracts(selected_term,config)
+    chunks = get_ncbi_abstracts(config)
     
     if debug_nb_abstracts_by_search>0:
         chunks = chunks[:debug_nb_abstracts_by_search]
