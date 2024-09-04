@@ -31,5 +31,7 @@ python -m llm_semantic_annotator config/igepp.json populate_ncbi_abstract_embedd
 python -m llm_semantic_annotator config/test.json compute_tag_chunk_similarities
 ```
 
-
+```bash
+python -m unittest discover
+```
 
