@@ -48,7 +48,7 @@ if __name__ == "__main__":
         config['force'] = True
     else:
         config['force'] = False
-    print(config['force'])
+    
     if args.execution_type == "populate_owl_tag_embeddings":
         main_populate_owl_tag_embeddings(config)
     elif args.execution_type == "populate_ncbi_abstract_embeddings":

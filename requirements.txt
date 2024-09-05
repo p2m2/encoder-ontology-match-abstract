@@ -6,3 +6,4 @@ rich
 rdflib
 requests
 wget
+np
