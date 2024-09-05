@@ -9,6 +9,9 @@ def get_ncbi_abstracts(config):
     debug_nb_req = config['debug_nb_ncbi_request']
     retmax = config['retmax']
     search_term_list = config['selected_term']
+    if 'force' not in config:
+        config['force'] = False
+        
     base_url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/"
     
     nrecord = 0
@@ -91,6 +94,8 @@ def get_ncbi_abstracts(config):
 def manage_abstracts(config):
     debug_nb_abstracts_by_search = config['debug_nb_abstracts_by_search']
     retention_dir = config['retention_dir']
+    if 'force' not in config:
+        config['force'] = False
 
     chunks = get_ncbi_abstracts(config)
     

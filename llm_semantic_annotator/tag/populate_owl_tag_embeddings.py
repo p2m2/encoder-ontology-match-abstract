@@ -12,7 +12,7 @@ def get_corpus(ontologies,config):
 
     tags = []
 
-    for ontology in download_ontologies(ontologies,config):
+    for ontology in get_ontologies(ontologies,config):
         filename = retention_dir+"/tag_"+ontology+".json"
         if not config['force'] and os.path.exists(filename):
             tags.extend(load_results(filename))
@@ -24,15 +24,38 @@ def get_corpus(ontologies,config):
     return tags
 
 # Charger le fichier OWL local
-def download_ontologies(list_ontologies,config):
+def get_ontologies(list_ontologies,config):
     
     for ontology,values in list_ontologies.items():
-        filepath= config['retention_dir']+"/"+ontology+"."+values['format']
-        list_ontologies[ontology]['filepath'] = filepath
         
-        if config['force'] or not os.path.exists(list_ontologies[ontology]['filepath']):
-            print("Downloading ontology: ",ontology)
-            wget.download(values['url'],filepath)
+        filepath = config['retention_dir']+"/"+ontology+"."+values['format']
+                
+        # utilisation d'un fichier local
+        print(values)
+        if 'filepath' in values:
+            if not os.path.exists(values['filepath']):
+                raise FileNotFoundError(f"Le fichier '{values['filepath']}' n'existe pas.")
+            if os.path.exists(filepath) and config['force']:
+                os.remove(filepath)
+            if os.path.exists(filepath):
+                continue
+            try:
+                os.symlink(os.path.abspath(values['filepath']),filepath)
+                print(f"Lien symbolique créé : {filepath} -> {values['filepath']}")
+            except FileExistsError:
+                print(f"Le lien symbolique {filepath} existe déjà.")
+            except PermissionError:
+                print("Erreur de permission. Assurez-vous d'avoir les droits nécessaires.")
+            except OSError as e:
+                print(f"Erreur lors de la création du lien symbolique : {e}")
+
+        else: # sinon telechargement
+            if config['force'] or not os.path.exists(filepath):
+                print("Downloading ontology: ",ontology)
+                wget.download(values['url'],filepath)
+        
+        list_ontologies[ontology]['filepath'] = filepath
+
         
     return list_ontologies
 
@@ -58,6 +81,9 @@ def build_corpus(
         warnings.warn("'properties' is not defined ["+ontology+"]", UserWarning)
         return []
 
+    if 'label' not in ontology_config:
+        ontology_config['label'] = "<http://www.w3.org/2000/01/rdf-schema#>"
+
     varProperties = []
     sparqlProperties = []
 
@@ -66,11 +92,9 @@ def build_corpus(
         sparqlProperties.append("?term "+prop+" ?prop"+str(i)+" .")
     
     query_base = """
-    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-
     SELECT ?term ?labelLeaf """ + " ".join(varProperties) + """ WHERE { 
         """+"\n".join(sparqlProperties)+"""
-        ?term rdfs:label ?labelLeaf .
+        ?term """+ontology_config['label']+""" ?labelLeaf .
     }
     """
     print(query_base)
@@ -108,7 +132,9 @@ def build_corpus(
 def manage_tags(config):
     ontologies_by_link = config['ontologies']
     retention_dir = config['retention_dir']
-
+    if 'force' not in config:
+        config['force'] = False
+        
     # Encoder les descriptions des tags
     tag_embeddings = {}
     if os.path.exists(retention_dir+'/tags.pth'):

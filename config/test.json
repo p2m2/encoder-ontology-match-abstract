@@ -1,26 +1,42 @@
 {
     "populate_owl_tag_embeddings" : {
         "ontologies": {
-            "planteome_link" : {
-                "peco": {
-                    "url": "http://purl.obolibrary.org/obo/peco.owl",
-                    "prefix": "http://purl.obolibrary.org/obo/PECO_",
+            "technology_link" : {
+                "ms": {
+                    "url": "http://purl.obolibrary.org/obo/ms.owl",
+                    "prefix": "http://purl.obolibrary.org/obo/MS_",
                     "format": "xml",
+                    "label" : "<http://www.w3.org/2000/01/rdf-schema#label>",
                     "properties": ["<http://purl.obolibrary.org/obo/IAO_0000115>"]
                 }
             },
-            "technology_link" : {
+            "animal_link" : {
+                "zfa": {
+                    "url": "http://purl.obolibrary.org/obo/zfa.owl",
+                    "prefix": "http://purl.obolibrary.org/obo/ZFA_",
+                    "format": "xml",
+                    "label" : "<http://www.w3.org/2000/01/rdf-schema#label>",
+                    "properties": ["<http://purl.obolibrary.org/obo/IAO_0000115>"]
+                },
+                "fake_animal" : {
+                    "filepath" : "tests/data/animals.owl",
+                    "prefix": "http://www.example.org/animals#",
+                    "format": "xml",
+                    "label" : "<http://www.w3.org/2000/01/rdf-schema#label>",
+                    "properties": ["<http://www.w3.org/2000/01/rdf-schema#comment>"]
+                }
             }
         },
-        "debug_nb_terms_by_ontology" : 2
+        "debug_nb_terms_by_ontology" : 100
     },
 
     "populate_ncbi_abstract_embeddings" : {
         "debug_nb_ncbi_request" : 1,
         "debug_nb_abstracts_by_search" : 1,
-        "retmax":2,
+        "retmax":5,
         "selected_term" : [
-            "abiotic+AND+metabolomics+AND+plant+AND+stress+AND+brassicaceae"
+            "metabolomics+AND+jungle",
+            "metabolomics+AND+zebrafish"
         ]
     },
 

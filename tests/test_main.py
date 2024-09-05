@@ -10,17 +10,38 @@ from llm_semantic_annotator import main_compute_tag_chunk_similarities
 
 class TestAbstractPreparation(unittest.TestCase):
     def setUp(self):
-        self.temp_dir = tempfile.mkdtemp()
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        project_root = os.path.dirname(current_dir)
-        file_path = os.path.join(project_root, "config/test.json")
+        self.config = {
+            "populate_owl_tag_embeddings" : {
+                "ontologies": {
+                    "animal_link" : {
+                        "fake_animal" : {
+                            "filepath" : "./tests/data/animals.owl",
+                            "prefix": "http://www.example.org/animals#",
+                            "format": "xml",
+                            "label" : "<http://www.w3.org/2000/01/rdf-schema#label>",
+                            "properties": ["<http://www.w3.org/2000/01/rdf-schema#comment>"]
+                        }
+                    }
+                },
+                "debug_nb_terms_by_ontology" : 1
+            },
+            "populate_ncbi_abstract_embeddings" : {
+                "debug_nb_ncbi_request" : 1,
+                "debug_nb_abstracts_by_search" : 1,
+                "retmax":5,
+                "selected_term" : [
+                    "metabolomics+AND+jungle",
+                ]
+            },
+            "compute_tag_chunk_similarities" : {
+                "threshold_similarity_tag_chunk" : 0.25,
+                "debug_nb_similarity_compute" : 100
+            }
+        }
 
-        if os.path.exists(file_path):
-            with open(file_path, 'r') as f:
-                self.config = json.load(f)
-                self.config['retention_dir'] = self.temp_dir
-        else:
-            self.fail(f"Can not load config file ${file_path}")
+        self.temp_dir = tempfile.mkdtemp()
+        self.config['retention_dir'] = self.temp_dir
+        self.config['force'] = True
     
     def tearDown(self):
         shutil.rmtree(self.temp_dir)
