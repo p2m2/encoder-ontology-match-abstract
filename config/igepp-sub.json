@@ -37,7 +37,7 @@
     },
 
     "compute_tag_chunk_similarities" : {
-        "threshold_similarity_tag_chunk" : 0.70,
+        "threshold_similarity_tag_chunk" : 0.50,
         "debug_nb_similarity_compute" : -1
     }
 }

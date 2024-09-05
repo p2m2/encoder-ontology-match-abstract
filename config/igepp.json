@@ -30,23 +30,6 @@
                     "label" : "<http://www.w3.org/2000/01/rdf-schema#label>",
                     "properties": ["<http://purl.obolibrary.org/obo/IAO_0000115>"]
                 }
-            },
-            "technology_link" : {
-                "ms": {
-                    "url": "http://purl.obolibrary.org/obo/ms.owl",
-                    "prefix": "http://purl.obolibrary.org/obo/MS_",
-                    "format": "xml",
-                    "label" : "<http://www.w3.org/2000/01/rdf-schema#label>",
-                    "properties": ["<http://purl.obolibrary.org/obo/IAO_0000115>"]
-                }
-            },
-            "taxon_link" : {
-                "ncbitaxon": {
-                    "url": "http://purl.obolibrary.org/obo/ncbitaxon.owl",
-                    "prefix": "http://purl.obolibrary.org/obo/NCBITaxon_",
-                    "format": "xml",
-                    "properties": ["<http://purl.obolibrary.org/obo/IAO_0000115>"]
-                }
             }
         },
         "debug_nb_terms_by_ontology" : -1
@@ -63,7 +46,7 @@
     },
 
     "compute_tag_chunk_similarities" : {
-        "threshold_similarity_tag_chunk" : 0.74,
+        "threshold_similarity_tag_chunk" : 0.66,
         "debug_nb_similarity_compute" : -1
     }
 }

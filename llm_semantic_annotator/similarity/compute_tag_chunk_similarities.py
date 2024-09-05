@@ -21,8 +21,8 @@ from llm_semantic_annotator import load_results,save_results
 #https://huggingface.co/spaces/mteb/leaderboard
 # mixedbread-ai/mxbai-embed-large-v1
 
-#model_name = 'sentence-transformers/all-MiniLM-L6-v2'
-model_name = 'mixedbread-ai/mxbai-embed-large-v1'
+model_name = 'sentence-transformers/all-MiniLM-L6-v2'
+#model_name = 'mixedbread-ai/mxbai-embed-large-v1'
 #model_name = 'sentence-transformers/all-mpnet-base-v2'
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModel.from_pretrained(model_name)
