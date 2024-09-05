@@ -6,6 +6,6 @@ rich
 rdflib
 requests
 wget
-np
+numpy<2.0
 pandas
 tabulate
