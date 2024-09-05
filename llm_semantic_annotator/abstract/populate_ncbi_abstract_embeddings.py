@@ -1,7 +1,7 @@
 import os, torch, requests, re
 from tqdm import tqdm
 from rich import print
-from llm_semantic_annotator import dict_to_csv,save_results,load_results
+from llm_semantic_annotator import list_of_dicts_to_csv,save_results,load_results
 from llm_semantic_annotator import encode_text
 
 # return json with element containing title, pmid, abstract and doi
@@ -98,15 +98,17 @@ def manage_abstracts(config):
         config['force'] = False
 
     chunks = get_ncbi_abstracts(config)
-    
+    filename_pth=retention_dir+'/abstract_chunks.pth'
+    filename_csv=retention_dir+'/abstract_chunks.csv'
+
     if debug_nb_abstracts_by_search>0:
         chunks = chunks[:debug_nb_abstracts_by_search]
     
     print("chunks embeddings")
     # Encoder les descriptions des tags
     chunk_embeddings = {}
-    if os.path.exists(retention_dir+'/chunks.pth'):
-        chunk_embeddings = torch.load(retention_dir+'/chunks.pth')
+    if os.path.exists(filename_pth):
+        chunk_embeddings = torch.load(filename_pth)
 
     change = False
 
@@ -123,15 +125,17 @@ def manage_abstracts(config):
             change = True
 
     if change:
-        torch.save(chunk_embeddings, retention_dir+'/chunks.pth')
-        dict_to_csv(chunk_embeddings, retention_dir+'/chunks.csv')
+        torch.save(chunk_embeddings, filename_pth)
+        list_of_dicts_to_csv(chunks, filename_csv)
         
 
     return chunk_embeddings
 
 def get_abstracts_embeddings(retention_dir):
-    if os.path.exists(retention_dir+'/chunks.pth'):
-        return torch.load(retention_dir+'/chunks.pth')
+    filename_pth=retention_dir+'/abstract_chunks.pth'
+  
+    if os.path.exists(filename_pth):
+        return torch.load(filename_pth)
     else:
         return {}
     

@@ -3,7 +3,7 @@ from rdflib import Graph, Namespace, URIRef
 from tqdm import tqdm
 from rich import print
 import wget
-from llm_semantic_annotator import dict_to_csv,save_results,load_results
+from llm_semantic_annotator import list_of_dicts_to_csv,save_results,load_results
 from llm_semantic_annotator import encode_text
 
 def get_corpus(ontologies,config):
@@ -13,13 +13,17 @@ def get_corpus(ontologies,config):
     tags = []
 
     for ontology in get_ontologies(ontologies,config):
-        filename = retention_dir+"/tag_"+ontology+".json"
+        filename = retention_dir+f"/tag_{ontology}.json"
+
         if not config['force'] and os.path.exists(filename):
             tags.extend(load_results(filename))
-            continue
-
-        tags.extend(build_corpus(ontology, ontologies[ontology],debug_nb_terms_by_ontology))
-        save_results(tags,filename)
+        else:
+            tags_ontology = build_corpus(ontology, ontologies[ontology],debug_nb_terms_by_ontology)
+            print(f"save results on {filename} with length:{len(tags_ontology)}")
+            if len(tags_ontology) == 0:
+                warnings(f"** No Tags found  ** ")
+            save_results(tags_ontology,filename)
+            tags.extend(tags_ontology)
     
     return tags
 
@@ -81,7 +85,7 @@ def build_corpus(
         return []
 
     if 'label' not in ontology_config:
-        ontology_config['label'] = "<http://www.w3.org/2000/01/rdf-schema#>"
+        ontology_config['label'] = "<http://www.w3.org/2000/01/rdf-schema#label>"
 
     varProperties = []
     sparqlProperties = []
@@ -102,7 +106,7 @@ def build_corpus(
     # Exécuter la requête SPARQL
     results = g.query(query_base)
     nb_record=0
-
+    print(f"Ontology {ontology} NB RECORDS:{len(results)}")
     for row in tqdm(results):
 
         descriptionLeaf = '\n'.join([ row.get(prop.replace('?',''), '') for prop in varProperties ])
@@ -118,6 +122,7 @@ def build_corpus(
         tags.append({
                 'term': row.term,
                 'label': formatted_label,
+                'rdfs_label': labelLeaf,
                 'description' : remove_prefix_tags(ontology,descriptionLeaf)
             })
         
@@ -144,9 +149,11 @@ def manage_tags(config):
     for link_name,ontologies in ontologies_by_link.items():
         # get vocabulary from ontologies selected
         tags = get_corpus(ontologies, config)
+        list_of_dicts_to_csv(tags, retention_dir+f'/tags-{link_name}.csv')
+
         for item in tqdm(tags):
-            if not item['label'] in tag_embeddings:
-                embeddings = encode_text(item['description'])
+            if config['force'] or not item['label'] in tag_embeddings:
+                embeddings = encode_text(f"{item['rdfs_label']} - {item['description']}")
                 tag_embeddings[item['label']] = embeddings
                 change = True
 
@@ -154,7 +161,6 @@ def manage_tags(config):
     if change:
         print("save tags embeddings")
         torch.save(tag_embeddings, retention_dir+'/tags.pth')
-        dict_to_csv(tag_embeddings, retention_dir+'/tags.csv')
 
     return tag_embeddings
 
