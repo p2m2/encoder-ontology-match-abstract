@@ -31,7 +31,6 @@ def get_ontologies(list_ontologies,config):
         filepath = config['retention_dir']+"/"+ontology+"."+values['format']
                 
         # utilisation d'un fichier local
-        print(values)
         if 'filepath' in values:
             if not os.path.exists(values['filepath']):
                 raise FileNotFoundError(f"Le fichier '{values['filepath']}' n'existe pas.")
@@ -134,7 +133,7 @@ def manage_tags(config):
     retention_dir = config['retention_dir']
     if 'force' not in config:
         config['force'] = False
-        
+
     # Encoder les descriptions des tags
     tag_embeddings = {}
     if os.path.exists(retention_dir+'/tags.pth'):

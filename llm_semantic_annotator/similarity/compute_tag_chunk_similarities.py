@@ -1,9 +1,10 @@
-import torch
+import torch,json,os
 from transformers import BertTokenizer, BertModel
 from transformers import AutoTokenizer, AutoModel
 from sentence_transformers import SentenceTransformer, util
 import torch.nn.functional as F
 from tqdm import tqdm
+from llm_semantic_annotator import load_results,save_results
 
 # Charger le modèle BERT et le tokenizer
 # bert-base-uncased
@@ -45,26 +46,35 @@ def best_similarity_for_tag(chunk_embedding, tag_embeddings):
 def compare_tags_with_chunks(tag_embeddings, chunk_embeddings,config):
     threshold = config['threshold_similarity_tag_chunk']
     debug_nb_similarity_compute = config['debug_nb_similarity_compute']
-
-    results_complete_similarities = {}
+    retention_dir = config['retention_dir']
+    
+    if 'force' not in config:
+        config['force'] = False
+    
+    filename = retention_dir+f"/similarity_{threshold}_{debug_nb_similarity_compute}.json"
+    results_complete_similarities = load_results(filename)
+    
+    if results_complete_similarities is None:
+        results_complete_similarities = {}
 
     record=0
     for doi,chunk_embedding in tqdm(chunk_embeddings.items()):
-        # Convertir le tensor en une forme serialisable pour le dictionnaire
+        if doi in results_complete_similarities:
+            continue
         
-        tag_similarities = {}
         complete_similarities = {}
         for tag, descriptions_embeddings in tag_embeddings.items():
             similarity = best_similarity_for_tag(chunk_embedding, {tag: descriptions_embeddings})
-            tag_similarities[tag] = similarity
             if similarity>=threshold :
                 complete_similarities[tag] = similarity
             
         if doi not in results_complete_similarities:
             results_complete_similarities[doi] = complete_similarities
-        #results_complete_similarities.append(complete_similarities)
+
         if record == debug_nb_similarity_compute:
             break
-        record+=1
 
+        record+=1
+    
+    save_results(results_complete_similarities,filename)
     return results_complete_similarities
