@@ -1,6 +1,7 @@
 from .misc.utils import list_of_dicts_to_csv,dict_to_csv
 from .misc.utils import save_results,load_results,get_retention_dir
-from .misc.stats import ontologies_distribution
+from .misc.stats import display_ontologies_distribution
+from .misc.console import display_best_similarity_abstract_tag
 
 from .similarity.compute_tag_chunk_similarities import encode_text
 from .similarity.compute_tag_chunk_similarities import compare_tags_with_chunks

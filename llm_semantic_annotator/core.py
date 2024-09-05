@@ -1,7 +1,8 @@
 from llm_semantic_annotator import manage_tags, get_tags_embeddings
 from llm_semantic_annotator import manage_abstracts, get_abstracts_embeddings
 from llm_semantic_annotator import compare_tags_with_chunks
-from llm_semantic_annotator import ontologies_distribution
+from llm_semantic_annotator import display_ontologies_distribution
+from llm_semantic_annotator import display_best_similarity_abstract_tag
 
 def setup_general_config(config_all,methode):
     config = config_all[methode]
@@ -34,4 +35,5 @@ def main_compute_tag_chunk_similarities(config_all):
     results_complete_similarities = compare_tags_with_chunks(
         tag_embeddings, chunk_embeddings,config)
 
-    ontologies_distribution(results_complete_similarities)
+    display_ontologies_distribution(results_complete_similarities)
+    display_best_similarity_abstract_tag(results_complete_similarities)

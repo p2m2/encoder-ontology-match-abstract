@@ -1,7 +1,7 @@
 from collections import Counter
 from rich import print
 
-def ontologies_distribution(data):
+def display_ontologies_distribution(data):
     # Extraire les préfixes des clés
     ontologies = []
     labels = []
