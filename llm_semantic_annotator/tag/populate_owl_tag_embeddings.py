@@ -14,11 +14,12 @@ def get_corpus(ontologies,config):
 
     for ontology in download_ontologies(ontologies,config):
         filename = retention_dir+"/tag_"+ontology+".json"
-        if os.path.exists(filename):
+        if not config['force'] and os.path.exists(filename):
             tags.extend(load_results(filename))
-        else:
-            tags.extend(build_corpus(ontology, ontologies[ontology],debug_nb_terms_by_ontology))
-            save_results(tags,filename)
+            continue
+
+        tags.extend(build_corpus(ontology, ontologies[ontology],debug_nb_terms_by_ontology))
+        save_results(tags,filename)
     
     return tags
 
@@ -29,7 +30,7 @@ def download_ontologies(list_ontologies,config):
         filepath= config['retention_dir']+"/"+ontology+"."+values['format']
         list_ontologies[ontology]['filepath'] = filepath
         
-        if not os.path.exists(list_ontologies[ontology]['filepath']):
+        if config['force'] or not os.path.exists(list_ontologies[ontology]['filepath']):
             print("Downloading ontology: ",ontology)
             wget.download(values['url'],filepath)
         

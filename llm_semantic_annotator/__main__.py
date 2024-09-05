@@ -33,6 +33,8 @@ def parse_arguments():
         help="Type d'exécution à effectuer."
     )
 
+    parser.add_argument('--force', action='store_true', help="Forcer l'exécution sans demander de confirmation")
+
     return parser.parse_args()
 
 if __name__ == "__main__":
@@ -41,7 +43,12 @@ if __name__ == "__main__":
     config = load_config(args.config_file)
     
     config['retention_dir'] = get_retention_dir(args.config_file)
-
+    
+    if args.force:
+        config['force'] = True
+    else:
+        config['force'] = False
+    print(config['force'])
     if args.execution_type == "populate_owl_tag_embeddings":
         main_populate_owl_tag_embeddings(config)
     elif args.execution_type == "populate_ncbi_abstract_embeddings":

@@ -18,14 +18,15 @@ def get_ncbi_abstracts(config):
         search_url = f"{base_url}esearch.fcgi?db=pubmed&term={search_term}&retmax={retmax}&retmode=json"
         
         filename = config['retention_dir'] + f"/abstract_{search_term}_{debug_nb_req}_{retmax}.json"
-
-        # Essayer de charger les résultats existants
-        results_cur = load_results(filename)
-        # if results exist in the file, we don't need to do the request
-        if results_cur is not None:
-            print(f"Résultats chargés pour '{search_term}' et '{search_url}'")
-            results.extend(results_cur)
-            continue
+        
+        if not config['force']:
+            # Essayer de charger les résultats existants
+            results_cur = load_results(filename)
+            # if results exist in the file, we don't need to do the request
+            if results_cur is not None:
+                print(f"Résultats chargés pour '{search_term}' et '{search_url}'")
+                results.extend(results_cur)
+                continue
 
         response = requests.get(search_url)
         search_results = response.json()
