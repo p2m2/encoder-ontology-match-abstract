@@ -7,3 +7,4 @@ rdflib
 requests
 wget
 np
+pandas
