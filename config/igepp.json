@@ -50,9 +50,9 @@
     "populate_ncbi_abstract_embeddings" : {
         "debug_nb_ncbi_request" : -1,
         "debug_nb_abstracts_by_search" : -1,
-        "retmax" : 10000,
+        "retmax" : 15000,
         "selected_term" : [
-            "abiotic+AND+metabolomics+AND+plant+AND+stress+AND+brassicaceae",
+            "metabolomics+AND+plant",
             "mass+AND+spectrometry+AND+glucosinolate"
         ]
     },

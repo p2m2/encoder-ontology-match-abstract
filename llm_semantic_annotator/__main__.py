@@ -74,9 +74,6 @@ if __name__ == "__main__":
     if args.execution_type == "populate_tag_embeddings":
         main_populate_tag_embeddings(config)
     elif args.execution_type == "populate_ncbi_abstract_embeddings":
-        if not args.selected_term:
-            print("L'option --selected_term est requise pour compute_similarities.")
-            sys.exit(1)
         main_populate_ncbi_abstract_embeddings(config)
     elif args.execution_type == "compute_tag_chunk_similarities":
         main_compute_tag_chunk_similarities(config)
