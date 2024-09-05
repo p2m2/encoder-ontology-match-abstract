@@ -83,11 +83,6 @@ check exemple on [config](./config) directory
     </tr>
 </table>
 
-    
-    
-    
-
-
 
 ### Execution
 

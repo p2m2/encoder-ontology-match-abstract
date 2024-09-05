@@ -31,6 +31,7 @@ def display_best_similarity_abstract_tag(results_complete_similarities):
 def display_ontologies_summary(results_complete_similarities):
     
     tag_list = []
+    ontology_tag_list = []
     ontology = [] 
     count_ontology = []
     count = []
@@ -38,8 +39,6 @@ def display_ontologies_summary(results_complete_similarities):
     similarity_tag = []
     
     for doi, complete_similarities in results_complete_similarities.items():
-        
-        
         
         for tag, similarity in complete_similarities.items():
             ontology_tag = tag.split('__')[1]
@@ -55,6 +54,7 @@ def display_ontologies_summary(results_complete_similarities):
             t = tag.split('__')[2]
             
             if t not in tag_list:
+                ontology_tag_list.append(ontology_tag)
                 tag_list.append(t)
                 count.append(1)
                 similarity_tag.append([similarity])
@@ -79,6 +79,7 @@ def display_ontologies_summary(results_complete_similarities):
     
     df_tag = pd.DataFrame({
         'Tag': tag_list,
+        'Ontology': ontology_tag_list,
         'Count': count,
         'Mean Similarity': mean_similarity,
         'Std Similarity': std_similarity,
@@ -92,7 +93,7 @@ def display_ontologies_summary(results_complete_similarities):
 
     df_ontology = pd.DataFrame({
         'Ontology': ontology,
-        'Count': count_ontology,
+        'Tag Count': count_ontology,
         'Mean Similarity': mean_similarity_ontology,
         'Std Similarity': std_similarity_ontology,
     })

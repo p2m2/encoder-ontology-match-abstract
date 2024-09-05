@@ -1,4 +1,4 @@
-import os, json, torch, requests
+import os, torch, requests, re
 from tqdm import tqdm
 from rich import print
 from llm_semantic_annotator import dict_to_csv,save_results,load_results
@@ -11,7 +11,7 @@ def get_ncbi_abstracts(config):
     search_term_list = config['selected_term']
     if 'force' not in config:
         config['force'] = False
-        
+
     base_url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/"
     
     nrecord = 0
@@ -114,7 +114,12 @@ def manage_abstracts(config):
 
     for chunk in tqdm(chunks):
         if not chunk['doi'] in chunk_embeddings:
-            chunk_embeddings[chunk['doi']] = encode_text(chunk['abstract'])
+            chunk_embeddings[chunk['doi']] = [encode_text(chunk['title'])]
+
+            pattern = r'(?<=[.!?])\s+(?=[A-Z])'
+            sentences = re.split(pattern, chunk['abstract'])
+            enc = [encode_text(sentence.strip()) for sentence in sentences]
+            chunk_embeddings[chunk['doi']].extend(enc)
             change = True
 
     if change:

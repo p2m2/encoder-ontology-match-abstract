@@ -28,11 +28,17 @@ def main_populate_ncbi_abstract_embeddings(config_all):
 
 def main_compute_tag_chunk_similarities(config_all):
     """Fonction principale pour calculer la similarité entre tous les tags et chunks."""
+    
     config = setup_general_config(config_all,'compute_tag_chunk_similarities')
 
     tag_embeddings = get_tags_embeddings(config['retention_dir'])
+    if (len(tag_embeddings)==0):
+        raise FileNotFoundError("No tags embeddings found")
+        
     chunk_embeddings = get_abstracts_embeddings(config['retention_dir'])
-   
+    if (len(chunk_embeddings)==0):
+        raise FileNotFoundError("No abstract chunks embeddings found")
+    
     results_complete_similarities = compare_tags_with_chunks(
         tag_embeddings, chunk_embeddings,config)
 
