@@ -22,7 +22,7 @@ check exemple on [config](./config) directory
         <th>Description</th>
     </tr>
     <tr>
-        <td>populate_tag_embeddings</td>
+        <td>populate_owl_tag_embeddings</td>
         <td>Populate the corpus of tags</td>
         <td></td>
         <td></td>
@@ -92,7 +92,7 @@ check exemple on [config](./config) directory
 ### Execution
 
 ```bash
-python -m llm_semantic_annotator config/test.json populate_tag_embeddings
+python -m llm_semantic_annotator config/test.json populate_owl_tag_embeddings
 ```
 
 ```bash

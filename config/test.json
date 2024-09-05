@@ -1,5 +1,5 @@
 {
-    "populate_tag_embeddings" : {
+    "populate_owl_tag_embeddings" : {
         "ontologies": {
             "planteome_link" : {
                 "peco": {

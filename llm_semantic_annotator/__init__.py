@@ -1,6 +1,13 @@
-from .utils import list_of_dicts_to_csv,dict_to_csv,save_results,load_results,get_retention_dir
-from .torch_utils import encode_text, compare_tags_with_chunks
-from .build_corpus import manage_tags,get_tags_embeddings
-from .abstract_preparation import manage_abstracts,get_abstracts_embeddings,get_ncbi_abstracts
-from .stats import ontologies_distribution
-from .__main__ import main_populate_tag_embeddings, main_populate_ncbi_abstract_embeddings, main_compute_tag_chunk_similarities
+from .misc.utils import list_of_dicts_to_csv,dict_to_csv
+from .misc.utils import save_results,load_results,get_retention_dir
+from .misc.stats import ontologies_distribution
+
+from .similarity.compute_tag_chunk_similarities import encode_text
+from .similarity.compute_tag_chunk_similarities import compare_tags_with_chunks
+
+from .tag.populate_owl_tag_embeddings import manage_tags,get_tags_embeddings
+from .abstract.populate_ncbi_abstract_embeddings import manage_abstracts
+from .abstract.populate_ncbi_abstract_embeddings import get_abstracts_embeddings
+from .abstract.populate_ncbi_abstract_embeddings import get_ncbi_abstracts
+
+from .core import main_populate_owl_tag_embeddings, main_populate_ncbi_abstract_embeddings, main_compute_tag_chunk_similarities

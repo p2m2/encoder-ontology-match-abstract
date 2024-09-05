@@ -1,7 +1,7 @@
 import unittest,shutil,tempfile,os,json
 from llm_semantic_annotator import get_ncbi_abstracts
 
-from llm_semantic_annotator import main_populate_tag_embeddings
+from llm_semantic_annotator import main_populate_owl_tag_embeddings
 from llm_semantic_annotator import main_populate_ncbi_abstract_embeddings
 from llm_semantic_annotator import main_compute_tag_chunk_similarities
 
@@ -26,6 +26,6 @@ class TestAbstractPreparation(unittest.TestCase):
         shutil.rmtree(self.temp_dir)
         
     def test_main(self):
-        main_populate_tag_embeddings(self.config)
+        main_populate_owl_tag_embeddings(self.config)
         main_populate_ncbi_abstract_embeddings(self.config)
         main_compute_tag_chunk_similarities(self.config)

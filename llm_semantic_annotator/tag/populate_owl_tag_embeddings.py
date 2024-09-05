@@ -3,7 +3,7 @@ from rdflib import Graph, Namespace, URIRef
 from tqdm import tqdm
 from rich import print
 import wget
-from llm_semantic_annotator import dict_to_csv,save_results,load_results, get_retention_dir
+from llm_semantic_annotator import dict_to_csv,save_results,load_results
 from llm_semantic_annotator import encode_text
 
 def get_corpus(ontologies,config):

@@ -1,7 +1,5 @@
 import os,csv,json
 
-
-
 def save_results(data,filename):
     """
     Sauvegarde les résultats dans un fichier JSON.
