@@ -144,6 +144,7 @@ def manage_tags(config):
     if os.path.exists(retention_dir+'/tags.pth'):
         print("load tags embeddings")
         tag_embeddings = torch.load(retention_dir+'/tags.pth')
+    
     change = False
 
     for link_name,ontologies in ontologies_by_link.items():
