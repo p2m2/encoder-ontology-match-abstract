@@ -20,22 +20,6 @@
                     "format": "xml",
                     "label" : "<http://www.w3.org/2000/01/rdf-schema#label>",
                     "properties": ["<http://purl.obolibrary.org/obo/IAO_0000115>"]
-                },
-                "to": {
-                    "url": "http://purl.obolibrary.org/obo/to.owl",
-                    "prefix": "http://purl.obolibrary.org/obo/TO_",
-                    "format": "xml",
-                    "label" : "<http://www.w3.org/2000/01/rdf-schema#label>",
-                    "properties": ["<http://purl.obolibrary.org/obo/IAO_0000115>"]
-                }
-            },
-            "technology_link" : {
-                "ms": {
-                    "url": "http://purl.obolibrary.org/obo/ms.owl",
-                    "prefix": "http://purl.obolibrary.org/obo/MS_",
-                    "format": "xml",
-                    "label" : "<http://www.w3.org/2000/01/rdf-schema#label>",
-                    "properties": ["<http://purl.obolibrary.org/obo/IAO_0000115>"]
                 }
             }
         },
@@ -45,15 +29,15 @@
     "populate_ncbi_abstract_embeddings" : {
         "debug_nb_ncbi_request" : -1,
         "debug_nb_abstracts_by_search" : -1,
-        "retmax" : 1000,
+        "retmax" : 1,
         "selected_term" : [
-            "metabolomics+AND+plant",
-            "mass+AND+spectrometry+AND+glucosinolate+AND+brassicaceae"
+            "human+AND+genetics",
+            "abiotic+AND+stress+AND+mass+AND+spectrometry+AND+glucosinolate+AND+brassicaceae"
         ]
     },
 
     "compute_tag_chunk_similarities" : {
-        "threshold_similarity_tag_chunk" : 0.55,
+        "threshold_similarity_tag_chunk" : 0.20,
         "debug_nb_similarity_compute" : -1
     }
 }
