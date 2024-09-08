@@ -35,12 +35,17 @@ def main_compute_tag_chunk_similarities(config_all):
     tag_embeddings = OwlTagManagement(config_owl).get_tags_embeddings()
     if (len(tag_embeddings)==0):
         raise FileNotFoundError("No tags embeddings found")
-        
-    chunk_embeddings = get_abstracts_embeddings(config['retention_dir'])
+    
+    taxon_tags_embeddings = TaxonTagManagement(config_owl).get_tags_embeddings()
+    if (len(taxon_tags_embeddings)==0):
+        raise FileNotFoundError("No Taxon tags embeddings found")
+
+    tag_embeddings.update(taxon_tags_embeddings)
+    chunk_embeddings = get_abstracts_embeddings(config)
     if (len(chunk_embeddings)==0):
         raise FileNotFoundError("No abstract chunks embeddings found")
     
-    results_complete_similarities = ModelEmbeddingManagement().compare_tags_with_chunks(
+    results_complete_similarities = ModelEmbeddingManagement(config).compare_tags_with_chunks(
         tag_embeddings, chunk_embeddings,config)
 
     display_ontologies_distribution(results_complete_similarities)

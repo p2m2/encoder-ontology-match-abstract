@@ -94,21 +94,20 @@ def get_ncbi_abstracts(config):
 def manage_abstracts(config):
     debug_nb_abstracts_by_search = config['debug_nb_abstracts_by_search']
     retention_dir = config['retention_dir']
-    if 'force' not in config:
-        config['force'] = False
+
+    mem = ModelEmbeddingManagement(config)
+
+    if config['force']:
+        chunk_embeddings = {}
+    else:
+        chunk_embeddings = mem.load_pth("chunks_asbtract")
+
 
     chunks = get_ncbi_abstracts(config)
-    filename_pth=retention_dir+'/abstract_chunks.pth'
     filename_csv=retention_dir+'/abstract_chunks.csv'
 
     if debug_nb_abstracts_by_search>0:
         chunks = chunks[:debug_nb_abstracts_by_search]
-    
-    print("chunks embeddings")
-    # Encoder les descriptions des tags
-    chunk_embeddings = {}
-    if os.path.exists(filename_pth):
-        chunk_embeddings = torch.load(filename_pth)
 
     change = False
 
@@ -117,40 +116,33 @@ def manage_abstracts(config):
     chunks_doi_ref = []
     for chunk in tqdm(chunks):
         if not chunk['doi'] in chunk_embeddings:
-            #chunk_embeddings[chunk['doi']] = [ModelEmbeddingManagement().encode_text(chunk['title'])]
             chunk_embeddings[chunk['doi']] = []
             chunks_doi_ref.append(chunk['doi'])
             chunks_toencoce.append(chunk['title'])
 
             pattern = r'(?<=[.!?])\s+(?=[A-Z])'
             sentences = re.split(pattern, chunk['abstract'])
-            #enc = [ModelEmbeddingManagement().encode_text(sentence.strip()) for sentence in sentences]
-            #chunk_embeddings[chunk['doi']].extend(enc)
+
             for s in sentences:
                 chunks_toencoce.append(s)
                 chunks_doi_ref.append(chunk['doi'])
             change = True
 
     if len(chunks_toencoce)>0:
-        embeddings = ModelEmbeddingManagement().encode_text_batch(chunks_toencoce)
+        embeddings = mem.encode_text_batch(chunks_toencoce)
     
         for idx,emb in enumerate(embeddings):
             chunk_embeddings[chunks_doi_ref[idx]].append(emb)
 
         if change:
-            torch.save(chunk_embeddings, filename_pth)
+            mem.save_pth(chunk_embeddings, "chunks_asbtract")
             list_of_dicts_to_csv(chunks, filename_csv)
-        
+    
 
     return chunk_embeddings
 
-def get_abstracts_embeddings(retention_dir):
-    filename_pth=retention_dir+'/abstract_chunks.pth'
-  
-    if os.path.exists(filename_pth):
-        return torch.load(filename_pth)
-    else:
-        return {}
+def get_abstracts_embeddings(config):
+    return ModelEmbeddingManagement(config).load_pth("chunks_asbtract")
     
 def get_abstracts(config):
     for filename in os.listdir(config['retention_dir']):

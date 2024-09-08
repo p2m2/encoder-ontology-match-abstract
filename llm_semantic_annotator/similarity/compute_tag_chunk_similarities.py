@@ -25,6 +25,9 @@ import torch,json,os
 from transformers import BertTokenizer, BertModel
 from transformers import AutoTokenizer, AutoModel
 from sentence_transformers import SentenceTransformer, util
+import numpy as np
+from scipy.spatial.distance import cdist
+
 import torch.nn.functional as F
 from sentence_transformers.util import cos_sim
 from tqdm import tqdm
@@ -45,16 +48,35 @@ from llm_semantic_annotator import load_results,save_results
 # mixedbread-ai/mxbai-embed-large-v1
 
 class ModelEmbeddingManagement:
-    def __init__(self):
+    def __init__(self,config):
+        self.config=config
+        self.retention_dir = config['retention_dir']
+
         self.model_name = 'sentence-transformers/all-MiniLM-L6-v2'
         #self.model_name = 'mixedbread-ai/mxbai-embed-large-v1'
         #self.model_name = 'sentence-transformers/all-mpnet-base-v2'
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
         self.model = AutoModel.from_pretrained(self.model_name)
         self.batch_size=32
+        self.threshold_similarity_tag = 0.75
+        self.model_suffix=self.model_name.split("/").pop()
 
+    def get_filename_pth(self,name_embeddings):
+        return f"{self.retention_dir}/{name_embeddings}-{self.model_suffix}.pth"
+    
+    def load_pth(self,name_embeddings):
+        filename = self.get_filename_pth(name_embeddings)
+        
+        tag_embeddings = {}
 
-    #SentenceTransformer
+        if os.path.exists(filename):
+            print(f"load tags embeddings - {filename}")
+            tag_embeddings = torch.load(filename)
+        return tag_embeddings
+
+    def save_pth(self,tag_embeddings,name_embeddings):
+        filename = self.get_filename_pth(name_embeddings)
+        torch.save(tag_embeddings, filename)
 
     #Mean Pooling - Take attention mask into account for correct averaging
     def mean_pooling(self,model_output, attention_mask):
@@ -162,58 +184,50 @@ class ModelEmbeddingManagement:
 
         return tags_embedding
 
-    def compare_tags_with_chunks(self,tag_embeddings, chunks_embeddings,config):
+
+    def compare_tags_with_chunks(self, tag_embeddings, chunks_embeddings, config):
         threshold = config['threshold_similarity_tag_chunk']
         debug_nb_similarity_compute = config['debug_nb_similarity_compute']
-        retention_dir = config['retention_dir']
         
-        if 'force' not in config:
-            config['force'] = False
+        # Convertir les embeddings en arrays NumPy pour une meilleure performance
+        tag_list = list(tag_embeddings.keys())
+        tag_embeddings_matrix = np.array([tag_embeddings[tag].cpu().numpy() for tag in tag_list])
         
         results_complete_similarities = {}
-
-        record=0
-        tag_used_encode = {}
-        for doi,chunks_embedding in tqdm(chunks_embeddings.items()):
+        
+        for doi, chunks_embedding in tqdm(list(chunks_embeddings.items())[:debug_nb_similarity_compute]):
+            # Convertir chunks_embedding en array NumPy
+            chunks_matrix = np.array([chunk.cpu().numpy() for chunk in chunks_embedding])
             
-            complete_similarities = {}
-            for tag, descriptions_embeddings in tag_embeddings.items():
-                similarity = self.best_similarity_for_tag(chunks_embedding, {tag: descriptions_embeddings})
-                if similarity>=threshold :
-                    complete_similarities[tag] = similarity
-            # Filtre : si 2 tags sont suffisamment similaires, on en garde un seul (la meilleure similarité)
-            change = True
-            lKeys = []
-
-            for tag in list(complete_similarities.keys()):
-                if tag not in tag_used_encode:
-                    lKeys.append(tag)
-            if len(lKeys)>0:
-                tag_used_encode.update({
-                    lKeys[ind] : enc
-                    for ind, enc in enumerate(self.encode_text_batch(lKeys))})
+            # Calcul vectorisé des similarités
+            similarities = 1 - cdist(chunks_matrix, tag_embeddings_matrix, metric='cosine')
+            max_similarities = np.max(similarities, axis=0)
             
-            while change:
-                change = False
-                for tag1 in complete_similarities:
-                    for tag2 in complete_similarities:
-                        if tag1 != tag2 :
-                            score = self.cosine_similarity(tag_used_encode[tag1] , tag_used_encode[tag2])
-                            if score > 0.75:
-                                if complete_similarities[tag1] > complete_similarities[tag2]:
-                                    del complete_similarities[tag2]
-                                else:
-                                    del complete_similarities[tag1]
-                                change = True
-                                break
-                    if change:
+            # Filtrage des similarités au-dessus du seuil
+            above_threshold = max_similarities >= threshold
+            complete_similarities = {tag: sim for tag, sim in zip(tag_list, max_similarities) if sim >= threshold}
+            
+            # Filtrage des tags similaires
+            if len(complete_similarities) > 1:
+                tags_to_keep = list(complete_similarities.keys())
+                tag_embeddings_filtered = tag_embeddings_matrix[[tag_list.index(tag) for tag in tags_to_keep]]
+                tag_similarities = 1 - cdist(tag_embeddings_filtered, tag_embeddings_filtered, metric='cosine')
+                np.fill_diagonal(tag_similarities, 0)
+                
+                while True:
+                    max_sim = np.max(tag_similarities)
+                    if max_sim <= self.threshold_similarity_tag:
                         break
-
+                    i, j = np.unravel_index(np.argmax(tag_similarities), tag_similarities.shape)
+                    if complete_similarities[tags_to_keep[i]] > complete_similarities[tags_to_keep[j]]:
+                        del complete_similarities[tags_to_keep[j]]
+                        tags_to_keep.pop(j)
+                    else:
+                        del complete_similarities[tags_to_keep[i]]
+                        tags_to_keep.pop(i)
+                    tag_similarities = np.delete(tag_similarities, min(i, j), axis=0)
+                    tag_similarities = np.delete(tag_similarities, min(i, j), axis=1)
+            
             results_complete_similarities[doi] = complete_similarities
-
-            if record == debug_nb_similarity_compute:
-                break
-
-            record+=1
         
         return results_complete_similarities

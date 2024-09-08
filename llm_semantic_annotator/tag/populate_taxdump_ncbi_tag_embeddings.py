@@ -7,9 +7,10 @@ from llm_semantic_annotator import ModelEmbeddingManagement
 
 class TaxonTagManagement:
     def __init__(self,config):
-        print(config)
+        
+        self.config=config
         self.retention_dir = config['retention_dir']
-        self.embeddings_file_name = self.retention_dir+"/tags-taxon.pth"
+
         self.filename_gbif_csv = self.retention_dir+'/taxdumpgbif-table.csv'
         self.filename_ncbi_csv = self.retention_dir+'/taxdump-table.csv'
 
@@ -88,36 +89,42 @@ class TaxonTagManagement:
         
         tags = []
         tag_embeddings = {}
+
+        mem = ModelEmbeddingManagement(self.config)
         
-        if os.path.exists(self.embeddings_file_name):
-            print("load tags embeddings")
-            tag_embeddings = torch.load(self.embeddings_file_name)
+        if self.force:
+            tag_embeddings = {}
+        else:
+            tag_embeddings = mem.load_pth("tag-ncbitaxon")
         
-        change = False
+        if len(tag_embeddings) == 0 :
+            change = False
 
-        filter_debug = ['onema','auliflower' , 'ustar' ,'arabaido' , 'moustar' , 'assicac']
+            filter_debug = ['onema','auliflower' , 'ustar' ,'arabaido' , 'moustar' , 'assicac']
 
-        for row in tqdm(table):
-            label_idx = self.format_taxon_name(row[1])
+            for row in tqdm(table):
+                label_idx = self.format_taxon_name(row[1])
 
-            if label_idx in tag_embeddings:
-                continue
+                if label_idx in tag_embeddings:
+                    continue
+                
+                if any([ elt in label_idx for elt in filter_debug]):
+                    item = {
+                            'term': f"http://purl.obolibrary.org/obo/NCBITaxon_{row[0]}",
+                            'label': label_idx,
+                            'rdfs_label': row[1],
+                            'description' : ''
+                        }
+                    change = True
+                    tags.append(item)
             
-            if any([ elt in label_idx for elt in filter_debug]):
-                item = {
-                        'term': f"http://purl.obolibrary.org/obo/NCBITaxon_{row[0]}",
-                        'label': label_idx,
-                        'rdfs_label': row[1],
-                        'description' : ''
-                    }
-                change = True
-                tags.append(item)
-        
-        tag_embeddings = ModelEmbeddingManagement().encode_tags(tags)
-        torch.save(tag_embeddings, self.embeddings_file_name)
+            tag_embeddings = mem.encode_tags(tags)
+            mem.save_pth(tag_embeddings,"tag-ncbitaxon")
 
         return tag_embeddings
 
+    def get_tags_embeddings(self):
+        return ModelEmbeddingManagement(self.config).load_pth("tag-ncbitaxon")
 
     def manage_gbif_taxon_tags(self,config):
         from pygbif import species

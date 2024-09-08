@@ -8,15 +8,14 @@ from llm_semantic_annotator import ModelEmbeddingManagement
 
 class OwlTagManagement:
     def __init__(self,config):
-        print(config)
+        
+        self.config=config
         if 'debug_nb_terms_by_ontology' in config:
             self.debug_nb_terms_by_ontology = config['debug_nb_terms_by_ontology']
         else:
             self.debug_nb_terms_by_ontology = -1
 
         self.retention_dir = config['retention_dir']
-        self.embeddings_file_name = self.retention_dir+"/tags-owl.pth"
-
         self.ontologies_by_link = config['ontologies']
 
         if 'force' not in config:
@@ -150,26 +149,25 @@ class OwlTagManagement:
         return tags
 
     def manage_tags(self):
-        
-        if os.path.exists(self.embeddings_file_name):
-            print("load tags embeddings")
-            tag_embeddings = torch.load(self.embeddings_file_name)
+        mem = ModelEmbeddingManagement(self.config)
+        if self.force:
+            tag_embeddings = {}
+        else:
+            tag_embeddings = mem.load_pth("tags-owl")
 
-        tags = []
-        for link_name,ontologies in self.ontologies_by_link.items():
-            # get vocabulary from ontologies selected
-            tags.extend(self.get_corpus(ontologies))
-        
-        tag_embeddings = ModelEmbeddingManagement().encode_tags(tags)
-        torch.save(tag_embeddings, self.embeddings_file_name)
+        if len(tag_embeddings)==0:
+            tags = []
+            for link_name,ontologies in self.ontologies_by_link.items():
+                # get vocabulary from ontologies selected
+                tags.extend(self.get_corpus(ontologies))
+            
+            tag_embeddings = mem.encode_tags(tags)
+            mem.save_pth(tag_embeddings,"tags-owl")
 
 
     # Return tag embeddings in JSON format where the key is the DOI and the value is the embedding
     def get_tags_embeddings(self):
-        if os.path.exists(self.embeddings_file_name):
-            return torch.load(self.embeddings_file_name)
-        else:
-            return {}
+        return ModelEmbeddingManagement(self.config).load_pth("tags-owl")
 
     # Return a tags list where element is an object containing the term, label and description 
     def get_tags(self):
