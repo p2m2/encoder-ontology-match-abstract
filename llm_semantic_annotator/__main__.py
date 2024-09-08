@@ -3,8 +3,9 @@ import json, sys
 from llm_semantic_annotator import get_retention_dir
 from llm_semantic_annotator import main_populate_owl_tag_embeddings
 from llm_semantic_annotator import main_populate_ncbi_abstract_embeddings
-from llm_semantic_annotator import main_compute_tag_chunk_similarities
 from llm_semantic_annotator import main_populate_ncbi_taxon_tag_embeddings
+from llm_semantic_annotator import main_populate_gbif_taxon_tag_embeddings
+from llm_semantic_annotator import main_compute_tag_chunk_similarities
 
 from rich import print
 import argparse
@@ -32,12 +33,14 @@ def parse_arguments():
         "execution_type",
         choices=["populate_owl_tag_embeddings",
                  "populate_ncbi_taxon_tag_embeddings",
+                 "populate_gbif_taxon_tag_embeddings",
                  "populate_ncbi_abstract_embeddings",
                  "compute_tag_chunk_similarities"],
         help="Type d'exécution à effectuer."
     )
 
-    parser.add_argument('--force', action='store_true', help="Forcer l'exécution sans demander de confirmation")
+    parser.add_argument('--force', action='store_true', 
+                        help="Forcer l'exécution sans demander de confirmation")
 
     return parser.parse_args()
 
@@ -57,6 +60,8 @@ if __name__ == "__main__":
         main_populate_owl_tag_embeddings(config)
     elif args.execution_type == "populate_ncbi_taxon_tag_embeddings":
         main_populate_ncbi_taxon_tag_embeddings(config)
+    elif args.execution_type == "populate_gbif_taxon_tag_embeddings":
+        main_populate_gbif_taxon_tag_embeddings(config)
     elif args.execution_type == "populate_ncbi_abstract_embeddings":
         main_populate_ncbi_abstract_embeddings(config)
     elif args.execution_type == "compute_tag_chunk_similarities":

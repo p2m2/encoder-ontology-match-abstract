@@ -29,7 +29,7 @@
     "populate_ncbi_abstract_embeddings" : {
         "debug_nb_ncbi_request" : -1,
         "debug_nb_abstracts_by_search" : -1,
-        "retmax" : 1,
+        "retmax" : 50,
         "selected_term" : [
             "human+AND+genetics",
             "abiotic+AND+stress+AND+mass+AND+spectrometry+AND+glucosinolate+AND+brassicaceae"
@@ -37,7 +37,7 @@
     },
 
     "compute_tag_chunk_similarities" : {
-        "threshold_similarity_tag_chunk" : 0.20,
+        "threshold_similarity_tag_chunk" : 0.60,
         "debug_nb_similarity_compute" : -1
     }
 }

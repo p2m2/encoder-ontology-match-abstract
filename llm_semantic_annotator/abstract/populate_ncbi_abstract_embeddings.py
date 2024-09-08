@@ -2,7 +2,7 @@ import os, torch, requests, re
 from tqdm import tqdm
 from rich import print
 from llm_semantic_annotator import list_of_dicts_to_csv,save_results,load_results
-from llm_semantic_annotator import encode_text
+from llm_semantic_annotator import ModelEmbeddingManagement
 
 # return json with element containing title, pmid, abstract and doi
 def get_ncbi_abstracts(config):
@@ -113,20 +113,33 @@ def manage_abstracts(config):
     change = False
 
     # Encoder les chunks de texte
-
+    chunks_toencoce = []
+    chunks_doi_ref = []
     for chunk in tqdm(chunks):
         if not chunk['doi'] in chunk_embeddings:
-            chunk_embeddings[chunk['doi']] = [encode_text(chunk['title'])]
+            #chunk_embeddings[chunk['doi']] = [ModelEmbeddingManagement().encode_text(chunk['title'])]
+            chunk_embeddings[chunk['doi']] = []
+            chunks_doi_ref.append(chunk['doi'])
+            chunks_toencoce.append(chunk['title'])
 
             pattern = r'(?<=[.!?])\s+(?=[A-Z])'
             sentences = re.split(pattern, chunk['abstract'])
-            enc = [encode_text(sentence.strip()) for sentence in sentences]
-            chunk_embeddings[chunk['doi']].extend(enc)
+            #enc = [ModelEmbeddingManagement().encode_text(sentence.strip()) for sentence in sentences]
+            #chunk_embeddings[chunk['doi']].extend(enc)
+            for s in sentences:
+                chunks_toencoce.append(s)
+                chunks_doi_ref.append(chunk['doi'])
             change = True
 
-    if change:
-        torch.save(chunk_embeddings, filename_pth)
-        list_of_dicts_to_csv(chunks, filename_csv)
+    if len(chunks_toencoce)>0:
+        embeddings = ModelEmbeddingManagement().encode_text_batch(chunks_toencoce)
+    
+        for idx,emb in enumerate(embeddings):
+            chunk_embeddings[chunks_doi_ref[idx]].append(emb)
+
+        if change:
+            torch.save(chunk_embeddings, filename_pth)
+            list_of_dicts_to_csv(chunks, filename_csv)
         
 
     return chunk_embeddings
