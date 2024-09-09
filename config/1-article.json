@@ -29,10 +29,10 @@
         "debug_nb_taxon" : 5,
         "regex" : "assic.*"
     },
-    "populate_ncbi_abstract_embeddings" : {
-        "debug_nb_ncbi_request" : -1,
-        "debug_nb_abstracts_by_search" : -1,
+    "populate_abstract_embeddings" : {
         "from_ncbi_api" : {
+            "debug_nb_ncbi_request" : -1,
+            "debug_nb_abstracts_by_search" : -1,
             "retmax" : 50,
             "selected_term" : [
                 "human+AND+genetics",

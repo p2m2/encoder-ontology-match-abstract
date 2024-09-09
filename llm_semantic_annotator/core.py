@@ -25,8 +25,8 @@ def main_populate_owl_tag_embeddings(config_all):
     
     OwlTagManager(config).manage_tags()
 
-def main_populate_ncbi_abstract_embeddings(config_all):
-    config = setup_general_config(config_all,'populate_ncbi_abstract_embeddings')
+def main_populate_abstract_embeddings(config_all):
+    config = setup_general_config(config_all,'populate_abstract_embeddings')
 
     AbstractManager(config).manage_abstracts()
 
@@ -51,9 +51,11 @@ def main_compute_tag_chunk_similarities(config_all):
     results_complete_similarities = ModelEmbeddingManager(config).compare_tags_with_chunks(
         tag_embeddings, chunk_embeddings,config)
 
+    retention_dir = config['retention_dir']
+    
     display_ontologies_distribution(results_complete_similarities)
-    display_best_similarity_abstract_tag(results_complete_similarities)
-    display_ontologies_summary(results_complete_similarities)
+    display_best_similarity_abstract_tag(results_complete_similarities,retention_dir)
+    display_ontologies_summary(results_complete_similarities,retention_dir)
 
 def main_populate_gbif_taxon_tag_embeddings(config_all):
     config = setup_general_config(config_all,'populate_gbif_taxon_tag_embeddings')

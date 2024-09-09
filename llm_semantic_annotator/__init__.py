@@ -11,6 +11,6 @@ from .abstract.abstract_manager import AbstractManager
 
 
 from .core import main_populate_owl_tag_embeddings
-from .core import main_populate_ncbi_abstract_embeddings
+from .core import main_populate_abstract_embeddings
 from .core import main_compute_tag_chunk_similarities
 from .core import main_populate_gbif_taxon_tag_embeddings

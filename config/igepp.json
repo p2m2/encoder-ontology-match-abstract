@@ -30,23 +30,38 @@
                     "label" : "<http://www.w3.org/2000/01/rdf-schema#label>",
                     "properties": ["<http://purl.obolibrary.org/obo/IAO_0000115>"]
                 }
+            },
+            "technology_link" : {
+                "ms": {
+                    "url": "http://purl.obolibrary.org/obo/ms.owl",
+                    "prefix": "http://purl.obolibrary.org/obo/MS_",
+                    "format": "xml",
+                    "label" : "<http://www.w3.org/2000/01/rdf-schema#label>",
+                    "properties": ["<http://purl.obolibrary.org/obo/IAO_0000115>"]
+                }
             }
         },
         "debug_nb_terms_by_ontology" : -1
     },
 
-    "populate_ncbi_abstract_embeddings" : {
-        "debug_nb_ncbi_request" : -1,
-        "debug_nb_abstracts_by_search" : -1,
-        "retmax" : 15000,
-        "selected_term" : [
-            "metabolomics+AND+plant",
-            "mass+AND+spectrometry+AND+glucosinolate"
-        ]
+    "populate_gbif_taxon_tag_embeddings" : {
+    },
+
+    "populate_abstract_embeddings" : {
+        "from_ncbi_api" : {
+            "debug_nb_ncbi_request" : -1,
+            "debug_nb_abstracts_by_search" : -1,
+            "retmax" : 15000,
+            "selected_term" : [
+                "metabolomics+AND+plant",
+                "mass+AND+spectrometry+AND+glucosinolate",
+                "metabolomics+AND+glucosinolate"
+            ]
+        }
     },
 
     "compute_tag_chunk_similarities" : {
-        "threshold_similarity_tag_chunk" : 0.66,
+        "threshold_similarity_tag_chunk" : 0.70,
         "debug_nb_similarity_compute" : -1
     }
 }

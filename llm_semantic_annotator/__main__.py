@@ -2,7 +2,7 @@ import json, sys
 
 from llm_semantic_annotator import get_retention_dir
 from llm_semantic_annotator import main_populate_owl_tag_embeddings
-from llm_semantic_annotator import main_populate_ncbi_abstract_embeddings
+from llm_semantic_annotator import main_populate_abstract_embeddings
 from llm_semantic_annotator import main_populate_gbif_taxon_tag_embeddings
 from llm_semantic_annotator import main_compute_tag_chunk_similarities
 
@@ -31,10 +31,9 @@ def parse_arguments():
     parser.add_argument(
         "execution_type",
         choices=["populate_owl_tag_embeddings",
-                 "populate_ncbi_taxon_tag_embeddings",
-                 "populate_gbif_taxon_tag_embeddings",
-                 "populate_ncbi_abstract_embeddings",
-                 "compute_tag_chunk_similarities"],
+                "populate_gbif_taxon_tag_embeddings",
+                "populate_abstract_embeddings",
+                "compute_tag_chunk_similarities"],
         help="Type d'exécution à effectuer."
     )
 
@@ -57,12 +56,14 @@ if __name__ == "__main__":
     
     if args.execution_type == "populate_owl_tag_embeddings":
         main_populate_owl_tag_embeddings(config)
-    elif args.execution_type == "populate_ncbi_taxon_tag_embeddings":
-        main_populate_ncbi_taxon_tag_embeddings(config)
     elif args.execution_type == "populate_gbif_taxon_tag_embeddings":
         main_populate_gbif_taxon_tag_embeddings(config)
+    elif args.execution_type == "populate_abstract_embeddings":
+        main_populate_abstract_embeddings(config)
     elif args.execution_type == "compute_tag_chunk_similarities":
         main_compute_tag_chunk_similarities(config)
+    else:
+        raise ValueError("Type d'exécution non reconnu.")
     
 
 

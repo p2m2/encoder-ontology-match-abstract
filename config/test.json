@@ -30,7 +30,7 @@
         "debug_nb_terms_by_ontology" : 100
     },
 
-    "populate_ncbi_abstract_embeddings" : {
+    "populate_abstract_embeddings" : {
         "debug_nb_ncbi_request" : 1,
         "debug_nb_abstracts_by_search" : 1,
         "retmax":5,

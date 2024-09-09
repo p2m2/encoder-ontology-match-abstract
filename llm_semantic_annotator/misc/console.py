@@ -3,7 +3,7 @@ import pandas as pd
 from tabulate import tabulate
 import np as np
 
-def display_best_similarity_abstract_tag(results_complete_similarities):
+def display_best_similarity_abstract_tag(results_complete_similarities,retention_dir):
     dois = []
     similarities = []
     tags = []
@@ -17,18 +17,19 @@ def display_best_similarity_abstract_tag(results_complete_similarities):
 
     df = pd.DataFrame({
     'DOI': dois,
-    'Similarity': similarities,
     'Tag': tags,
+    'Similarity': similarities
     #'link' : links_kind
     })
 
     df_sorted = df.sort_values(by='Similarity', ascending=False)
     df_sorted = df_sorted.reset_index(drop=True)
-
+    df_sorted.to_csv(retention_dir+"/best_similarities_tags.csv", index=False)
+    
     print("## Best similarity between abstract and tag")
     print(tabulate(df_sorted, headers='keys', tablefmt='psql', showindex=False))
 
-def display_ontologies_summary(results_complete_similarities):
+def display_ontologies_summary(results_complete_similarities,retention_dir):
     
     tag_list = []
     ontology_tag_list = []
@@ -87,6 +88,8 @@ def display_ontologies_summary(results_complete_similarities):
 
     df_tag_sorted = df_tag.sort_values(by='Mean Similarity', ascending=False)
     df_tag_sorted = df_tag_sorted.reset_index(drop=True)
+    
+    df_tag_sorted.to_csv(retention_dir+"/summary_tags.csv", index=False)
 
     print("## Summary of tags")
     print(tabulate(df_tag_sorted, headers='keys', tablefmt='psql', showindex=False))
@@ -100,6 +103,8 @@ def display_ontologies_summary(results_complete_similarities):
 
     df_ontology_sorted = df_ontology.sort_values(by='Mean Similarity', ascending=False)
     df_ontology_sorted = df_ontology_sorted.reset_index(drop=True)
+
+    df_ontology_sorted.to_csv(retention_dir+"/summary_ontologies.csv", index=False)
 
     print("## Summary of ontologies")
     # Afficher le tableau trié avec tabulate
