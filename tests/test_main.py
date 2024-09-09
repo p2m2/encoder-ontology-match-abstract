@@ -1,9 +1,10 @@
 import unittest,shutil,tempfile,os,json
-from llm_semantic_annotator import get_ncbi_abstracts
 
 from llm_semantic_annotator import main_populate_owl_tag_embeddings
+from llm_semantic_annotator import main_populate_gbif_taxon_tag_embeddings
 from llm_semantic_annotator import main_populate_ncbi_abstract_embeddings
 from llm_semantic_annotator import main_compute_tag_chunk_similarities
+
 
 
 
@@ -25,13 +26,30 @@ class TestAbstractPreparation(unittest.TestCase):
                 },
                 "debug_nb_terms_by_ontology" : 1
             },
+            "populate_gbif_taxon_tag_embeddings" : {
+                "debug_nb_taxon" : 1,
+                "regex" : "assic.*"
+            },
             "populate_ncbi_abstract_embeddings" : {
-                "debug_nb_ncbi_request" : 1,
-                "debug_nb_abstracts_by_search" : 1,
-                "retmax":5,
-                "selected_term" : [
-                    "metabolomics+AND+jungle",
-                ]
+                "from_ncbi_api" : {
+                    "debug_nb_ncbi_request" : 1,
+                    "debug_nb_abstracts_by_search" : 1,
+                    "retmax":1,
+                    "selected_term" : [
+                        "metabolomics+AND+jungle",
+                    ]
+                },
+                "from_file" : {
+                    "json_files" : [
+                        "data/abstracts/abstracts_1.json",
+                        "data/abstracts/abstracts_2.json"
+                    ],
+            "text_files" : [
+                        "data/abstracts/abstracts_3.txt",
+                        "data/abstracts/abstracts_4.txt"
+                    ]
+                }
+                
             },
             "compute_tag_chunk_similarities" : {
                 "threshold_similarity_tag_chunk" : 0.25,
@@ -49,4 +67,5 @@ class TestAbstractPreparation(unittest.TestCase):
     def test_main(self):
         main_populate_owl_tag_embeddings(self.config)
         main_populate_ncbi_abstract_embeddings(self.config)
+        main_populate_gbif_taxon_tag_embeddings(self.config)
         main_compute_tag_chunk_similarities(self.config)

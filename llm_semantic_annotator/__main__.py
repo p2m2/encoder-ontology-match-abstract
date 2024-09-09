@@ -3,7 +3,6 @@ import json, sys
 from llm_semantic_annotator import get_retention_dir
 from llm_semantic_annotator import main_populate_owl_tag_embeddings
 from llm_semantic_annotator import main_populate_ncbi_abstract_embeddings
-from llm_semantic_annotator import main_populate_ncbi_taxon_tag_embeddings
 from llm_semantic_annotator import main_populate_gbif_taxon_tag_embeddings
 from llm_semantic_annotator import main_compute_tag_chunk_similarities
 
@@ -62,8 +61,6 @@ if __name__ == "__main__":
         main_populate_ncbi_taxon_tag_embeddings(config)
     elif args.execution_type == "populate_gbif_taxon_tag_embeddings":
         main_populate_gbif_taxon_tag_embeddings(config)
-    elif args.execution_type == "populate_ncbi_abstract_embeddings":
-        main_populate_ncbi_abstract_embeddings(config)
     elif args.execution_type == "compute_tag_chunk_similarities":
         main_compute_tag_chunk_similarities(config)
     

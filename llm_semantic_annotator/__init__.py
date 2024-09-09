@@ -4,18 +4,13 @@ from .misc.stats import display_ontologies_distribution
 from .misc.console import display_best_similarity_abstract_tag
 from .misc.console import display_ontologies_summary
 
-from .similarity.compute_tag_chunk_similarities import ModelEmbeddingManagement
+from .similarity.model_embedding_manager import ModelEmbeddingManager
+from .tag.owl_tag_manager import OwlTagManager
+from .tag.taxon_tag_manager import TaxonTagManager
+from .abstract.abstract_manager import AbstractManager
 
-from .tag.populate_owl_tag_embeddings import OwlTagManagement
-from .tag.populate_taxdump_ncbi_tag_embeddings import TaxonTagManagement
-
-
-from .abstract.populate_ncbi_abstract_embeddings import manage_abstracts
-from .abstract.populate_ncbi_abstract_embeddings import get_abstracts_embeddings
-from .abstract.populate_ncbi_abstract_embeddings import get_ncbi_abstracts
 
 from .core import main_populate_owl_tag_embeddings
 from .core import main_populate_ncbi_abstract_embeddings
 from .core import main_compute_tag_chunk_similarities
-from .core import main_populate_ncbi_taxon_tag_embeddings
 from .core import main_populate_gbif_taxon_tag_embeddings
