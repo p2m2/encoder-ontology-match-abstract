@@ -22,21 +22,30 @@ class TaxonTagManager:
         self.regex = config.get('regex',None)
         self.debug_nb_taxon = config.get('debug_nb_taxon',-1)
 
+    def taxon_file(self):
+        if 'taxon_tsv_debug' in self.config:
+            taxon_file = os.path.join(self.work_dir, self.config['taxon_tsv_debug'])
+        else:
+            taxon_file = os.path.join(self.work_dir, 'taxon.tsv')
+        
+        return taxon_file
+
+    def vernicular_file(self):
+        if 'vernicular_tsv_debug' in self.config:
+            vernacular_file = os.path.join(self.work_dir, self.config['vernicular_tsv_debug'])
+        else:
+            vernacular_file = os.path.join(self.work_dir, 'vernacular_name.tsv')
+        
+        return vernacular_file
+
     def process_gbif_backbone(self):
         
         # Créer le répertoire s'il n'existe pas
         os.makedirs(self.work_dir, exist_ok=True)
         
-        if 'taxon_tsv_debug' in self.config and 'vernicular_tsv_debug' in self.config:
-            vernacular_file = os.path.join(self.work_dir, self.config['vernicular_tsv_debug'])
-            taxon_file = os.path.join(self.work_dir, self.config['taxon_tsv_debug'])
-            print(taxon_file)
-            print(vernacular_file)
-        else:
-            # Vérifier si les fichiers existent déjà
-            vernacular_file = os.path.join(self.work_dir, 'vernacular_name.tsv')
-            taxon_file = os.path.join(self.work_dir, 'taxon.tsv')
-        
+        taxon_file = self.taxon_file()
+        vernacular_file = self.vernicular_file()
+
         if os.path.exists(vernacular_file) and os.path.exists(taxon_file):
             self.logger.info("Les fichiers vernacular_name.tsv et taxon.tsv existent déjà.")
             self.logger.info(f"Emplacement des fichiers : {self.work_dir}")
@@ -142,8 +151,8 @@ class TaxonTagManager:
         return name
 
     def generate_tags(self):
-        taxon_file = os.path.join(self.work_dir, 'taxon.tsv')
-        vernacular_file = os.path.join(self.work_dir, 'vernacular_name.tsv')
+        taxon_file = self.taxon_file()
+        vernacular_file = self.vernicular_file()
         tags = []
         
         # Compiler l'expression régulière si elle est fournie
