@@ -54,7 +54,7 @@ class ModelEmbeddingManager:
         self.model_name = 'sentence-transformers/all-MiniLM-L6-v2'
         #self.model_name = 'mixedbread-ai/mxbai-embed-large-v1'
         #self.model_name = 'sentence-transformers/all-mpnet-base-v2'
-        self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
+        self.tokenizer = AutoTokenizer.from_pretrained(self.model_name,clean_up_tokenization_spaces=True)
         self.model = AutoModel.from_pretrained(self.model_name)
         self.batch_size=32
         self.threshold_similarity_tag = 0.75
