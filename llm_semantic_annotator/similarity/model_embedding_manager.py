@@ -70,7 +70,7 @@ class ModelEmbeddingManager:
 
         if os.path.exists(filename):
             print(f"load tags embeddings - {filename}")
-            tag_embeddings = torch.load(filename)
+            tag_embeddings = torch.load(filename,weights_only=True)
         return tag_embeddings
 
     def save_pth(self,tag_embeddings,name_embeddings):
