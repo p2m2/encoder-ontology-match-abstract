@@ -1,10 +1,13 @@
 from setuptools import setup, find_packages
 
+with open('requirements.txt') as f:
+    requirements = f.read().splitlines()
+
 setup(
     name="LLMSemanticAnnotator",
     version="0.1",
     packages=find_packages(),
-    install_requires=[],
+    install_requires=requirements,
     entry_points={
         'console_scripts': [
             'llm-semantic-annotator=llm_semantic_annotator.__main__:main',
