@@ -42,7 +42,7 @@ def parse_arguments():
 
     return parser.parse_args()
 
-if __name__ == "__main__":
+def main():
     import os
     args = parse_arguments()
     config = load_config(args.config_file)
@@ -64,6 +64,9 @@ if __name__ == "__main__":
         main_compute_tag_chunk_similarities(config)
     else:
         raise ValueError("Type d'exécution non reconnu.")
+
+if __name__ == "__main__":
+    main()
     
 
 
