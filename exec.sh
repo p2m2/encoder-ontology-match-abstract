@@ -1,6 +1,6 @@
 #!/bin/bash
 
-conffile=config/ncbi.json
+conffile=config/igepp-sub.json
 #rm -rf igepp-sub_w*/
 python -m llm_semantic_annotator $conffile populate_owl_tag_embeddings
 python -m llm_semantic_annotator $conffile populate_gbif_taxon_tag_embeddings

@@ -5,9 +5,10 @@ from rich import print
 import wget
 from llm_semantic_annotator import list_of_dicts_to_csv,save_results,load_results
 from llm_semantic_annotator import ModelEmbeddingManager
+import pandas as pd
 
 class OwlTagManager:
-    def __init__(self,config):
+    def __init__(self,config,model_embedding_manager):
         
         self.config=config
         if 'debug_nb_terms_by_ontology' in config:
@@ -22,25 +23,14 @@ class OwlTagManager:
             config['force'] = False
         else:
             self.force = config['force']
+        
+        self.mem = model_embedding_manager
+        self.tags_owl_path_filename = f"tags_owl_"
 
     def get_corpus(self,ontologies):
-    
-        tags = []
         for ontology in self.get_ontologies(ontologies):
-            filename = self.retention_dir+f"/tag_{ontology}.json"
-
-            if not self.force and os.path.exists(filename):
-                tags.extend(load_results(filename))
-            else:
-                tags_ontology = self.build_corpus(ontology, ontologies[ontology],
-                self.debug_nb_terms_by_ontology)
-                print(f"save results on {filename} with length:{len(tags_ontology)}")
-                if len(tags_ontology) == 0:
-                    warnings(f"** No Tags found  ** ")
-                save_results(tags_ontology,filename)
-                tags.extend(tags_ontology)
-        
-        return tags
+            self.build_corpus(ontology, ontologies[ontology],self.debug_nb_terms_by_ontology)
+            
 
     # Charger le fichier OWL local
     def get_ontologies(self,list_ontologies):
@@ -89,7 +79,15 @@ class OwlTagManager:
             ontology, 
             ontology_config,
             debug_nb_terms_by_ontology):
+
+        tags_owl_path_filename = self.tags_owl_path_filename+ontology
+        tag_embeddings = self.mem.load_pth(tags_owl_path_filename)
+
+        if (len(tag_embeddings)>0):
+            return tag_embeddings
+
         # Charger le fichier OWL local
+
         g = Graph()
         g.parse(ontology_config['filepath'], format=ontology_config['format'])
 
@@ -145,29 +143,36 @@ class OwlTagManager:
             if nb_record == debug_nb_terms_by_ontology:
                 break
             nb_record+=1
+
+        df = pd.DataFrame({
+        'label': [ ele['label'] for ele in tags ],
+        'rdfs:label': [ ele['rdfs_label'] for ele in tags ],
+        'description': [ ele['description'] for ele in tags ]
+        })
         
+        df.to_csv(self.retention_dir+f"/tags_owl_{ontology}.csv", index=False)
+        self.mem.save_pth(self.mem.encode_tags(tags),tags_owl_path_filename)
         return tags
 
     def manage_tags(self):
-        mem = ModelEmbeddingManager(self.config)
-        if self.force:
-            tag_embeddings = {}
-        else:
-            tag_embeddings = mem.load_pth("tags-owl")
+        for link_name,ontologies in self.ontologies_by_link.items():
+            # get vocabulary from ontologies selected
+            self.get_corpus(ontologies)
 
-        if len(tag_embeddings)==0:
-            tags = []
-            for link_name,ontologies in self.ontologies_by_link.items():
-                # get vocabulary from ontologies selected
-                tags.extend(self.get_corpus(ontologies))
-            
-            tag_embeddings = mem.encode_tags(tags)
-            mem.save_pth(tag_embeddings,"tags-owl")
-
-
-    # Return tag embeddings in JSON format where the key is the DOI and the value is the embedding
-    def get_tags_embeddings(self):
-        return ModelEmbeddingManager(self.config).load_pth("tags-owl")
+    # Return tag embeddings in JSON format where the key is the label and the value is the embedding
+    def get_files_tags_embeddings(self):
+        matching_files = []
+    
+        # Compile le motif regex pour une meilleure performance
+        pattern = re.compile(self.tags_owl_path_filename+f".*-{self.mem.model_suffix}.pth")
+        # Parcourt tous les fichiers dans le chemin donné
+        for root, dirs, files in os.walk(self.retention_dir):
+            for filename in files:
+                if pattern.search(filename):
+                    # Ajoute le chemin complet du fichier à la liste
+                    matching_files.append(os.path.join(root, filename))
+        
+        return matching_files
 
     # Return a tags list where element is an object containing the term, label and description 
     def get_tags(self):

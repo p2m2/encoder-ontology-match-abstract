@@ -3,11 +3,11 @@ from llm_semantic_annotator import OwlTagManager
 from llm_semantic_annotator import TaxonTagManager
 from llm_semantic_annotator import AbstractManager
 
-
 from llm_semantic_annotator import display_ontologies_distribution
 from llm_semantic_annotator import display_best_similarity_abstract_tag
 from llm_semantic_annotator import display_ontologies_summary
 
+import warnings
 
 def setup_general_config(config_all,methode):
     config = config_all[methode]
@@ -23,40 +23,62 @@ def main_populate_owl_tag_embeddings(config_all):
     print(f"Ontologies : {config['ontologies']}")
     print(f"Nb terms to compute : {config['debug_nb_terms_by_ontology']}")
     
-    OwlTagManager(config).manage_tags()
+    mem = ModelEmbeddingManager(config_all)
+    
+    OwlTagManager(config,mem).manage_tags()
+
+def main_populate_gbif_taxon_tag_embeddings(config_all):
+    config = setup_general_config(config_all,'populate_gbif_taxon_tag_embeddings')
+    mem = ModelEmbeddingManager(config_all)
+
+    TaxonTagManager(config,mem).manage_gbif_taxon_tags()
 
 def main_populate_abstract_embeddings(config_all):
+    
     config = setup_general_config(config_all,'populate_abstract_embeddings')
+    mem = ModelEmbeddingManager(config_all)
 
-    AbstractManager(config).manage_abstracts()
+    AbstractManager(config,mem).manage_abstracts()
 
 def main_compute_tag_chunk_similarities(config_all):
     """Fonction principale pour calculer la similarité entre tous les tags et chunks."""
     config_owl = setup_general_config(config_all,'populate_owl_tag_embeddings')
-    config = setup_general_config(config_all,'compute_tag_chunk_similarities')
+    config_abstract = setup_general_config(config_all,'populate_abstract_embeddings')
+    
+    mem = ModelEmbeddingManager(config_all)
 
-    tag_embeddings = OwlTagManager(config_owl).get_tags_embeddings()
-    if (len(tag_embeddings)==0):
+    results_complete_similarities = {}
+    tags_pth_files = OwlTagManager(config_owl,mem).get_files_tags_embeddings()
+    
+    if len(tags_pth_files) == 0:
         raise FileNotFoundError("No tags embeddings found")
     
-    taxon_tags_embeddings = TaxonTagManager(config_owl).get_tags_embeddings()
-    if (len(taxon_tags_embeddings)==0):
-        raise FileNotFoundError("No Taxon tags embeddings found")
-
-    tag_embeddings.update(taxon_tags_embeddings)
-    chunk_embeddings = AbstractManager(config).get_abstracts_embeddings()
-    if (len(chunk_embeddings)==0):
-        raise FileNotFoundError("No abstract chunks embeddings found")
+    tags_taxon_pth_files = TaxonTagManager(config_owl,mem).get_files_tags_taxon_embeddings()
     
-    results_complete_similarities = ModelEmbeddingManager(config).compare_tags_with_chunks(
-        tag_embeddings, chunk_embeddings,config)
+    if len(tags_taxon_pth_files) == 0:
+        warnings.warn("No tags taxon embeddings found")
 
-    retention_dir = config['retention_dir']
+    tags_pth_files.extend(tags_taxon_pth_files)
     
-    display_ontologies_distribution(results_complete_similarities)
-    display_best_similarity_abstract_tag(results_complete_similarities,retention_dir)
-    display_ontologies_summary(results_complete_similarities,retention_dir)
+    abstracts_pth_files = AbstractManager(config_abstract,mem).get_files_abstracts_embeddings()
 
-def main_populate_gbif_taxon_tag_embeddings(config_all):
-    config = setup_general_config(config_all,'populate_gbif_taxon_tag_embeddings')
-    TaxonTagManager(config).manage_gbif_taxon_tags(config)
+    if len(abstracts_pth_files) == 0:
+        raise FileNotFoundError("No abstracts embeddings found")
+
+    for tags_pth_file in tags_pth_files:
+        tag_embeddings = mem.load_filepth(tags_pth_file)
+        
+        for  abstracts_pth_file in abstracts_pth_files:
+            chunk_embeddings = mem.load_filepth(abstracts_pth_file)
+            for doi,res in mem.compare_tags_with_chunks(
+                tag_embeddings, chunk_embeddings).items():
+                if doi not in results_complete_similarities:
+                    results_complete_similarities[doi] = res
+                else:
+                    results_complete_similarities[doi].update(res)
+    
+    if len(results_complete_similarities)>0:
+        retention_dir = config_all['retention_dir']
+        display_ontologies_distribution(results_complete_similarities)
+        display_best_similarity_abstract_tag(results_complete_similarities,retention_dir)
+        display_ontologies_summary(results_complete_similarities,retention_dir)

@@ -1,41 +1,59 @@
 import os, torch, requests, re, json
 from tqdm import tqdm
 from rich import print
-from llm_semantic_annotator import list_of_dicts_to_csv, save_results, load_results
-from llm_semantic_annotator import ModelEmbeddingManager
+from llm_semantic_annotator import load_results
 import xml.etree.ElementTree as ET
+from pathlib import Path
 
 class AbstractManager:
-    def __init__(self, config):
+    def __init__(self, config, model_embedding_manager):
         self.config = config
-        self.mem = ModelEmbeddingManager(config)
+        # option a mettre dans le json
+        self.ncbi_api_chunk_size = config.get('from_ncbi_api').get('ncbi_api_chunk_size', 20)
+        # option a mettre dans le json
+        self.abstracts_per_file=config.get('abstracts_per_file', 100)
+        self.mem = model_embedding_manager
+        self.retmax = self.config.get('from_ncbi_api').get('retmax',10000)
+        self.debug_nb_req = self.config.get('from_ncbi_api').get('debug_nb_ncbi_request',-1)
+
+    def _get_index_abstract(self):
+        existing_files = [
+            f for f in os.listdir(self.config['retention_dir']) 
+                if f.startswith(f"abstracts_") and f.endswith(".json")]
+        
+        if existing_files:
+            max_index = max([int(f.split('_')[-1].split('.')[0]) for f in existing_files])
+            return max_index + 1
+        else:
+            return 1
+
+    def _remove_abstract_files(self):
+        for filename in os.listdir(self.config['retention_dir']):
+            if filename.startswith('abstracts_') and filename.endswith('.json'):
+                os.remove(os.path.join(self.config['retention_dir'], filename))
+
+    def _save_to_json_file_with_index(self,abstracts, file_index):
+        filename = self.config['retention_dir']+f"/abstracts_{file_index}.json"
+        print(f"abstract file:{filename}, nb :{len(abstracts)}")
+        with open(filename, 'w', encoding='utf-8') as f:
+            json.dump(abstracts, f, ensure_ascii=False, indent=4)
+    
+    def _link_to_json_file_with_index(self,source_file, file_index):
+        destination = self.config['retention_dir']+f"/abstracts_{file_index}.json"
+        os.symlink(os.path.abspath(source_file), destination)
 
     def get_ncbi_abstracts_from_api(self):
-        if 'debug_nb_ncbi_request' in self.config:
-            debug_nb_req = self.config['debug_nb_ncbi_request']
-        else:
-            debug_nb_req = -1
-
-        retmax = self.config['from_ncbi_api']['retmax']
+        
         search_term_list = self.config['from_ncbi_api']['selected_term']
-        force = self.config.get('force', False)
-
+        
+        file_index = self._get_index_abstract()
         base_url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/"
         
-        results = []
+        abstract_count = 0
+        abstracts = []
 
         for search_term in search_term_list:  
-            search_url = f"{base_url}esearch.fcgi?db=pubmed&term={search_term}&retmax={retmax}&retmode=json"
-            
-            filename = self.config['retention_dir'] + f"/abstract_{search_term}_{debug_nb_req}_{retmax}.json"
-            
-            if not force:
-                results_cur = load_results(filename)
-                if results_cur is not None:
-                    print(f"Résultats chargés pour '{search_term}' et '{search_url}'")
-                    results.extend(results_cur)
-                    continue
-
+            search_url = f"{base_url}esearch.fcgi?db=pubmed&term={search_term}&retmax={self.retmax}&retmode=json"
             response = requests.get(search_url)
             search_results = response.json()
             
@@ -43,17 +61,12 @@ class AbstractManager:
                 continue
             
             id_list = search_results['esearchresult']['idlist']
-            
-            print("nb abstract:", len(id_list))
 
-            abstracts = []
-            chunk_size = 20
-
-            for i in tqdm(range(0, len(id_list), chunk_size)):
-                chunk = id_list[i:i+chunk_size]
+            for i in tqdm(range(0, len(id_list), self.ncbi_api_chunk_size)):
+                chunk = id_list[i:i+self.ncbi_api_chunk_size]
                 ids = ",".join(chunk)
                 fetch_url = f"{base_url}efetch.fcgi?db=pubmed&id={ids}&rettype=abstract&retmode=xml"
-                
+
                 fetch_response = requests.get(fetch_url)
                 
                 root = ET.fromstring(fetch_response.content)
@@ -62,6 +75,10 @@ class AbstractManager:
                     abstract_text = "".join(abstract.text or "" for abstract in article.findall('.//AbstractText'))
                     
                     doi = next((id_elem.text for id_elem in article.findall(".//ArticleId") if id_elem.get("IdType") == "doi"), None)
+                    abstract_title = article.findtext(".//ArticleTitle")
+                    
+                    if abstract_title.strip() == '' or abstract_text == '':
+                        continue
 
                     abstracts.append({
                         'title': article.findtext(".//ArticleTitle"),
@@ -69,86 +86,73 @@ class AbstractManager:
                         'doi': doi
                     })
 
-                if len(abstracts) >= debug_nb_req:
-                    break
+                    abstract_count += 1
 
-            results_cur = [v for v in abstracts if v['abstract'].strip() and v['title'].strip()]
-            
-            save_results(results_cur, filename)
-            
-            results.extend(results_cur)
+                    if abstract_count % self.abstracts_per_file == 0:
+                        self._save_to_json_file_with_index(abstracts, file_index)
+                        abstracts = []
+                        file_index += 1
 
-        return results
+                    if len(abstracts) >= self.debug_nb_req:
+                        break
+            
+        # Sauvegarder les abstracts restants
+        if abstracts:
+            self._save_to_json_file_with_index(abstracts, file_index)
+        
+        print(f"Total abstract :{abstract_count}")
 
     def get_ncbi_abstracts_from_file(self):
         files_to_parse = self.config['from_file']['json_files']
-        results = []
+        file_index = self._get_index_abstract()
         
-        for f in files_to_parse:
-            if not os.path.exists(f):
-                print(f"File {f} does not exist")
+        for file in files_to_parse:
+            if not os.path.exists(file):
+                print(f"File {file} does not exist")
                 continue
+            self._link_to_json_file_with_index(file, file_index)
+            file_index+=1
+        
 
-            with open(f, 'r') as file:
-                results.extend(json.load(file))
-        return results
+    def _set_embedding_abstract_file(self):
+        for filename in os.listdir(self.config['retention_dir']):
+            
+            if filename.startswith('abstracts_') and filename.endswith('.json'):
+                results = load_results(os.path.join(self.config['retention_dir'], filename))
+                genname = filename.split('.json')[0]
+                self.mem.save_pth(self.mem.encode_abstracts(results,genname),genname)
 
     def manage_abstracts(self):
-        if 'debug_nb_abstracts_by_search' in self.config:
-            debug_nb_abstracts_by_search = self.config['debug_nb_abstracts_by_search']
-        else:
-            debug_nb_abstracts_by_search = -1
 
-        retention_dir = self.config['retention_dir']
-
-        chunk_embeddings = {} if self.config['force'] else self.mem.load_pth("chunks_asbtract")
-        abstracts = []
+        self._remove_abstract_files()
+        
         if 'from_ncbi_api' in self.config :
-            abstracts.extend(self.get_ncbi_abstracts_from_api())
+            self.get_ncbi_abstracts_from_api()
         else:
             print("No abstracts source 'from_api' selected")
 
         if 'from_file' in self.config :
-            abstracts.extend(self.get_ncbi_abstracts_from_file())
+            self.get_ncbi_abstracts_from_file()
         else:
             print("No abstracts source 'from_file' selected")
+
+        self._set_embedding_abstract_file()
+
+
+    # Return tag embeddings in JSON format where the key is the DOI and the value is the embedding
+    def get_files_abstracts_embeddings(self):
+        matching_files = []
+    
+        # Compile le motif regex pour une meilleure performance
+        pattern = re.compile(f"abstracts_.*-{self.mem.model_suffix}.pth")
+        # Parcourt tous les fichiers dans le chemin donné
+        for root, dirs, files in os.walk(self.config['retention_dir']):
+            for filename in files:
+                if pattern.search(filename):
+                    # Ajoute le chemin complet du fichier à la liste
+                    matching_files.append(os.path.join(root, filename))
         
-        filename_csv = retention_dir + '/abstract.csv'
-
-        if debug_nb_abstracts_by_search > 0:
-            abstracts = abstracts[:debug_nb_abstracts_by_search]
-
-        change = False
-
-        chunks_toencode = []
-        chunks_doi_ref = []
-        for abstract in tqdm(abstracts):
-            if abstract['doi'] not in chunk_embeddings:
-                chunk_embeddings[abstract['doi']] = []
-                chunks_doi_ref.append(abstract['doi'])
-                chunks_toencode.append(abstract['title'])
-
-                sentences = re.split(r'(?<=[.!?])\s+(?=[A-Z])', abstract['abstract'])
-
-                for s in sentences:
-                    chunks_toencode.append(s)
-                    chunks_doi_ref.append(abstract['doi'])
-                change = True
-
-        if chunks_toencode:
-            embeddings = self.mem.encode_text_batch(chunks_toencode)
-        
-            for idx, emb in enumerate(embeddings):
-                chunk_embeddings[chunks_doi_ref[idx]].append(emb)
-
-            if change:
-                self.mem.save_pth(chunk_embeddings, "chunks_asbtract")
-                list_of_dicts_to_csv(abstracts, filename_csv)
-
-        return chunk_embeddings
-
-    def get_abstracts_embeddings(self):
-        return self.mem.load_pth("chunks_asbtract")
+        return matching_files
     
     def get_abstracts(self):
         results = []

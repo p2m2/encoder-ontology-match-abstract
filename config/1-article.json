@@ -1,4 +1,9 @@
 {
+    "encodeur" : "sentence-transformers/all-MiniLM-L6-v2",
+    "threshold_similarity_tag_chunk" : 0.65,
+    "threshold_similarity_tag" : 0.75,
+    "batch_size" : 32,
+
     "populate_owl_tag_embeddings" : {
         "ontologies": {
             "planteome_link" : {
@@ -8,15 +13,18 @@
                     "format": "xml",
                     "properties": ["<http://purl.obolibrary.org/obo/IAO_0000115>"]
                 },
-                "po": {
-                    "url": "http://purl.obolibrary.org/obo/po.owl",
-                    "prefix": "http://purl.obolibrary.org/obo/PO_",
+                "to": {
+                    "url": "http://purl.obolibrary.org/obo/to.owl",
+                    "prefix": "http://purl.obolibrary.org/obo/TO_",
                     "format": "xml",
+                    "label" : "<http://www.w3.org/2000/01/rdf-schema#label>",
                     "properties": ["<http://purl.obolibrary.org/obo/IAO_0000115>"]
-                },
-                "pso": {
-                    "url": "http://purl.obolibrary.org/obo/pso.owl",
-                    "prefix": "http://purl.obolibrary.org/obo/PSO_",
+                }
+            },
+            "technology_link" : {
+                "ms": {
+                    "url": "http://purl.obolibrary.org/obo/ms.owl",
+                    "prefix": "http://purl.obolibrary.org/obo/MS_",
                     "format": "xml",
                     "label" : "<http://www.w3.org/2000/01/rdf-schema#label>",
                     "properties": ["<http://purl.obolibrary.org/obo/IAO_0000115>"]
@@ -26,17 +34,19 @@
         "debug_nb_terms_by_ontology" : -1
     },
     "populate_gbif_taxon_tag_embeddings" : {
-        "debug_nb_taxon" : 5,
-        "regex" : "assic.*"
+        "debug_nb_taxon" : 250,
+        "regex" : "assic.*",
+        "tags_per_file" : 100
     },
     "populate_abstract_embeddings" : {
+        "abstracts_per_file" : 50,
+        
         "from_ncbi_api" : {
+            "ncbi_api_chunk_size" : 20,
             "debug_nb_ncbi_request" : -1,
-            "debug_nb_abstracts_by_search" : -1,
-            "retmax" : 50,
+            "retmax" : 100,
             "selected_term" : [
-                "human+AND+genetics",
-                "abiotic+AND+stress+AND+mass+AND+spectrometry+AND+glucosinolate+AND+brassicaceae"
+                "mass+AND+spectrometry+AND+glucosinolate+AND+brassicaceae"
             ]
         },
         "from_file" : {
@@ -50,10 +60,5 @@
             ]
         }
         
-    },
-
-    "compute_tag_chunk_similarities" : {
-        "threshold_similarity_tag_chunk" : 0.60,
-        "debug_nb_similarity_compute" : -1
     }
 }

@@ -103,5 +103,6 @@ python -m llm_semantic_annotator config/test.json compute_tag_chunk_similarities
 
 ```bash
 python -m unittest discover
+python -m unittest tests/similarity/test_model_embedding_manager.py
 ```
 

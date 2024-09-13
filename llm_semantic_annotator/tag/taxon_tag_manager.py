@@ -1,4 +1,4 @@
-import requests,tarfile,os, torch,csv,zipfile,re
+import requests,tarfile,os, torch,csv,zipfile,re,json
 from urllib.parse import urlparse
 from tqdm import tqdm
 from rich import print
@@ -6,9 +6,10 @@ from llm_semantic_annotator import list_of_dicts_to_csv,save_results,load_result
 from llm_semantic_annotator import ModelEmbeddingManager
 import logging
 from collections import defaultdict
+import pandas as pd
 
 class TaxonTagManager:
-    def __init__(self,config):
+    def __init__(self,config,model_embedding_manager):
         
         self.config=config
         self.retention_dir = config['retention_dir']
@@ -16,12 +17,15 @@ class TaxonTagManager:
         
         self.logger = logging.getLogger(__name__)
         csv.field_size_limit(10000000)
+        self.tags_per_file = config.get('tags_per_file', 1000)
 
         # Définir le répertoire de travail
         self.work_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'gbif-backbone')
         self.regex = config.get('regex',None)
         self.debug_nb_taxon = config.get('debug_nb_taxon',-1)
-
+        self.tags_tag_path_filename = f"tags_taxon"
+        self.mem = model_embedding_manager
+    
     def taxon_file(self):
         if 'taxon_tsv_debug' in self.config:
             taxon_file = os.path.join(self.work_dir, self.config['taxon_tsv_debug'])
@@ -128,7 +132,8 @@ class TaxonTagManager:
     def _cleanup_files(self, zip_filename):
         files_to_remove = [
             "Description.tsv", "Distribution.tsv", "Multimedia.tsv", "Reference.tsv",
-            "Taxon.tsv", "TypesAndSpecimen.tsv", "VernacularName.tsv", "eml.xml", "meta.xml"
+            "TypesAndSpecimen.tsv", "eml.xml", "meta.xml",
+            #"Taxon.tsv", "VernacularName.tsv"
         ]
         self.logger.info("Suppression des fichiers non nécessaires")
         for file in files_to_remove:
@@ -150,14 +155,12 @@ class TaxonTagManager:
         
         return name
 
-    def generate_tags(self):
+    def manage_gbif_taxon_tags(self):
         taxon_file = self.taxon_file()
         vernacular_file = self.vernicular_file()
-        tags = []
-        
+
         # Compiler l'expression régulière si elle est fournie
         regex = re.compile(self.regex, re.IGNORECASE) if self.regex else None
-
 
         # Dictionnaire pour stocker les noms vernaculaires par taxonID
         vernacular_names = defaultdict(list)
@@ -174,6 +177,10 @@ class TaxonTagManager:
 
         # Lire taxon.tsv et créer les tags
         self.logger.info("Lecture de taxon.tsv et création des tags")
+        tag_count = 0
+        tags = []
+        file_index = 0
+
         with open(taxon_file, 'r', newline='', encoding='utf-8') as file:
             reader = csv.reader(file, delimiter='\t')
             next(reader, None)  # Ignorer l'en-tête si présent
@@ -185,35 +192,58 @@ class TaxonTagManager:
                             "term": f"https://www.gbif.org/species/{taxon_id}",
                             "label": self._format_taxon_name(scientific_name),
                             "rdfs_label": scientific_name,
-                            "description": " ".join(vernacular_names.get(taxon_id, []))
+                            "description": ", ".join(vernacular_names.get(taxon_id, []))
                         }
                         tags.append(tag)
+                        tag_count += 1
 
-        self.logger.info(f"Nombre total de tags générés : {len(tags)}")
+                        if tag_count % self.tags_per_file == 0:
+                            df = pd.DataFrame({
+                            'label': [ ele['label'] for ele in tags ],
+                            'rdfs:label': [ ele['rdfs_label'] for ele in tags ],
+                            'description': [ ele['description'] for ele in tags ]
+                            })
+                            
+                            df.to_csv(self.retention_dir+f"/{self.tags_tag_path_filename}_{file_index}.csv", index=False)
+                            self.mem.save_pth(self.mem.encode_tags(tags),self.tags_tag_path_filename+f"_{file_index}")
+                            tags = []
+                            file_index += 1
+                        
+                        if self.debug_nb_taxon > 0 and tag_count >= self.debug_nb_taxon:
+                            break
+        # Sauvegarder les abstracts restants
+        if tags:
+            df = pd.DataFrame({
+                'label': [ ele['label'] for ele in tags ],
+                'rdfs:label': [ ele['rdfs_label'] for ele in tags ],
+                'description': [ ele['description'] for ele in tags ]
+                })
+                
+            df.to_csv(self.retention_dir+f"/{self.tags_tag_path_filename}_{file_index}.csv", index=False)
+            self.mem.save_pth(self.mem.encode_tags(tags),self.tags_tag_path_filename+f"_{file_index}")
+
+        self.logger.info(f"Nombre total de tags générés : {tag_count} , nombre de fichiers : {file_index+1}")
+        
+        #df = pd.DataFrame({
+        #'label': [ ele['label'] for ele in tags ],
+        #'rdfs:label': [ ele['rdfs_label'] for ele in tags ],
+        #'description': [ ele['description'] for ele in tags ]
+        #})
+        #df.to_csv(self.retention_dir+"/tags_gbif_taxon.csv", index=False)
+        
         return tags
-
-    def manage_gbif_taxon_tags(self,config):
-        
-        mem = ModelEmbeddingManager(self.config)
-        if self.force:
-            tag_embeddings = {}
-        else:
-            tag_embeddings = mem.load_pth("tags-taxon-gbif")
-        
-        if len(tag_embeddings)==0:
-            tags = []
-            logging.basicConfig(level=logging.INFO)
-            self.process_gbif_backbone()
-            tags = self.generate_tags()
-            if len(tags) == 0:
-                raise FileNotFoundError("No tags found")
-
-            if self.debug_nb_taxon > 0:
-                tags = tags[:self.debug_nb_taxon]
-            tag_embeddings = mem.encode_tags(tags)
-            
-            mem.save_pth(tag_embeddings,"tags-taxon-gbif")
     
-    def get_tags_embeddings(self):
-        return ModelEmbeddingManager(self.config).load_pth("tags-taxon-gbif")
+    def get_files_tags_taxon_embeddings(self):
+        matching_files = []
+    
+        # Compile le motif regex pour une meilleure performance
+        pattern = re.compile(f"{self.tags_tag_path_filename}.*-{self.mem.model_suffix}.pth")
+        # Parcourt tous les fichiers dans le chemin donné
+        for root, dirs, files in os.walk(self.retention_dir):
+            for filename in files:
+                if pattern.search(filename):
+                    # Ajoute le chemin complet du fichier à la liste
+                    matching_files.append(os.path.join(root, filename))
+        
+        return matching_files
 

@@ -21,12 +21,14 @@ __maintainer__ = "Olivier Filangi"
 __email__ = "olivier.filangi@inrae.fr"
 __status__ = "Devel"
 
-import torch,json,os
+import torch,json,os,re
 from transformers import BertTokenizer, BertModel
 from transformers import AutoTokenizer, AutoModel
 from sentence_transformers import SentenceTransformer, util
 import numpy as np
 from scipy.spatial.distance import cdist
+from rich import print
+import pandas as pd
 
 import torch.nn.functional as F
 from sentence_transformers.util import cos_sim
@@ -43,33 +45,61 @@ from tqdm import tqdm
 # FacebookAI/roberta-base
 # sentence-transformers/all-MiniLM-L6-v2
 
-#https://huggingface.co/spaces/mteb/leaderboard
+# https://huggingface.co/spaces/mteb/leaderboard
 # mixedbread-ai/mxbai-embed-large-v1
 
 class ModelEmbeddingManager:
     def __init__(self,config):
         self.config=config
         self.retention_dir = config['retention_dir']
-
-        self.model_name = 'sentence-transformers/all-MiniLM-L6-v2'
+        print(config['encodeur'])
+        if 'encodeur' in config:
+            self.model_name = config['encodeur']
+        else:
+            self.model_name = 'sentence-transformers/all-MiniLM-L6-v2'
+        
         #self.model_name = 'mixedbread-ai/mxbai-embed-large-v1'
         #self.model_name = 'sentence-transformers/all-mpnet-base-v2'
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_name,clean_up_tokenization_spaces=True)
         self.model = AutoModel.from_pretrained(self.model_name)
-        self.batch_size=32
-        self.threshold_similarity_tag = 0.75
+        
+        if 'batch_size' in config:
+            self.batch_size = config['batch_size']
+        else:
+            self.batch_size=32
+        
+        if 'threshold_similarity_tag' in config:
+            self.threshold_similarity_tag = config['threshold_similarity_tag']
+        else:
+            self.threshold_similarity_tag = 0.75
+        
+        if 'threshold_similarity_tag_chunk' in config:
+            self.threshold_similarity_tag_chunk = config['threshold_similarity_tag_chunk']
+        else:
+            self.threshold_similarity_tag_chunk = 0.75
+
         self.model_suffix=self.model_name.split("/").pop()
+
+        print("------------------------------------")
+        print("endoceur:",self.model_name)
+        print("threshold_similarity_tag:",self.threshold_similarity_tag)
+        print("threshold_similarity_tag_chunk:",self.threshold_similarity_tag_chunk)
+        print("batch_size:",self.batch_size)
+        print("------------------------------------")
 
     def get_filename_pth(self,name_embeddings):
         return f"{self.retention_dir}/{name_embeddings}-{self.model_suffix}.pth"
     
+    def load_filepth(self,filename_embeddings):
+        return torch.load(filename_embeddings,weights_only=True)
+
     def load_pth(self,name_embeddings):
         filename = self.get_filename_pth(name_embeddings)
         
         tag_embeddings = {}
 
         if os.path.exists(filename):
-            print(f"load tags embeddings - {filename}")
+            print(f"load embeddings - {filename}")
             tag_embeddings = torch.load(filename,weights_only=True)
         return tag_embeddings
 
@@ -84,7 +114,7 @@ class ModelEmbeddingManager:
         return torch.sum(token_embeddings * input_mask_expanded, 1) / torch.clamp(input_mask_expanded.sum(1), min=1e-9)
 
     def encode_text_base(self,text):
-        inputs = tokenizer(text, return_tensors='pt', truncation=True, padding=True)
+        inputs = self.tokenizer(text, return_tensors='pt', truncation=True, padding=True)
         with torch.no_grad():
             outputs = self.model(**inputs)
         return outputs.last_hidden_state.mean(dim=1)
@@ -99,7 +129,7 @@ class ModelEmbeddingManager:
 
     def encode_text(self,text):
         return self.encode_text_allMiniLML6V2(text)
-
+        #return self.encode_text_base(text)
 
     def encode_text_batch_allMiniLML6V2(self,texts, batch_size=32):
         # Passage en mode évaluation
@@ -182,28 +212,73 @@ class ModelEmbeddingManager:
             tags_embedding[tags[idx]['label']] = item
 
         return tags_embedding
+    
+    def encode_abstracts(self,abstracts,genname) :
+        """
+        abstract : {
+                'doi',
+                'title',
+                'abstract'
+            }
+        """
 
+        chunks_toencode = []
+        chunks_doi_ref = []
+        lcount = 0
+        print("Flat abstracts to build batch.....")
+        for item in tqdm(abstracts):
+            if 'abstract' in item and item['abstract'].strip() != '':
+                if 'title' in item and item['title'].strip() != '':
+                    sentences = re.split(r'(?<=[.!?])\s+(?=[A-Z])', item['abstract'])
+                    # title
+                    chunks_doi_ref.append(item['doi'])
+                    chunks_toencode.append(item['title'])
+                    lcount+=1
+                    # with all abstract sentences
+                    for s in sentences:
+                        chunks_toencode.append(s)
+                        chunks_doi_ref.append(item['doi'])
+                        lcount+=1
+                
+        print("batch encoding.....")
 
-    def compare_tags_with_chunks(self, tag_embeddings, chunks_embeddings, config):
-        threshold = config['threshold_similarity_tag_chunk']
-        debug_nb_similarity_compute = config['debug_nb_similarity_compute']
+        df = pd.DataFrame({
+            'doi': chunks_doi_ref,
+            'chunks': chunks_toencode
+        })
         
+        df.to_csv(self.retention_dir+f"/{genname}.csv", index=False)
+        
+        embeddings = self.encode_text_batch(chunks_toencode)
+        abstracts_embedding={}
+        for idx in chunks_doi_ref:
+            abstracts_embedding[idx] = []
+
+        print("set encoding.....")
+        for idx,item in tqdm(enumerate(embeddings)):
+            abstracts_embedding[chunks_doi_ref[idx]].append(item)
+
+        return abstracts_embedding
+
+    def compare_tags_with_chunks(self, tag_embeddings, chunks_embeddings):
+        threshold = self.threshold_similarity_tag_chunk
         # Convertir les embeddings en arrays NumPy pour une meilleure performance
         tag_list = list(tag_embeddings.keys())
         tag_embeddings_matrix = np.array([tag_embeddings[tag].cpu().numpy() for tag in tag_list])
         
         results_complete_similarities = {}
-        
-        for doi, chunks_embedding in tqdm(list(chunks_embeddings.items())[:debug_nb_similarity_compute]):
+
+        for doi, chunks_embedding in tqdm(list(chunks_embeddings.items())):
             # Convertir chunks_embedding en array NumPy
             chunks_matrix = np.array([chunk.cpu().numpy() for chunk in chunks_embedding])
-            
             # Calcul vectorisé des similarités
             similarities = 1 - cdist(chunks_matrix, tag_embeddings_matrix, metric='cosine')
+            
             max_similarities = np.max(similarities, axis=0)
             
             # Filtrage des similarités au-dessus du seuil
-            above_threshold = max_similarities >= threshold
+            #above_threshold = max_similarities >= threshold
+            
             complete_similarities = {tag: sim for tag, sim in zip(tag_list, max_similarities) if sim >= threshold}
             
             # Filtrage des tags similaires
@@ -212,7 +287,7 @@ class ModelEmbeddingManager:
                 tag_embeddings_filtered = tag_embeddings_matrix[[tag_list.index(tag) for tag in tags_to_keep]]
                 tag_similarities = 1 - cdist(tag_embeddings_filtered, tag_embeddings_filtered, metric='cosine')
                 np.fill_diagonal(tag_similarities, 0)
-                
+
                 while True:
                     max_sim = np.max(tag_similarities)
                     if max_sim <= self.threshold_similarity_tag:

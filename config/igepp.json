@@ -1,4 +1,9 @@
 {
+    "encodeur" : "sentence-transformers/all-MiniLM-L6-v2",
+    "threshold_similarity_tag_chunk" : 0.65,
+    "threshold_similarity_tag" : 0.75,
+    "batch_size" : 32,
+
     "populate_owl_tag_embeddings" : {
         "ontologies": {
             "planteome_link" : {
@@ -45,9 +50,11 @@
     },
 
     "populate_gbif_taxon_tag_embeddings" : {
+        "tags_per_file" : 2000
     },
 
     "populate_abstract_embeddings" : {
+        "abstracts_per_file" : 500,
         "from_ncbi_api" : {
             "debug_nb_ncbi_request" : -1,
             "debug_nb_abstracts_by_search" : -1,
@@ -58,10 +65,5 @@
                 "metabolomics+AND+glucosinolate"
             ]
         }
-    },
-
-    "compute_tag_chunk_similarities" : {
-        "threshold_similarity_tag_chunk" : 0.70,
-        "debug_nb_similarity_compute" : -1
     }
 }

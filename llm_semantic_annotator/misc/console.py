@@ -16,7 +16,7 @@ def display_best_similarity_abstract_tag(results_complete_similarities,retention
             links_kind.append("DOI-Tag")
 
     df = pd.DataFrame({
-    'DOI': dois,
+    'DOI': [ f"https://doi.org/{doi}" for doi in dois],
     'Tag': tags,
     'Similarity': similarities
     #'link' : links_kind
