@@ -52,7 +52,7 @@ class ModelEmbeddingManager:
     def __init__(self,config):
         self.config=config
         self.retention_dir = config['retention_dir']
-        print(config['encodeur'])
+
         if 'encodeur' in config:
             self.model_name = config['encodeur']
         else:

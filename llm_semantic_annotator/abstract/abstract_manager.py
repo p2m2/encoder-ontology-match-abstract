@@ -8,13 +8,17 @@ from pathlib import Path
 class AbstractManager:
     def __init__(self, config, model_embedding_manager):
         self.config = config
-        # option a mettre dans le json
-        self.ncbi_api_chunk_size = config.get('from_ncbi_api').get('ncbi_api_chunk_size', 20)
-        # option a mettre dans le json
+    
         self.abstracts_per_file=config.get('abstracts_per_file', 100)
         self.mem = model_embedding_manager
-        self.retmax = self.config.get('from_ncbi_api').get('retmax',10000)
-        self.debug_nb_req = self.config.get('from_ncbi_api').get('debug_nb_ncbi_request',-1)
+        if 'from_ncbi_api' in config:
+            self.retmax = self.config.get('from_ncbi_api').get('retmax',10000)
+            self.debug_nb_req = self.config.get('from_ncbi_api').get('debug_nb_ncbi_request',-1)
+            self.ncbi_api_chunk_size = config.get('from_ncbi_api').get('ncbi_api_chunk_size', 20)
+        else:
+            self.retmax = 10000
+            self.debug_nb_req = -1
+            self.ncbi_api_chunk_size = 20
 
     def _get_index_abstract(self):
         existing_files = [

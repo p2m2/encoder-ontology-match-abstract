@@ -12,6 +12,11 @@ from llm_semantic_annotator import main_compute_tag_chunk_similarities
 class TestAbstractPreparation(unittest.TestCase):
     def setUp(self):
         self.config = {
+            "encodeur" : "sentence-transformers/all-MiniLM-L6-v2",
+            "threshold_similarity_tag_chunk" : 0.65,
+            "threshold_similarity_tag" : 0.75,
+            "batch_size" : 32,
+
             "populate_owl_tag_embeddings" : {
                 "ontologies": {
                     "animal_link" : {
@@ -44,10 +49,6 @@ class TestAbstractPreparation(unittest.TestCase):
                     ]
                 }
                 
-            },
-            "compute_tag_chunk_similarities" : {
-                "threshold_similarity_tag_chunk" : 0.25,
-                "debug_nb_similarity_compute" : 100
             }
         }
 
