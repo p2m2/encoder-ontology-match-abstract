@@ -156,6 +156,9 @@ class TaxonTagManager:
         return name
 
     def manage_gbif_taxon_tags(self):
+        
+        self.process_gbif_backbone()
+
         taxon_file = self.taxon_file()
         vernacular_file = self.vernicular_file()
 
