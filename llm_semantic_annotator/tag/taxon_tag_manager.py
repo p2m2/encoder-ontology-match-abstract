@@ -131,8 +131,8 @@ class TaxonTagManager:
 
     def _cleanup_files(self, zip_filename):
         files_to_remove = [
-            "Description.tsv", "Distribution.tsv", "Multimedia.tsv", "Reference.tsv",
-            "TypesAndSpecimen.tsv", "eml.xml", "meta.xml",
+            #"Description.tsv", "Distribution.tsv", "Multimedia.tsv", "Reference.tsv",
+            #"TypesAndSpecimen.tsv", "eml.xml", "meta.xml",
             #"Taxon.tsv", "VernacularName.tsv"
         ]
         self.logger.info("Suppression des fichiers non nécessaires")
@@ -191,6 +191,7 @@ class TaxonTagManager:
                 if len(row) >= 2:
                     taxon_id, scientific_name = row[0], row[1]
                     if regex is None or regex.search(scientific_name):
+                        #Brassicaceae is a plant in the kingdom Plantae, phylum Tracheophyta, class Magnoliopsida, of the order Brassicales.
                         tag = {
                             "term": f"https://www.gbif.org/species/{taxon_id}",
                             "label": self._format_taxon_name(scientific_name),
