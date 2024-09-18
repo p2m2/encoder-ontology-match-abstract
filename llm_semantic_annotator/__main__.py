@@ -4,6 +4,7 @@ from llm_semantic_annotator import get_retention_dir
 from llm_semantic_annotator import main_populate_owl_tag_embeddings
 from llm_semantic_annotator import main_populate_abstract_embeddings
 from llm_semantic_annotator import main_populate_gbif_taxon_tag_embeddings
+from llm_semantic_annotator import main_populate_ncbi_taxon_tag_embeddings
 from llm_semantic_annotator import main_compute_tag_chunk_similarities
 
 from rich import print
@@ -32,6 +33,7 @@ def parse_arguments():
         "execution_type",
         choices=["populate_owl_tag_embeddings",
                 "populate_gbif_taxon_tag_embeddings",
+                "populate_ncbi_taxon_tag_embeddings",
                 "populate_abstract_embeddings",
                 "compute_tag_chunk_similarities"],
         help="Type d'exécution à effectuer."
@@ -58,6 +60,8 @@ def main():
         main_populate_owl_tag_embeddings(config)
     elif args.execution_type == "populate_gbif_taxon_tag_embeddings":
         main_populate_gbif_taxon_tag_embeddings(config)
+    elif args.execution_type == "populate_ncbi_taxon_tag_embeddings":
+        main_populate_ncbi_taxon_tag_embeddings(config)
     elif args.execution_type == "populate_abstract_embeddings":
         main_populate_abstract_embeddings(config)
     elif args.execution_type == "compute_tag_chunk_similarities":

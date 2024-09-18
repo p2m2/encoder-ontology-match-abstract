@@ -33,6 +33,12 @@ def main_populate_gbif_taxon_tag_embeddings(config_all):
 
     TaxonTagManager(config,mem).manage_gbif_taxon_tags()
 
+def main_populate_ncbi_taxon_tag_embeddings(config_all):
+    config = setup_general_config(config_all,'populate_ncbi_taxon_tag_embeddings')
+    mem = ModelEmbeddingManager(config_all)
+
+    TaxonTagManager(config,mem).manage_ncbi_taxon_tags()
+
 def main_populate_abstract_embeddings(config_all):
     
     config = setup_general_config(config_all,'populate_abstract_embeddings')
@@ -53,7 +59,8 @@ def main_compute_tag_chunk_similarities(config_all):
     if len(tags_pth_files) == 0:
         raise FileNotFoundError("No tags embeddings found")
     
-    tags_taxon_pth_files = TaxonTagManager(config_owl,mem).get_files_tags_taxon_embeddings()
+    #tags_taxon_pth_files = TaxonTagManager(config_owl,mem).get_files_tags_gbif_taxon_embeddings()
+    tags_taxon_pth_files = TaxonTagManager(config_owl,mem).get_files_tags_ncbi_taxon_embeddings()
     
     if len(tags_taxon_pth_files) == 0:
         warnings.warn("No tags taxon embeddings found")

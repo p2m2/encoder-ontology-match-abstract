@@ -1,6 +1,6 @@
 {
     "encodeur" : "sentence-transformers/all-MiniLM-L6-v2",
-    "threshold_similarity_tag_chunk" : 0.65,
+    "threshold_similarity_tag_chunk" : 0.60,
     "threshold_similarity_tag" : 0.75,
     "batch_size" : 32,
 
@@ -38,15 +38,19 @@
         "regex" : "assic.*",
         "tags_per_file" : 100
     },
+    "populate_ncbi_taxon_tag_embeddings" : {
+        "regex" : "assic.*" ,
+	"tags_per_file" : 100
+    },
     "populate_abstract_embeddings" : {
         "abstracts_per_file" : 50,
         
         "from_ncbi_api" : {
-            "ncbi_api_chunk_size" : 20,
+            "ncbi_api_chunk_size" : 200,
             "debug_nb_ncbi_request" : -1,
-            "retmax" : 100,
+            "retmax" : 2000,
             "selected_term" : [
-                "mass+AND+spectrometry+AND+glucosinolate+AND+brassicaceae"
+                "mass+AND+spectrometry+AND+glucosinolate"
             ]
         },
         "from_file" : {

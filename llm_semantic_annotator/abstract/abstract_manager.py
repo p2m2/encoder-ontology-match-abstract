@@ -56,11 +56,13 @@ class AbstractManager:
         abstract_count = 0
         abstracts = []
 
-        for search_term in search_term_list:  
+        for search_term in search_term_list:
             search_url = f"{base_url}esearch.fcgi?db=pubmed&term={search_term}&retmax={self.retmax}&retmode=json"
             response = requests.get(search_url)
             search_results = response.json()
-            
+            if 'error' in search_results:
+                raise ValueError(f"Error in search results: {search_results['error']}")
+
             if 'esearchresult' not in search_results or 'idlist' not in search_results['esearchresult']:
                 continue
             
@@ -83,6 +85,7 @@ class AbstractManager:
                     
                     if abstract_title.strip() == '' or abstract_text == '':
                         continue
+                    
 
                     abstracts.append({
                         'title': article.findtext(".//ArticleTitle"),
@@ -91,7 +94,7 @@ class AbstractManager:
                     })
 
                     abstract_count += 1
-
+                    
                     if abstract_count % self.abstracts_per_file == 0:
                         self._save_to_json_file_with_index(abstracts, file_index)
                         abstracts = []
