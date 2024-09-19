@@ -73,16 +73,15 @@ class AbstractManager:
                 ids = ",".join(chunk)
                 fetch_url = f"{base_url}efetch.fcgi?db=pubmed&id={ids}&rettype=abstract&retmode=xml"
 
-                fetch_response = requests.get(fetch_url)
+                fetch_response = requests.post(fetch_url)
                 
                 root = ET.fromstring(fetch_response.content)
-                
+                    
                 for article in root.findall('.//PubmedArticle'):
                     abstract_text = "".join(abstract.text or "" for abstract in article.findall('.//AbstractText'))
                     
                     doi = next((id_elem.text for id_elem in article.findall(".//ArticleId") if id_elem.get("IdType") == "doi"), None)
                     abstract_title = article.findtext(".//ArticleTitle")
-                    #print(abstract_title)
                     supplMaterialList = article.findtext(".//SupplMaterialList")
                     #print(article)
                     if abstract_title.strip() == '' or abstract_text == '':
@@ -102,7 +101,7 @@ class AbstractManager:
                         abstracts = []
                         file_index += 1
 
-                    if len(abstracts) >= self.debug_nb_req:
+                    if self.debug_nb_req>0 and len(abstracts) >= self.debug_nb_req:
                         break
             
         # Sauvegarder les abstracts restants

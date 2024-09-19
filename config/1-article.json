@@ -1,6 +1,6 @@
 {
     "encodeur" : "sentence-transformers/all-MiniLM-L6-v2",
-    "threshold_similarity_tag_chunk" : 0.60,
+    "threshold_similarity_tag_chunk" : 0.65,
     "threshold_similarity_tag" : 0.75,
     "batch_size" : 32,
 
@@ -48,9 +48,10 @@
         "from_ncbi_api" : {
             "ncbi_api_chunk_size" : 200,
             "debug_nb_ncbi_request" : -1,
-            "retmax" : 2000,
+            "retmax" : 20,
             "selected_term" : [
-                "mass+AND+spectrometry+AND+glucosinolate"
+                "mass+AND+spectrometry+AND+glucosinolate" ,
+	            "chemical+AND+glucosinolate"
             ]
         },
         "from_file" : {
