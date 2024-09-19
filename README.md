@@ -6,14 +6,14 @@ LLMSemanticAnnotator employs Semantic Textual Similarity (STS) to annotate scien
 
 ## Detailed Functioning
 
-    - LLM Utilization: The annotator employs Large Language Models (LLMs) to deeply understand the context and content of scientific articles.
-    - STS Application: The system compares the semantic similarity between ontological term definitions and article text, using advanced natural language processing techniques.
-    - Ontology Sources: In addition to Planteome, the annotator integrates controlled vocabularies from other recognized sources in the field of plant biology, ensuring comprehensive coverage of relevant terms.
-    - Multi-level Annotation: The annotation process specifically targets:
-        - Experimental conditions
-        - Plant developmental stages
-        - Molecules of interest under study
-    - Semantic Association: Ultimately, the annotator establishes links between annotated terms, enabling the association of experimental conditions and developmental stages with the molecules of interest studied.
+- LLM Utilization: The annotator employs Large Language Models (LLMs) to deeply understand the context and content of scientific articles.
+- STS Application: The system compares the semantic similarity between ontological term definitions and article text, using advanced natural language processing techniques.
+- Ontology Sources: In addition to Planteome, the annotator integrates controlled vocabularies from other recognized sources in the field of plant biology, ensuring comprehensive coverage of relevant terms.
+- Multi-level Annotation: The annotation process specifically targets:
+    - Experimental conditions
+    - Plant developmental stages
+    - Molecules of interest under study
+- Semantic Association: Ultimately, the annotator establishes links between annotated terms, enabling the association of experimental conditions and developmental stages with the molecules of interest studied.
 
 This approach aims to significantly enrich the metadata of scientific articles, thereby facilitating experimental reproducibility, comparative analysis of studies, and large-scale knowledge extraction in the field of plant biology.
 
