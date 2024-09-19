@@ -1,6 +1,23 @@
-# LLMSemanticAnnotator
+# LLMSemanticAnnotator: Advanced Semantic Annotation for Plant Biology Research
 
 [![Tests](https://github.com/p2m2/encoder-ontology-match-abstract/actions/workflows/ci.yml/badge.svg)](https://github.com/p2m2/encoder-ontology-match-abstract/actions/workflows/ci.yml)
+
+LLMSemanticAnnotator employs Semantic Textual Similarity (STS) to annotate scientific articles with controlled vocabulary, based on precise term definitions. This implementation primarily leverages ontologies from the Planteome project, while also incorporating other relevant sources, to address the lack of detailed annotations in scientific articles, particularly regarding experimental conditions and plant developmental stages.
+
+## Detailed Functioning
+
+    - LLM Utilization: The annotator employs Large Language Models (LLMs) to deeply understand the context and content of scientific articles.
+    - STS Application: The system compares the semantic similarity between ontological term definitions and article text, using advanced natural language processing techniques.
+    - Ontology Sources: In addition to Planteome, the annotator integrates controlled vocabularies from other recognized sources in the field of plant biology, ensuring comprehensive coverage of relevant terms.
+    - Multi-level Annotation: The annotation process specifically targets:
+        - Experimental conditions
+        - Plant developmental stages
+        - Molecules of interest under study
+    - Semantic Association: Ultimately, the annotator establishes links between annotated terms, enabling the association of experimental conditions and developmental stages with the molecules of interest studied.
+
+This approach aims to significantly enrich the metadata of scientific articles, thereby facilitating experimental reproducibility, comparative analysis of studies, and large-scale knowledge extraction in the field of plant biology.
+
+
 
 ## Installation
 
