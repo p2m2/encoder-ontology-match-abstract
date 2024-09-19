@@ -69,7 +69,7 @@ class OwlTagManager:
 
     def remove_prefix_tags(self,prefix_tag,text):
         escaped_prefix = re.escape(prefix_tag.upper())
-        pattern = rf'{escaped_prefix}:\d+'
+        pattern = r'\([A-Z]+:\d+\)'
 
         v = re.sub(pattern, '', text)
         return re.sub(r'\(\)', '', v)

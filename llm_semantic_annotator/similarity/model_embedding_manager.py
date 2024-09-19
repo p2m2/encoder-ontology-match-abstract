@@ -25,7 +25,6 @@ import torch,json,os,re
 from transformers import BertTokenizer, BertModel
 from transformers import AutoTokenizer, AutoModel
 from sentence_transformers import SentenceTransformer, util
-
 import numpy as np
 from scipy.spatial.distance import cdist
 from rich import print
@@ -261,47 +260,53 @@ class ModelEmbeddingManager:
 
         return abstracts_embedding
 
-    def compare_tags_with_chunks(self,tag_embeddings, chunks_embeddings):
-        # Vérifier si un GPU est disponible
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
+    def compare_tags_with_chunks(self, tag_embeddings, chunks_embeddings):
+        # Convertir les embeddings en arrays NumPy pour une meilleure performance
         tag_list = list(tag_embeddings.keys())
-        tag_embeddings_matrix = torch.stack([tag_embeddings[tag] for tag in tag_list]).to(device)
+        tag_embeddings_matrix = np.array([tag_embeddings[tag].cpu().numpy() for tag in tag_list])
         
         results_complete_similarities = {}
 
         for doi, chunks_embedding in tqdm(list(chunks_embeddings.items())):
-            chunks_matrix = torch.stack(chunks_embedding).to(device)
+            # Convertir chunks_embedding en array NumPy
+            chunks_matrix = np.array([chunk.cpu().numpy() for chunk in chunks_embedding])
             
-            # Calcul des similarités cosinus
-            similarities = torch.nn.functional.cosine_similarity(chunks_matrix.unsqueeze(1), tag_embeddings_matrix.unsqueeze(0), dim=2)
-            
-            max_similarities, _ = torch.max(similarities, dim=0)
+            # Calcul vectorisé des similarités
+            similarities = 1 - cdist(chunks_matrix, tag_embeddings_matrix, metric='cosine')
+            max_similarities = np.max(similarities, axis=0)
 
-            complete_similarities = {tag: sim.item() for tag, sim in zip(tag_list, max_similarities) if sim >= self.threshold_similarity_tag_chunk}
-            
-            if len(complete_similarities) > 1:
-                tags_to_keep = list(complete_similarities.keys())
-                tag_embeddings_filtered = tag_embeddings_matrix[[tag_list.index(tag) for tag in tags_to_keep]]
-                
-                tag_similarities = torch.nn.functional.cosine_similarity(tag_embeddings_filtered.unsqueeze(1), tag_embeddings_filtered.unsqueeze(0), dim=2)
-                tag_similarities.fill_diagonal_(0)
-
-                while True and tag_similarities.size(0) > 0:
-                    max_sim = torch.max(tag_similarities,dim=0).values.max()
-                    if max_sim <= self.threshold_similarity_tag:
-                        break
-                    i, j = torch.where(tag_similarities == max_sim)
-                    i, j = i[0].item(), j[0].item()
-                    if complete_similarities[tags_to_keep[i]] > complete_similarities[tags_to_keep[j]]:
-                        del complete_similarities[tags_to_keep[j]]
-                        tags_to_keep.pop(j)
-                    else:
-                        del complete_similarities[tags_to_keep[i]]
-                        tags_to_keep.pop(i)
-                    tag_similarities = torch.cat([tag_similarities[:i], tag_similarities[i+1:]])
-                    tag_similarities = torch.cat([tag_similarities[:, :j], tag_similarities[:, j+1:]], dim=1)
+            # Filtrage des similarités au-dessus du seuil
+            complete_similarities = {tag: sim for tag, sim in zip(tag_list, max_similarities) if sim >= self.threshold_similarity_tag_chunk}
             
             results_complete_similarities[doi] = complete_similarities
         
         return results_complete_similarities
+    
+        return distance
+    
+    def remove_similar_tags_by_doi(self, tag_embeddings, complete_similarities):
+        tag_list = list(tag_embeddings.keys())
+        tag_embeddings_matrix = np.array([tag_embeddings[tag].cpu().numpy() for tag in tag_list])
+
+        # Filtrage des tags similaires
+        if len(complete_similarities) > 1:
+            tags_to_keep = list(complete_similarities.keys())
+            tag_embeddings_filtered = tag_embeddings_matrix[[tag_list.index(tag) for tag in tags_to_keep]]
+            tag_similarities = 1 - cdist(tag_embeddings_filtered, tag_embeddings_filtered, metric='cosine')
+            np.fill_diagonal(tag_similarities, 0)
+
+            while True:
+                max_sim = np.max(tag_similarities)
+                if max_sim <= self.threshold_similarity_tag:
+                    break
+                i, j = np.unravel_index(np.argmax(tag_similarities), tag_similarities.shape)
+                if complete_similarities[tags_to_keep[i]] > complete_similarities[tags_to_keep[j]]:
+                    del complete_similarities[tags_to_keep[j]]
+                    tags_to_keep.pop(j)
+                else:
+                    del complete_similarities[tags_to_keep[i]]
+                    tags_to_keep.pop(i)
+                tag_similarities = np.delete(tag_similarities, min(i, j), axis=0)
+                tag_similarities = np.delete(tag_similarities, min(i, j), axis=1)
+            
+        return complete_similarities

@@ -55,6 +55,7 @@ class AbstractManager:
         
         abstract_count = 0
         abstracts = []
+        ldoi = {}
 
         for search_term in search_term_list:
             search_url = f"{base_url}esearch.fcgi?db=pubmed&term={search_term}&retmax={self.retmax}&retmode=json"
@@ -87,14 +88,14 @@ class AbstractManager:
                     if abstract_title.strip() == '' or abstract_text == '' or doi is None:
                         continue
                     
-
-                    abstracts.append({
-                        'title': article.findtext(".//ArticleTitle"),
-                        'abstract': abstract_text,
-                        'doi': doi
-                    })
-
-                    abstract_count += 1
+                    if doi not in ldoi:
+                        abstracts.append({
+                            'title': article.findtext(".//ArticleTitle"),
+                            'abstract': abstract_text,
+                            'doi': doi
+                        })
+                        abstract_count += 1
+                        ldoi[doi] = True
                     
                     if abstract_count % self.abstracts_per_file == 0:
                         self._save_to_json_file_with_index(abstracts, file_index)
@@ -103,7 +104,7 @@ class AbstractManager:
 
                     if self.debug_nb_req>0 and len(abstracts) >= self.debug_nb_req:
                         break
-            
+
         # Sauvegarder les abstracts restants
         if abstracts:
             self._save_to_json_file_with_index(abstracts, file_index)

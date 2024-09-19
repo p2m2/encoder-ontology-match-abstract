@@ -53,7 +53,7 @@ def main_compute_tag_chunk_similarities(config_all):
     
     mem = ModelEmbeddingManager(config_all)
 
-    results_complete_similarities = {}
+    
     tags_pth_files = OwlTagManager(config_owl,mem).get_files_tags_embeddings()
     
     if len(tags_pth_files) == 0:
@@ -72,22 +72,33 @@ def main_compute_tag_chunk_similarities(config_all):
     if len(abstracts_pth_files) == 0:
         raise FileNotFoundError("No abstracts embeddings found")
 
-    for tags_pth_file in tags_pth_files:
-        tag_embeddings = mem.load_filepth(tags_pth_file)
-        
-        for  abstracts_pth_file in abstracts_pth_files:
-            chunk_embeddings = mem.load_filepth(abstracts_pth_file)
-            for doi,res in mem.compare_tags_with_chunks(
-                tag_embeddings, chunk_embeddings).items():
+    for abstracts_pth_file in abstracts_pth_files:
+        chunk_embeddings = mem.load_filepth(abstracts_pth_file)
+        results_complete_similarities = {}
+        keep_tag_embeddings = {}
+
+        for tags_pth_file in tags_pth_files:
+            tag_embeddings = mem.load_filepth(tags_pth_file)
+            
+            for doi,res in mem.compare_tags_with_chunks(tag_embeddings, chunk_embeddings).items():
                 if doi not in results_complete_similarities:
                     results_complete_similarities[doi] = res
+                    for tag in res.keys():
+                        keep_tag_embeddings[tag] = tag_embeddings[tag]
                 else:
                     for tag,sim in res.items():
                         if tag not in results_complete_similarities[doi] or sim>results_complete_similarities[doi][tag]:
                             results_complete_similarities[doi][tag] = sim
-    
-    if len(results_complete_similarities)>0:
-        retention_dir = config_all['retention_dir']
-        display_ontologies_distribution(results_complete_similarities)
-        display_best_similarity_abstract_tag(results_complete_similarities,retention_dir)
-        display_ontologies_summary(results_complete_similarities,retention_dir)
+                            keep_tag_embeddings[tag] = tag_embeddings[tag]
+        
+        for doi in chunk_embeddings:
+            results_complete_similarities[doi] = mem.remove_similar_tags_by_doi(keep_tag_embeddings,results_complete_similarities[doi])
+
+        if len(results_complete_similarities)>0:
+            prefix_file_name=abstracts_pth_file.split(".pth")[0].split("_").pop()
+            print("prefix_file_name:",prefix_file_name)
+            retention_dir = config_all['retention_dir']
+            display_ontologies_distribution(results_complete_similarities)
+            display_best_similarity_abstract_tag(prefix_file_name,results_complete_similarities,retention_dir)
+            display_ontologies_summary(prefix_file_name,results_complete_similarities,retention_dir)
+

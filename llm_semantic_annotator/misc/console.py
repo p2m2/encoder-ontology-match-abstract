@@ -3,7 +3,7 @@ import pandas as pd
 from tabulate import tabulate
 import np as np
 
-def display_best_similarity_abstract_tag(results_complete_similarities,retention_dir):
+def display_best_similarity_abstract_tag(prefix_file_name,results_complete_similarities,retention_dir):
     dois = []
     similarities = []
     tags = []
@@ -22,14 +22,14 @@ def display_best_similarity_abstract_tag(results_complete_similarities,retention
     #'link' : links_kind
     })
 
-    df_sorted = df.sort_values(by='Similarity', ascending=False)
+    df_sorted = df.sort_values(by=['DOI','Similarity'], ascending=False)
     df_sorted = df_sorted.reset_index(drop=True)
-    df_sorted.to_csv(retention_dir+"/best_similarities_tags.csv", index=False)
+    df_sorted.to_csv(retention_dir+f"/best_similarities_{prefix_file_name}.csv", index=False)
     
     print("## Best similarity between abstract and tag")
     print(tabulate(df_sorted, headers='keys', tablefmt='psql', showindex=False))
 
-def display_ontologies_summary(results_complete_similarities,retention_dir):
+def display_ontologies_summary(prefix_file_name,results_complete_similarities,retention_dir):
     
     tag_list = []
     ontology_tag_list = []
@@ -89,7 +89,7 @@ def display_ontologies_summary(results_complete_similarities,retention_dir):
     df_tag_sorted = df_tag.sort_values(by='Mean Similarity', ascending=False)
     df_tag_sorted = df_tag_sorted.reset_index(drop=True)
     
-    df_tag_sorted.to_csv(retention_dir+"/summary_tags.csv", index=False)
+    df_tag_sorted.to_csv(retention_dir+f"/summary_{prefix_file_name}.csv", index=False)
 
     print("## Summary of tags")
     print(tabulate(df_tag_sorted, headers='keys', tablefmt='psql', showindex=False))
@@ -104,7 +104,7 @@ def display_ontologies_summary(results_complete_similarities,retention_dir):
     df_ontology_sorted = df_ontology.sort_values(by='Mean Similarity', ascending=False)
     df_ontology_sorted = df_ontology_sorted.reset_index(drop=True)
 
-    df_ontology_sorted.to_csv(retention_dir+"/summary_ontologies.csv", index=False)
+    df_ontology_sorted.to_csv(retention_dir+f"/summary_ontologies_{prefix_file_name}.csv", index=False)
 
     print("## Summary of ontologies")
     # Afficher le tableau trié avec tabulate
