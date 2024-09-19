@@ -82,7 +82,9 @@ class AbstractManager:
                     
                     doi = next((id_elem.text for id_elem in article.findall(".//ArticleId") if id_elem.get("IdType") == "doi"), None)
                     abstract_title = article.findtext(".//ArticleTitle")
-                    
+                    #print(abstract_title)
+                    supplMaterialList = article.findtext(".//SupplMaterialList")
+                    #print(article)
                     if abstract_title.strip() == '' or abstract_text == '':
                         continue
                     

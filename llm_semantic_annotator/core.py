@@ -82,7 +82,9 @@ def main_compute_tag_chunk_similarities(config_all):
                 if doi not in results_complete_similarities:
                     results_complete_similarities[doi] = res
                 else:
-                    results_complete_similarities[doi].update(res)
+                    for tag,sim in res.items():
+                        if tag not in results_complete_similarities[doi] or sim>results_complete_similarities[doi][tag]:
+                            results_complete_similarities[doi][tag] = sim
     
     if len(results_complete_similarities)>0:
         retention_dir = config_all['retention_dir']

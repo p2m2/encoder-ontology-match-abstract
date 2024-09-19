@@ -271,11 +271,11 @@ class ModelEmbeddingManager:
         for doi, chunks_embedding in tqdm(list(chunks_embeddings.items())):
             # Convertir chunks_embedding en array NumPy
             chunks_matrix = np.array([chunk.cpu().numpy() for chunk in chunks_embedding])
+            
             # Calcul vectorisé des similarités
             similarities = 1 - cdist(chunks_matrix, tag_embeddings_matrix, metric='cosine')
-            
             max_similarities = np.max(similarities, axis=0)
-            
+
             # Filtrage des similarités au-dessus du seuil
             #above_threshold = max_similarities >= threshold
             
