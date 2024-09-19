@@ -84,7 +84,7 @@ class AbstractManager:
                     abstract_title = article.findtext(".//ArticleTitle")
                     supplMaterialList = article.findtext(".//SupplMaterialList")
                     #print(article)
-                    if abstract_title.strip() == '' or abstract_text == '':
+                    if abstract_title.strip() == '' or abstract_text == '' or doi is None:
                         continue
                     
 
