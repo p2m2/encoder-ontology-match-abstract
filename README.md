@@ -1,7 +1,6 @@
 # LLMSemanticAnnotator: Advanced Semantic Annotation for Plant Biology Research
 
 [![Tests](https://github.com/p2m2/encoder-ontology-match-abstract/actions/workflows/ci.yml/badge.svg)](https://github.com/p2m2/encoder-ontology-match-abstract/actions/workflows/ci.yml)
-
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/p2m2/encoder-ontology-match-abstract/blob/main/llm-semantic-annotator.ipynb)
 
 
