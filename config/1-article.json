@@ -11,6 +11,21 @@
                     "url": "http://purl.obolibrary.org/obo/peco.owl",
                     "prefix": "http://purl.obolibrary.org/obo/PECO_",
                     "format": "xml",
+                    "label" : "<http://www.w3.org/2000/01/rdf-schema#label>",
+                    "properties": ["<http://purl.obolibrary.org/obo/IAO_0000115>"]
+                },
+                "po": {
+                    "url": "http://purl.obolibrary.org/obo/po.owl",
+                    "prefix": "http://purl.obolibrary.org/obo/PO_",
+                    "format": "xml",
+                    "label" : "<http://www.w3.org/2000/01/rdf-schema#label>",
+                    "properties": ["<http://purl.obolibrary.org/obo/IAO_0000115>"]
+                },
+                "pso": {
+                    "url": "http://purl.obolibrary.org/obo/pso.owl",
+                    "prefix": "http://purl.obolibrary.org/obo/PSO_",
+                    "format": "xml",
+                    "label" : "<http://www.w3.org/2000/01/rdf-schema#label>",
                     "properties": ["<http://purl.obolibrary.org/obo/IAO_0000115>"]
                 },
                 "to": {
@@ -28,14 +43,18 @@
                     "format": "xml",
                     "label" : "<http://www.w3.org/2000/01/rdf-schema#label>",
                     "properties": ["<http://purl.obolibrary.org/obo/IAO_0000115>"]
-                },
+                }
+            },
+            "mesh_link" : {
                 "mesh" : {
                     "url": "https://nlmpubs.nlm.nih.gov/projects/mesh/rdf/mesh.nt",
                     "prefix": "http://id.nlm.nih.gov/mesh/",
                     "format": "nt",
                     "label" : "<http://www.w3.org/2000/01/rdf-schema#label>",
                     "properties": ["<http://id.nlm.nih.gov/mesh/vocab#scopeNote>"]
-                },
+                }
+            },
+            "chemical_link" : {
                 "chmo" : {
                     "url": "http://purl.obolibrary.org/obo/chmo.owl",
                     "prefix": "http://purl.obolibrary.org/obo/CHMO_",
