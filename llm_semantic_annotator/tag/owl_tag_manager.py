@@ -101,17 +101,18 @@ class OwlTagManager:
         if 'label' not in ontology_config:
             ontology_config['label'] = "<http://www.w3.org/2000/01/rdf-schema#label>"
 
-        varProperties = []
-        sparqlProperties = []
+        if len(ontology_config['properties'])<1:
+            raise ValueError(f"OWL TAG : At least one property is required :{ontology_config['properties']}")
 
-        for i,prop in enumerate(ontology_config['properties']):
-            varProperties.append("?prop"+str(i))
-            sparqlProperties.append("?term "+prop+" ?prop"+str(i)+" .")
-        
+        if len(ontology_config['properties'])>1:
+            raise ValueError(f"OWL TAG : Only one property is supported :{ontology_config['properties']}")
+
         query_base = """
-        SELECT ?term ?labelLeaf """ + " ".join(varProperties) + """ WHERE { 
-            """+"\n".join(sparqlProperties)+"""
+        SELECT ?term ?labelLeaf ?prop0 WHERE { 
             ?term """+ontology_config['label']+""" ?labelLeaf .
+            FILTER(LANG(?labelLeaf) = "en" || LANG(?labelLeaf) = "") .
+            ?term """+ontology_config['properties'][0]+""" ?prop0 .
+            FILTER(LANG(?prop0) = "en" || LANG(?prop0) = "") .
         }
         """
         print(query_base)
@@ -123,7 +124,7 @@ class OwlTagManager:
         print(f"Ontology {ontology} NB RECORDS:{len(results)}")
         for row in tqdm(results):
 
-            descriptionLeaf = '\n'.join([ row.get(prop.replace('?',''), '') for prop in varProperties ])
+            descriptionLeaf = '\n'.join([ row.get(prop.replace('?',''), '') for prop in ["?prop0"] ])
             labelLeaf = row.labelLeaf
             
             formatted_label = "__"+ontology+"__" + str(labelLeaf.lower()).replace(" ", "_")

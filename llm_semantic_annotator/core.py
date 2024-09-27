@@ -10,9 +10,14 @@ from llm_semantic_annotator import display_ontologies_summary
 import warnings
 
 def setup_general_config(config_all,methode):
-    config = config_all[methode]
+    
+    if methode not in config_all:
+        config = {}
+    else:
+        config = config_all[methode]
     config['retention_dir'] = config_all['retention_dir']
     config['force'] = config_all['force']
+    
     return config
 
 def main_populate_owl_tag_embeddings(config_all):
