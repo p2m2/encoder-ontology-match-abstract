@@ -225,6 +225,7 @@ class TaxonTagManager:
 
                         if tag_count % self.tags_per_file == 0:
                             df = pd.DataFrame({
+                            'term': [ ele['term'] for ele in tags ],
                             'label': [ ele['label'] for ele in tags ],
                             'rdfs:label': [ ele['rdfs_label'] for ele in tags ],
                             'description': [ ele['description'] for ele in tags ]
@@ -240,6 +241,7 @@ class TaxonTagManager:
         # Sauvegarder les abstracts restants
         if tags:
             df = pd.DataFrame({
+                'term': [ ele['term'] for ele in tags ],
                 'label': [ ele['label'] for ele in tags ],
                 'rdfs:label': [ ele['rdfs_label'] for ele in tags ],
                 'description': [ ele['description'] for ele in tags ]
@@ -422,6 +424,7 @@ class TaxonTagManager:
 
             if tag_count % self.tags_per_file == 0:
                 df = pd.DataFrame({
+                'term': [ ele['term'] for ele in tags ],
                 'label': [ ele['label'] for ele in tags ],
                 'rdfs:label': [ ele['rdfs_label'] for ele in tags ],
                 'description': [ ele['description'] for ele in tags ]
@@ -437,6 +440,7 @@ class TaxonTagManager:
 # Sauvegarder les abstracts restants
         if tags:
             df = pd.DataFrame({
+                'term': [ ele['term'] for ele in tags ],
                 'label': [ ele['label'] for ele in tags ],
                 'rdfs:label': [ ele['rdfs_label'] for ele in tags ],
                 'description': [ ele['description'] for ele in tags ]

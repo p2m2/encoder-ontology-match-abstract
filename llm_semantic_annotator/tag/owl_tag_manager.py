@@ -146,6 +146,7 @@ class OwlTagManager:
             nb_record+=1
 
         df = pd.DataFrame({
+        'term' : [ ele['term'] for ele in tags ],
         'label': [ ele['label'] for ele in tags ],
         'rdfs:label': [ ele['rdfs_label'] for ele in tags ],
         'description': [ ele['description'] for ele in tags ]

@@ -42,7 +42,14 @@ def display_ontologies_summary(prefix_file_name,results_complete_similarities,re
     for doi, complete_similarities in results_complete_similarities.items():
         
         for tag, similarity in complete_similarities.items():
-            ontology_tag = tag.split('__')[1]
+
+            try:
+                ontology_tag = tag.split('__')[1]  # Extraire le préfixe entre les doubles underscores
+            except:
+                ontology_tag = tag
+            finally:
+                pass
+            
             if ontology_tag not in ontology:
                 ontology.append(ontology_tag)
                 count_ontology.append(1)
@@ -52,7 +59,12 @@ def display_ontologies_summary(prefix_file_name,results_complete_similarities,re
                 count_ontology[index] += 1
                 similarity_ontology[index].append(similarity)
             
-            t = tag.split('__')[2]
+            try:
+                t = tag.split('__')[2]
+            except:
+                t = tag
+            finally:
+                pass
             
             if t not in tag_list:
                 ontology_tag_list.append(ontology_tag)

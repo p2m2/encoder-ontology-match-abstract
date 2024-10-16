@@ -7,7 +7,12 @@ def display_ontologies_distribution(data):
     labels = []
     for doi, item in data.items():
         for key in item.keys():
-            ontology = key.split('__')[1]  # Extraire le préfixe entre les doubles underscores
+            try:
+                ontology = key.split('__')[1]  # Extraire le préfixe entre les doubles underscores
+            except:
+                ontology = key
+            finally:
+                pass
             ontologies.append(ontology)
             labels.append(key)
 

@@ -83,7 +83,9 @@ def main_compute_tag_chunk_similarities(config_all):
         keep_tag_embeddings = {}
 
         for tags_pth_file in tags_pth_files:
-            tag_embeddings = mem.load_filepth(tags_pth_file)
+            tag_embeddings_all = mem.load_filepth(tags_pth_file)
+                 
+            tag_embeddings = { ele : tag_embeddings_all[ele]['emb'] for ele in tag_embeddings_all }
             
             for doi,res in mem.compare_tags_with_chunks(tag_embeddings, chunk_embeddings).items():
                 if doi not in results_complete_similarities:
@@ -98,7 +100,7 @@ def main_compute_tag_chunk_similarities(config_all):
         
         for doi in chunk_embeddings:
             results_complete_similarities[doi] = mem.remove_similar_tags_by_doi(keep_tag_embeddings,results_complete_similarities[doi])
-
+        print(results_complete_similarities)
         if len(results_complete_similarities)>0:
             prefix_file_name=abstracts_pth_file.split(".pth")[0].split("_").pop()
             print("prefix_file_name:",prefix_file_name)
