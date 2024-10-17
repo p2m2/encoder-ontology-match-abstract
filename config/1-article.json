@@ -73,16 +73,6 @@
     },
     "populate_abstract_embeddings" : {
         "abstracts_per_file" : 50,
-        
-        "from_ncbi_api" : {
-            "ncbi_api_chunk_size" : 200,
-            "debug_nb_ncbi_request" : -1,
-            "retmax" : 200,
-            "selected_term" : [
-                "chemical+AND+glucosinolate+AND+biotic" ,
-                "chemical+AND+glucosinolate+AND+abiotic"
-            ]
-        },
         "from_file" : {
             "json_files" : [
                 "data/abstracts/abstracts_1.json",

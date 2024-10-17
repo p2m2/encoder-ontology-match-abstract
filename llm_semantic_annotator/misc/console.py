@@ -17,9 +17,9 @@ def display_best_similarity_abstract_tag(prefix_file_name,results_complete_simil
 
     df = pd.DataFrame({
        'DOI': [f"https://doi.org/{doi}" for doi in dois],
-       'Ontology': [keep_tag_embeddings[k]['ontology'] for k in keep_tag_embeddings],
-       'Tag': [k.split('/')[-1] for k in keep_tag_embeddings],
-       'Label': [keep_tag_embeddings[k]['label'] for k in keep_tag_embeddings],
+       'Ontology': [keep_tag_embeddings[k]['ontology'] for k in tags],
+       'Tag': [k.split('/')[-1] for k in tags],
+       'Label': [keep_tag_embeddings[k]['label'] for k in tags],
        'Similarity': similarities
        })
 
