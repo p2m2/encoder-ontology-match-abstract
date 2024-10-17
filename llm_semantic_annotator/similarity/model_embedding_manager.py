@@ -209,7 +209,10 @@ class ModelEmbeddingManager:
         tags_embedding={}
         print("set encoding.....")
         for idx,item in tqdm(enumerate(embeddings)):
-            tags_embedding[tags[idx]['term']] = { 'label' : tags[idx]['rdfs_label'] , 'emb' : item }
+            tags_embedding[tags[idx]['term']] = { 
+                                                 'ontology' : tags[idx]['ontology'] ,
+                                                 'label' : tags[idx]['rdfs_label'] , 
+                                                 'emb' : item }
 
         return tags_embedding
     
@@ -286,7 +289,7 @@ class ModelEmbeddingManager:
     
     def remove_similar_tags_by_doi(self, tag_embeddings, complete_similarities):
         tag_list = list(tag_embeddings.keys())
-        tag_embeddings_matrix = np.array([tag_embeddings[tag].cpu().numpy() for tag in tag_list])
+        tag_embeddings_matrix = np.array([tag_embeddings[tag]['emb'].cpu().numpy() for tag in tag_list])
 
         # Filtrage des tags similaires
         if len(complete_similarities) > 1:

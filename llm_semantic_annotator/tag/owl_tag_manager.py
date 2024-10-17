@@ -127,16 +127,14 @@ class OwlTagManager:
             descriptionLeaf = '\n'.join([ row.get(prop.replace('?',''), '') for prop in ["?prop0"] ])
             labelLeaf = row.labelLeaf
             
-            formatted_label = "__"+ontology+"__" + str(labelLeaf.lower()).replace(" ", "_")
-            
-            if "obsolete" in formatted_label:
+            if "obsolete" in labelLeaf:
                 continue
             if 'obsolete' in descriptionLeaf.lower():
                 continue
             
             tags.append({
-                    'term': row.term,
-                    'label': formatted_label,
+                    'ontology' : ontology,
+                    'term': str(row.term),
                     'rdfs_label': labelLeaf,
                     'description' : self.remove_prefix_tags(ontology,descriptionLeaf)
                 })
@@ -146,11 +144,11 @@ class OwlTagManager:
             nb_record+=1
 
         df = pd.DataFrame({
-        'term' : [ ele['term'] for ele in tags ],
-        'label': [ ele['label'] for ele in tags ],
-        'rdfs:label': [ ele['rdfs_label'] for ele in tags ],
-        'description': [ ele['description'] for ele in tags ]
-        })
+            'ontology' : [ ele['ontology'] for ele in tags ],
+            'term' : [ ele['term'] for ele in tags ],
+            'rdfs:label': [ ele['rdfs_label'] for ele in tags ],
+            'description': [ ele['description'] for ele in tags ]
+            })
         
         df.to_csv(self.retention_dir+f"/tags_owl_{ontology}.csv", index=False)
         self.mem.save_pth(self.mem.encode_tags(tags),tags_owl_path_filename)

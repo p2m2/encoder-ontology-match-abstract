@@ -1,21 +1,16 @@
 from collections import Counter
 from rich import print
 
-def display_ontologies_distribution(data):
+def display_ontologies_distribution(data,keep_tag_embeddings):
     # Extraire les préfixes des clés
     ontologies = []
     labels = []
     for doi, item in data.items():
         for key in item.keys():
-            try:
-                ontology = key.split('__')[1]  # Extraire le préfixe entre les doubles underscores
-            except:
-                ontology = key
-            finally:
-                pass
+            ontology = keep_tag_embeddings[key]['ontology']
             ontologies.append(ontology)
             labels.append(key)
-
+    
     # Compter la distribution des préfixes
     distributionOntologies = Counter(ontologies)
     distributionLabels = Counter(labels)

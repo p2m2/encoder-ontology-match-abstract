@@ -3,7 +3,7 @@ import pandas as pd
 from tabulate import tabulate
 import np as np
 
-def display_best_similarity_abstract_tag(prefix_file_name,results_complete_similarities,retention_dir):
+def display_best_similarity_abstract_tag(prefix_file_name,results_complete_similarities,keep_tag_embeddings,retention_dir):
     dois = []
     similarities = []
     tags = []
@@ -16,11 +16,13 @@ def display_best_similarity_abstract_tag(prefix_file_name,results_complete_simil
             links_kind.append("DOI-Tag")
 
     df = pd.DataFrame({
-    'DOI': [ f"https://doi.org/{doi}" for doi in dois],
-    'Tag': tags,
-    'Similarity': similarities
-    #'link' : links_kind
-    })
+       'DOI': [f"https://doi.org/{doi}" for doi in dois],
+       'Ontology': [keep_tag_embeddings[k]['ontology'] for k in keep_tag_embeddings],
+       'Tag': [k.split('/')[-1] for k in keep_tag_embeddings],
+       'Label': [keep_tag_embeddings[k]['label'] for k in keep_tag_embeddings],
+       'Similarity': similarities
+       })
+
 
     df_sorted = df.sort_values(by=['DOI','Similarity'], ascending=False)
     df_sorted = df_sorted.reset_index(drop=True)
@@ -29,9 +31,10 @@ def display_best_similarity_abstract_tag(prefix_file_name,results_complete_simil
     print("## Best similarity between abstract and tag")
     print(tabulate(df_sorted, headers='keys', tablefmt='psql', showindex=False))
 
-def display_ontologies_summary(prefix_file_name,results_complete_similarities,retention_dir):
+def display_ontologies_summary(prefix_file_name,results_complete_similarities,keep_tag_embeddings,retention_dir):
     
     tag_list = []
+    label_list = []
     ontology_tag_list = []
     ontology = [] 
     count_ontology = []
@@ -42,13 +45,7 @@ def display_ontologies_summary(prefix_file_name,results_complete_similarities,re
     for doi, complete_similarities in results_complete_similarities.items():
         
         for tag, similarity in complete_similarities.items():
-
-            try:
-                ontology_tag = tag.split('__')[1]  # Extraire le préfixe entre les doubles underscores
-            except:
-                ontology_tag = tag
-            finally:
-                pass
+            ontology_tag = keep_tag_embeddings[tag]['ontology']
             
             if ontology_tag not in ontology:
                 ontology.append(ontology_tag)
@@ -58,17 +55,13 @@ def display_ontologies_summary(prefix_file_name,results_complete_similarities,re
                 index = ontology.index(ontology_tag)
                 count_ontology[index] += 1
                 similarity_ontology[index].append(similarity)
-            
-            try:
-                t = tag.split('__')[2]
-            except:
-                t = tag
-            finally:
-                pass
+
+            t = tag.split('/')[-1]
             
             if t not in tag_list:
                 ontology_tag_list.append(ontology_tag)
                 tag_list.append(t)
+                label_list.append(keep_tag_embeddings[tag]['label'])
                 count.append(1)
                 similarity_tag.append([similarity])
             else:
@@ -91,8 +84,9 @@ def display_ontologies_summary(prefix_file_name,results_complete_similarities,re
         std_similarity.append(np.std(data))
     
     df_tag = pd.DataFrame({
-        'Tag': tag_list,
         'Ontology': ontology_tag_list,
+        'Tag': tag_list,
+        'Label' : label_list,
         'Count': count,
         'Mean Similarity': mean_similarity,
         'Std Similarity': std_similarity,
