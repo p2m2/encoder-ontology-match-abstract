@@ -217,7 +217,7 @@ class TaxonTagManager:
                             df = pd.DataFrame({
                             'ontology' : [ ele['ontology'] for ele in tags ],    
                             'term': [ ele['term'] for ele in tags ],
-                            'rdfs:label': [ ele['rdfs_label'] for ele in tags ],
+                            'rdfs_label': [ ele['rdfs_label'] for ele in tags ],
                             'description': [ ele['description'] for ele in tags ]
                             })
                             
@@ -231,9 +231,9 @@ class TaxonTagManager:
         # Sauvegarder les abstracts restants
         if tags:
             df = pd.DataFrame({
+                'ontology' : [ ele['ontology'] for ele in tags ],
                 'term': [ ele['term'] for ele in tags ],
-                'label': [ ele['label'] for ele in tags ],
-                'rdfs:label': [ ele['rdfs_label'] for ele in tags ],
+                'rdfs_label': [ ele['rdfs_label'] for ele in tags ],
                 'description': [ ele['description'] for ele in tags ]
                 })
                 
