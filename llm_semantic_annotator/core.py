@@ -76,42 +76,53 @@ def main_compute_tag_chunk_similarities(config_all):
 
     if len(abstracts_pth_files) == 0:
         raise FileNotFoundError("No abstracts embeddings found")
+    
+    results_complete_similarities = {}
+    
+    ### Loading tags embeddings
+    ### -----------------------
+    tag_embeddings_all = {}
+    tag_embeddings = {}
 
+    for tags_pth_file in tags_pth_files:
+        current_embeddings = mem.load_filepth(tags_pth_file)
+        
+        # Mise à jour de tag_embeddings_all
+        tag_embeddings_all.update(current_embeddings)
+        
+        # Mise à jour de tag_embeddings
+        tag_embeddings.update({ele: current_embeddings[ele]['emb'] for ele in current_embeddings})
+
+    
+    ### Managing Abstracts
+    ### -----------------------  
+    keep_tag_embeddings = {}
+    
     for abstracts_pth_file in abstracts_pth_files:
         chunk_embeddings = mem.load_filepth(abstracts_pth_file)
-        results_complete_similarities = {}
-        keep_tag_embeddings = {}
+        
 
-        for tags_pth_file in tags_pth_files:
-            tag_embeddings_all = mem.load_filepth(tags_pth_file)
-            tag_embeddings = { ele : tag_embeddings_all[ele]['emb'] for ele in tag_embeddings_all }
-            
-            for doi,res in mem.compare_tags_with_chunks(tag_embeddings, chunk_embeddings).items():
-                if doi not in results_complete_similarities:
-                    results_complete_similarities[doi] = res
-                    for tag in res.keys():
+        for doi,res in mem.compare_tags_with_chunks(tag_embeddings, chunk_embeddings).items():
+            if doi not in results_complete_similarities:
+                results_complete_similarities[doi] = res
+                for tag in res.keys():
+                    if tag not in keep_tag_embeddings:
                         keep_tag_embeddings[tag] = tag_embeddings_all[tag]
-                else:
-                    for tag,sim in res.items():
-                        if tag not in results_complete_similarities[doi] or sim>results_complete_similarities[doi][tag]:
-                            results_complete_similarities[doi][tag] = sim
+            else:
+                for tag,sim in res.items():
+                    if tag not in results_complete_similarities[doi] or sim>results_complete_similarities[doi][tag]:
+                        results_complete_similarities[doi][tag] = sim
+                        if tag not in keep_tag_embeddings:
                             keep_tag_embeddings[tag] = tag_embeddings_all[tag]
                             
-        
-        for doi in chunk_embeddings:
-            results_complete_similarities[doi] = mem.remove_similar_tags_by_doi(keep_tag_embeddings,results_complete_similarities[doi])
-        
-        for ele in keep_tag_embeddings:
-            keep_tag_embeddings[ele].pop('emb')
-            
-        if 'http://purl.obolibrary.org/obo/TO_0000674' in keep_tag_embeddings:
-                print(keep_tag_embeddings['http://purl.obolibrary.org/obo/TO_0000674'])
+    for doi in chunk_embeddings:
+        results_complete_similarities[doi] = mem.remove_similar_tags_by_doi(keep_tag_embeddings,results_complete_similarities[doi])
 
-        if len(results_complete_similarities)>0:
-            prefix_file_name=abstracts_pth_file.split(".pth")[0].split("_").pop()
-            print("prefix_file_name:",prefix_file_name)
-            retention_dir = config_all['retention_dir']
-            display_ontologies_distribution(results_complete_similarities,keep_tag_embeddings)
-            display_best_similarity_abstract_tag(prefix_file_name,results_complete_similarities,keep_tag_embeddings,retention_dir)
-            display_ontologies_summary(prefix_file_name,results_complete_similarities,keep_tag_embeddings,retention_dir)
+    if len(results_complete_similarities)>0:
+        prefix_file_name=abstracts_pth_file.split(".pth")[0].split("_").pop()
+        print("prefix_file_name:",prefix_file_name)
+        retention_dir = config_all['retention_dir']
+        display_ontologies_distribution(results_complete_similarities,keep_tag_embeddings)
+        display_best_similarity_abstract_tag(prefix_file_name,results_complete_similarities,keep_tag_embeddings,retention_dir)
+        display_ontologies_summary(prefix_file_name,results_complete_similarities,keep_tag_embeddings,retention_dir)
 

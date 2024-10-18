@@ -1,9 +1,12 @@
-from rich import print
 import pandas as pd
-from tabulate import tabulate
-import np as np
+import numpy as np
+from rich.console import Console
+from rich.table import Table
+from rich.panel import Panel
 
-def display_best_similarity_abstract_tag(prefix_file_name,results_complete_similarities,keep_tag_embeddings,retention_dir):
+console = Console()
+
+def display_best_similarity_abstract_tag(prefix_file_name, results_complete_similarities, keep_tag_embeddings, retention_dir):
     dois = []
     similarities = []
     tags = []
@@ -21,18 +24,24 @@ def display_best_similarity_abstract_tag(prefix_file_name,results_complete_simil
        'Tag': [k.split('/')[-1] for k in tags],
        'Label': [keep_tag_embeddings[k]['label'] for k in tags],
        'Similarity': similarities
-       })
-
+    })
 
     df_sorted = df.sort_values(by=['DOI','Similarity'], ascending=False)
     df_sorted = df_sorted.reset_index(drop=True)
     df_sorted.to_csv(retention_dir+f"/best_similarities_{prefix_file_name}.csv", index=False)
     
-    print("## Best similarity between abstract and tag")
-    print(tabulate(df_sorted, headers='keys', tablefmt='psql', showindex=False))
-
-def display_ontologies_summary(prefix_file_name,results_complete_similarities,keep_tag_embeddings,retention_dir):
+    console.print(Panel.fit("[bold cyan]Best similarity between abstract and tag[/bold cyan]"))
     
+    table = Table(title="Best Similarities")
+    for column in df_sorted.columns:
+        table.add_column(column, style="green")
+    
+    for _, row in df_sorted.iterrows():
+        table.add_row(*[str(value) for value in row])
+    
+    console.print(table)
+
+def display_ontologies_summary(prefix_file_name, results_complete_similarities, keep_tag_embeddings, retention_dir):
     tag_list = []
     label_list = []
     ontology_tag_list = []
@@ -43,7 +52,6 @@ def display_ontologies_summary(prefix_file_name,results_complete_similarities,ke
     similarity_tag = []
     
     for doi, complete_similarities in results_complete_similarities.items():
-        
         for tag, similarity in complete_similarities.items():
             ontology_tag = keep_tag_embeddings[tag]['ontology']
             
@@ -69,24 +77,16 @@ def display_ontologies_summary(prefix_file_name,results_complete_similarities,ke
                 count[index] += 1
                 similarity_tag[index].append(similarity)
 
-        mean_similarity_ontology = []
-        std_similarity_ontology = []
-        
-        for data in similarity_ontology:
-            mean_similarity_ontology.append(np.mean(data))
-            std_similarity_ontology.append(np.std(data))
-
-    mean_similarity = []
-    std_similarity = []
+    mean_similarity_ontology = [np.mean(data) for data in similarity_ontology]
+    std_similarity_ontology = [np.std(data) for data in similarity_ontology]
     
-    for data in similarity_tag:
-        mean_similarity.append(np.mean(data))
-        std_similarity.append(np.std(data))
+    mean_similarity = [np.mean(data) for data in similarity_tag]
+    std_similarity = [np.std(data) for data in similarity_tag]
     
     df_tag = pd.DataFrame({
         'Ontology': ontology_tag_list,
         'Tag': tag_list,
-        'Label' : label_list,
+        'Label': label_list,
         'Count': count,
         'Mean Similarity': mean_similarity,
         'Std Similarity': std_similarity,
@@ -97,8 +97,16 @@ def display_ontologies_summary(prefix_file_name,results_complete_similarities,ke
     
     df_tag_sorted.to_csv(retention_dir+f"/summary_{prefix_file_name}.csv", index=False)
 
-    print("## Summary of tags")
-    print(tabulate(df_tag_sorted, headers='keys', tablefmt='psql', showindex=False))
+    console.print(Panel.fit("[bold cyan]Summary of tags[/bold cyan]"))
+    
+    table_tag = Table(title="Tag Summary")
+    for column in df_tag_sorted.columns:
+        table_tag.add_column(column, style="green")
+    
+    for _, row in df_tag_sorted.iterrows():
+        table_tag.add_row(*[str(value) for value in row])
+    
+    console.print(table_tag)
 
     df_ontology = pd.DataFrame({
         'Ontology': ontology,
@@ -112,8 +120,13 @@ def display_ontologies_summary(prefix_file_name,results_complete_similarities,ke
 
     df_ontology_sorted.to_csv(retention_dir+f"/summary_ontologies_{prefix_file_name}.csv", index=False)
 
-    print("## Summary of ontologies")
-    # Afficher le tableau trié avec tabulate
-    print(tabulate(df_ontology_sorted, headers='keys', tablefmt='psql', showindex=False))
+    console.print(Panel.fit("[bold cyan]Summary of ontologies[/bold cyan]"))
     
- 
+    table_ontology = Table(title="Ontology Summary")
+    for column in df_ontology_sorted.columns:
+        table_ontology.add_column(column, style="green")
+    
+    for _, row in df_ontology_sorted.iterrows():
+        table_ontology.add_row(*[str(value) for value in row])
+    
+    console.print(table_ontology)

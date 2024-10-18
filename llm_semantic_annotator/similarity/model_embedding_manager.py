@@ -285,8 +285,6 @@ class ModelEmbeddingManager:
         
         return results_complete_similarities
     
-        return distance
-    
     def remove_similar_tags_by_doi(self, tag_embeddings, complete_similarities):
         tag_list = list(tag_embeddings.keys())
         tag_embeddings_matrix = np.array([tag_embeddings[tag]['emb'].cpu().numpy() for tag in tag_list])
