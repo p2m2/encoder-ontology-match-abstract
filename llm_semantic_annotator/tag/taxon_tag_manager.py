@@ -208,7 +208,8 @@ class TaxonTagManager:
                             "ontology" : "gbif",
                             "term": f"https://www.gbif.org/species/{taxon_id}",
                             "rdfs_label": scientific_name,
-                            "description": ", ".join(vernacular_names.get(taxon_id, []))
+                            "description": ", ".join(vernacular_names.get(taxon_id, [])),
+                            'group': 'gbif'
                         }
                         tags.append(tag)
                         tag_count += 1
@@ -405,7 +406,8 @@ class TaxonTagManager:
                 "ontology" : "ncbi",
                 "term": f"http://purl.obolibrary.org/obo/NCBITaxon_{taxon_id}",
                 "rdfs_label": taxon_info['name'],
-                "description": f"{taxon_info['name']} is a {taxon_info['rank']} whose direct parent taxon is {taxon_info['parent_tax']} and the division is {taxon_info['division']}."
+                "description": f"{taxon_info['name']} is a {taxon_info['rank']} whose direct parent taxon is {taxon_info['parent_tax']} and the division is {taxon_info['division']}.",
+                "group": "ncbi"
             }
             tags.append(tag)
             tag_count += 1

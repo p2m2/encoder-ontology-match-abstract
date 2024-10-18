@@ -3,6 +3,8 @@ from .misc.utils import save_results,load_results,get_retention_dir
 from .misc.stats import display_ontologies_distribution
 from .misc.console import display_best_similarity_abstract_tag
 from .misc.console import display_ontologies_summary
+from .misc.scientific_abstract_rdf_annotator import create_rdf_graph,save_rdf_graph
+from .misc.scientific_abstract_rdf_annotator import save_rdf_graph
 
 from .similarity.model_embedding_manager import ModelEmbeddingManager
 from .tag.owl_tag_manager import OwlTagManager

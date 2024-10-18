@@ -6,6 +6,7 @@ from llm_semantic_annotator import AbstractManager
 from llm_semantic_annotator import display_ontologies_distribution
 from llm_semantic_annotator import display_best_similarity_abstract_tag
 from llm_semantic_annotator import display_ontologies_summary
+from llm_semantic_annotator import create_rdf_graph,save_rdf_graph
 
 import warnings
 
@@ -120,9 +121,54 @@ def main_compute_tag_chunk_similarities(config_all):
 
     if len(results_complete_similarities)>0:
         prefix_file_name=abstracts_pth_file.split(".pth")[0].split("_").pop()
-        print("prefix_file_name:",prefix_file_name)
         retention_dir = config_all['retention_dir']
         display_ontologies_distribution(results_complete_similarities,keep_tag_embeddings)
         display_best_similarity_abstract_tag(prefix_file_name,results_complete_similarities,keep_tag_embeddings,retention_dir)
         display_ontologies_summary(prefix_file_name,results_complete_similarities,keep_tag_embeddings,retention_dir)
-
+    
+    config_owl = setup_general_config(config_all,'populate_owl_tag_embeddings')
+    root_name_ttl = "annotation_graph_"
+    if 'ontologies' in config_owl:
+        for link_name,ontologies in config_owl['ontologies'].items():
+            results_complete_similarities_filtered = {}
+            for ontology_name,some in ontologies.items():
+                for doi in results_complete_similarities:
+                    for doi,tags in results_complete_similarities.items():
+                        for tag,similarity in tags.items():
+                            if tag in keep_tag_embeddings :
+                                if tag in keep_tag_embeddings and keep_tag_embeddings[tag]['group'] == ontology_name:
+                                    if doi not in results_complete_similarities_filtered:
+                                        results_complete_similarities_filtered[doi] = {}
+                                    results_complete_similarities_filtered[doi][tag] = similarity
+            if len(results_complete_similarities_filtered)>0:             
+                g = create_rdf_graph(
+                    results_complete_similarities_filtered,
+                    encoder_name=config_all['encodeur'],
+                    system_name="encoder-ontology-match-abstract",
+                    similarity_threshold=config_all['threshold_similarity_tag_chunk'],
+                    tag_similarity_threshold=config_all['threshold_similarity_tag'],
+                    similarity_method="cosine")
+                save_rdf_graph(g, f"{root_name_ttl}_{link_name}.ttl")
+    
+    ## GBIF OR NCBI
+    results_complete_similarities_filtered = {}
+    for doi in results_complete_similarities:
+        for doi,tags in results_complete_similarities.items():
+            for tag,similarity in tags.items():
+                if tag in keep_tag_embeddings :
+                    g = keep_tag_embeddings[tag]['group']
+                    if  g == 'gbif' or g == 'ncbi':
+                        if doi not in results_complete_similarities_filtered:
+                            results_complete_similarities_filtered[doi] = {}
+                        results_complete_similarities_filtered[doi][tag] = similarity
+    if len(results_complete_similarities_filtered)>0:
+        g = create_rdf_graph(
+            results_complete_similarities_filtered,
+            encoder_name=config_all['encodeur'],
+            system_name="encoder-ontology-match-abstract",
+            similarity_threshold=config_all['threshold_similarity_tag_chunk'],
+            tag_similarity_threshold=config_all['threshold_similarity_tag'],
+            similarity_method="cosine")
+        save_rdf_graph(g, f"{root_name_ttl}_taxon.ttl")
+    
+    

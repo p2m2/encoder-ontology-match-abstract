@@ -84,7 +84,7 @@ def display_ontologies_summary(prefix_file_name, results_complete_similarities, 
     std_similarity = [np.std(data) for data in similarity_tag]
     
     df_tag = pd.DataFrame({
-        'Ontology': ontology_tag_list,
+        'Ontology group': ontology_tag_list,
         'Tag': tag_list,
         'Label': label_list,
         'Count': count,
@@ -109,7 +109,7 @@ def display_ontologies_summary(prefix_file_name, results_complete_similarities, 
     console.print(table_tag)
 
     df_ontology = pd.DataFrame({
-        'Ontology': ontology,
+        'Ontology group': ontology,
         'Tag Count': count_ontology,
         'Mean Similarity': mean_similarity_ontology,
         'Std Similarity': std_similarity_ontology,

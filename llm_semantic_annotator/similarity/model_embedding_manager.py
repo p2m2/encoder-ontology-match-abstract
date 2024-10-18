@@ -212,6 +212,7 @@ class ModelEmbeddingManager:
             tags_embedding[tags[idx]['term']] = { 
                                                  'ontology' : tags[idx]['ontology'] ,
                                                  'label' : tags[idx]['rdfs_label'] , 
+                                                 'group' : tags[idx]['group'] ,
                                                  'emb' : item }
 
         return tags_embedding
