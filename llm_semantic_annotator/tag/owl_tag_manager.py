@@ -76,8 +76,8 @@ class OwlTagManager:
 
     def build_corpus(
             self,
-            ontology_group_name, 
             ontology,
+            ontology_group_name, 
             ontology_config,
             debug_nb_terms_by_ontology):
 

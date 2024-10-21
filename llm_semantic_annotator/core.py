@@ -183,9 +183,9 @@ def main_display_summary(config_all):
     retention_dir = config_all['retention_dir']
     
     if len(results_complete_similarities)>0:
-        display_ontologies_distribution(results_complete_similarities,tag_embeddings)
         display_best_similarity_abstract_tag(results_complete_similarities,tag_embeddings,retention_dir)
         display_ontologies_summary(results_complete_similarities,tag_embeddings,retention_dir)
+        display_ontologies_distribution(results_complete_similarities,tag_embeddings)
     else:
         print("No results found")
   
