@@ -46,14 +46,14 @@ execute_command() {
 create_venv_if_not_exists
 
 echo "What would you like to execute?"
-echo "1. Full workflow"
+echo "1. Pseudo workflow [2,4,5,6,7]"
 echo "2. populate_owl_tag_embeddings"
 echo "3. populate_ncbi_taxon_tag_embeddings"
 echo "4. populate_abstract_embeddings"
 echo "5. compute similarities between tags and chunks abstracts"
 echo "6. display similarities information"
 echo "7. build turtle knowledge graph"
-echo "8. evaluate encoder with mesh descriptors"
+echo "8. evaluate encoder with mesh descriptors (experimental)"
 read -p "Enter your choice (1-8): " choice
 
 case $choice in
@@ -62,6 +62,7 @@ case $choice in
         #run_command python3 -m llm_semantic_annotator "$conffile" populate_ncbi_taxon_tag_embeddings
         run_command python3 -m llm_semantic_annotator "$conffile" populate_abstract_embeddings
         run_command python3 -m llm_semantic_annotator "$conffile" compute_tag_chunk_similarities
+        run_command python3 -m llm_semantic_annotator "$conffile" build_graph
         run_command python3 -m llm_semantic_annotator "$conffile" display_summary
         ;;
     2|3|4|5|6|7|8)

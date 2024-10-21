@@ -80,8 +80,6 @@ def main_compute_tag_chunk_similarities(config_all):
     if len(abstracts_pth_files) == 0:
         raise FileNotFoundError("No abstracts embeddings found")
     
-
-    
     ### Loading tags embeddings
     ### -----------------------
     tag_embeddings_all = {}

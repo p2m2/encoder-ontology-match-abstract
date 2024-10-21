@@ -73,7 +73,7 @@ class AbstractManager:
                 chunk = id_list[i:i+self.ncbi_api_chunk_size]
                 ids = ",".join(chunk)
                 fetch_url = f"{base_url}efetch.fcgi?db=pubmed&id={ids}&rettype=abstract&retmode=xml"
-                print(fetch_url)
+                
                 fetch_response = requests.post(fetch_url)
                 
                 root = ET.fromstring(fetch_response.content)

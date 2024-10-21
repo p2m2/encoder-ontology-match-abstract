@@ -24,9 +24,7 @@ This approach aims to significantly enrich the metadata of scientific articles, 
 ## Installation
 
 ```bash
-python -m venv env
-source env/bin/activate
-pip install git+https://github.com/p2m2/encoder-ontology-match-abstract
+exec.sh <json_config_file>
 ```
 
 ## Configuration
@@ -103,22 +101,8 @@ check exemple on [config](./config) directory
 </table>
 
 
-### Execution
+### Tests Execution
 
-```bash
-python -m llm_semantic_annotator config/test.json populate_owl_tag_embeddings
-```
-
-```bash
-python -m llm_semantic_annotator config/test.json populate_ncbi_abstract_embeddings
-```
-```bash
-python -m llm_semantic_annotator config/igepp.json populate_ncbi_abstract_embeddings
-```
-
-```bash
-python -m llm_semantic_annotator config/test.json compute_tag_chunk_similarities
-```
 
 ```bash
 python -m unittest discover
