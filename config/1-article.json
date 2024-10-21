@@ -46,12 +46,12 @@
                 }
             },
             "mesh_link" : {
-                "mesh": {
-                    "filepath" : "data/mesh/2024.ttl",
+               "mesh": {
+                    "filepath" : "data/mesh/mesh_concept.nt",
                     "prefix": "http://id.nlm.nih.gov/mesh/",
-                    "format": "turtle",
+                    "format": "nt",
                     "label" : "<http://www.w3.org/2000/01/rdf-schema#label>",
-                    "properties": ["<http://www.w3.org/2000/01/rdf-schema#comment>"]
+                    "properties": ["<http://id.nlm.nih.gov/mesh/vocab#scopeNote>"]
                 }
             },
             "chemical_link" : {

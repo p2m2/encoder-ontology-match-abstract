@@ -6,7 +6,7 @@ from rich.panel import Panel
 
 console = Console()
 
-def display_best_similarity_abstract_tag(prefix_file_name, results_complete_similarities, keep_tag_embeddings, retention_dir):
+def display_best_similarity_abstract_tag(results_complete_similarities, keep_tag_embeddings, retention_dir):
     dois = []
     similarities = []
     tags = []
@@ -28,7 +28,7 @@ def display_best_similarity_abstract_tag(prefix_file_name, results_complete_simi
 
     df_sorted = df.sort_values(by=['DOI','Similarity'], ascending=False)
     df_sorted = df_sorted.reset_index(drop=True)
-    df_sorted.to_csv(retention_dir+f"/best_similarities_{prefix_file_name}.csv", index=False)
+    df_sorted.to_csv(retention_dir+f"/best_similarities.csv", index=False)
     
     console.print(Panel.fit("[bold cyan]Best similarity between abstract and tag[/bold cyan]"))
     
@@ -41,7 +41,7 @@ def display_best_similarity_abstract_tag(prefix_file_name, results_complete_simi
     
     console.print(table)
 
-def display_ontologies_summary(prefix_file_name, results_complete_similarities, keep_tag_embeddings, retention_dir):
+def display_ontologies_summary(results_complete_similarities, keep_tag_embeddings, retention_dir):
     tag_list = []
     label_list = []
     ontology_tag_list = []
@@ -95,7 +95,7 @@ def display_ontologies_summary(prefix_file_name, results_complete_similarities, 
     df_tag_sorted = df_tag.sort_values(by='Mean Similarity', ascending=False)
     df_tag_sorted = df_tag_sorted.reset_index(drop=True)
     
-    df_tag_sorted.to_csv(retention_dir+f"/summary_{prefix_file_name}.csv", index=False)
+    df_tag_sorted.to_csv(retention_dir+f"/summary.csv", index=False)
 
     console.print(Panel.fit("[bold cyan]Summary of tags[/bold cyan]"))
     
@@ -118,7 +118,7 @@ def display_ontologies_summary(prefix_file_name, results_complete_similarities, 
     df_ontology_sorted = df_ontology.sort_values(by='Mean Similarity', ascending=False)
     df_ontology_sorted = df_ontology_sorted.reset_index(drop=True)
 
-    df_ontology_sorted.to_csv(retention_dir+f"/summary_ontologies_{prefix_file_name}.csv", index=False)
+    df_ontology_sorted.to_csv(retention_dir+f"/summary_ontologies.csv", index=False)
 
     console.print(Panel.fit("[bold cyan]Summary of ontologies[/bold cyan]"))
     

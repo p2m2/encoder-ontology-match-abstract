@@ -19,3 +19,8 @@ from .core import main_populate_gbif_taxon_tag_embeddings
 from .core import main_populate_ncbi_taxon_tag_embeddings
 
 from .core import main_compute_tag_chunk_similarities
+from .core import main_display_summary
+from .core import main_build_graph
+
+from .core import get_scores_files
+from .similarity_evaluator import similarity_evaluator_main
