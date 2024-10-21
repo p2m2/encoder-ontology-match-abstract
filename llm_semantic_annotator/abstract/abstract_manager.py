@@ -73,7 +73,7 @@ class AbstractManager:
                 chunk = id_list[i:i+self.ncbi_api_chunk_size]
                 ids = ",".join(chunk)
                 fetch_url = f"{base_url}efetch.fcgi?db=pubmed&id={ids}&rettype=abstract&retmode=xml"
-
+                print(fetch_url)
                 fetch_response = requests.post(fetch_url)
                 
                 root = ET.fromstring(fetch_response.content)
@@ -83,8 +83,12 @@ class AbstractManager:
                     
                     doi = next((id_elem.text for id_elem in article.findall(".//ArticleId") if id_elem.get("IdType") == "doi"), None)
                     abstract_title = article.findtext(".//ArticleTitle")
-                    supplMaterialList = article.findtext(".//SupplMaterialList")
-                    #print(article)
+                    
+                    meshTerms = []
+                    
+                    for meshHeading in article.findall(".//MeshHeading/DescriptorName"):
+                        meshTerms.append(str(meshHeading.get('UI')))
+                    
                     if abstract_title.strip() == '' or abstract_text == '' or doi is None:
                         continue
                     
@@ -92,7 +96,8 @@ class AbstractManager:
                         abstracts.append({
                             'title': article.findtext(".//ArticleTitle"),
                             'abstract': abstract_text,
-                            'doi': doi
+                            'doi': doi,
+                            'descriptor': meshTerms
                         })
                         abstract_count += 1
                         ldoi[doi] = True

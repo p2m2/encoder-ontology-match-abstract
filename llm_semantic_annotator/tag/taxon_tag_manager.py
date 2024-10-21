@@ -125,16 +125,6 @@ class TaxonTagManager:
         zip_path = os.path.join(self.gbif_work_dir, zip_filename)
         if os.path.exists(zip_path):
             os.remove(zip_path)
-    
-    def _format_taxon_name_gbif(self,name):
-        # Supprime les espaces au début et à la fin
-        name = name.strip()
-        # Remplace tous les espaces par des underscores
-        name = name.replace(' ', '_')
-        # Ajoute le préfixe __taxon__
-        name = f"__taxon__{name}"
-        
-        return name
 
     def process_gbif_backbone(self):
         
@@ -215,18 +205,20 @@ class TaxonTagManager:
                     if regex is None or regex.search(scientific_name):
                         #Brassicaceae is a plant in the kingdom Plantae, phylum Tracheophyta, class Magnoliopsida, of the order Brassicales.
                         tag = {
+                            "ontology" : "gbif",
                             "term": f"https://www.gbif.org/species/{taxon_id}",
-                            "label": self._format_taxon_name_gbif(scientific_name),
                             "rdfs_label": scientific_name,
-                            "description": ", ".join(vernacular_names.get(taxon_id, []))
+                            "description": ", ".join(vernacular_names.get(taxon_id, [])),
+                            'group': 'gbif'
                         }
                         tags.append(tag)
                         tag_count += 1
 
                         if tag_count % self.tags_per_file == 0:
                             df = pd.DataFrame({
-                            'label': [ ele['label'] for ele in tags ],
-                            'rdfs:label': [ ele['rdfs_label'] for ele in tags ],
+                            'ontology' : [ ele['ontology'] for ele in tags ],    
+                            'term': [ ele['term'] for ele in tags ],
+                            'rdfs_label': [ ele['rdfs_label'] for ele in tags ],
                             'description': [ ele['description'] for ele in tags ]
                             })
                             
@@ -240,8 +232,9 @@ class TaxonTagManager:
         # Sauvegarder les abstracts restants
         if tags:
             df = pd.DataFrame({
-                'label': [ ele['label'] for ele in tags ],
-                'rdfs:label': [ ele['rdfs_label'] for ele in tags ],
+                'ontology' : [ ele['ontology'] for ele in tags ],
+                'term': [ ele['term'] for ele in tags ],
+                'rdfs_label': [ ele['rdfs_label'] for ele in tags ],
                 'description': [ ele['description'] for ele in tags ]
                 })
                 
@@ -397,9 +390,7 @@ class TaxonTagManager:
         print("manage_ncbi_taxon_tags")
         self.process_ncbi()
         dict_ncbi = self._ncbi_compile_file()
-        print(len(dict_ncbi))
-        print(dict_ncbi[3707])
-        
+       
         # Compiler l'expression régulière si elle est fournie
         regex = re.compile(self.regex, re.IGNORECASE) if self.regex else None
 
@@ -412,17 +403,19 @@ class TaxonTagManager:
                 continue
 
             tag = {
+                "ontology" : "ncbi",
                 "term": f"http://purl.obolibrary.org/obo/NCBITaxon_{taxon_id}",
-                "label": self._format_taxon_name_gbif(taxon_info['name']),
                 "rdfs_label": taxon_info['name'],
-                "description": f"{taxon_info['name']} is a {taxon_info['rank']} whose direct parent taxon is {taxon_info['parent_tax']} and the division is {taxon_info['division']}."
+                "description": f"{taxon_info['name']} is a {taxon_info['rank']} whose direct parent taxon is {taxon_info['parent_tax']} and the division is {taxon_info['division']}.",
+                "group": "ncbi"
             }
             tags.append(tag)
             tag_count += 1
 
             if tag_count % self.tags_per_file == 0:
                 df = pd.DataFrame({
-                'label': [ ele['label'] for ele in tags ],
+                'ontology' : [ ele['ontology'] for ele in tags ],
+                'term': [ ele['term'] for ele in tags ],
                 'rdfs:label': [ ele['rdfs_label'] for ele in tags ],
                 'description': [ ele['description'] for ele in tags ]
                 })
@@ -437,7 +430,8 @@ class TaxonTagManager:
 # Sauvegarder les abstracts restants
         if tags:
             df = pd.DataFrame({
-                'label': [ ele['label'] for ele in tags ],
+                'ontology' : [ ele['ontology'] for ele in tags ],
+                'term': [ ele['term'] for ele in tags ],
                 'rdfs:label': [ ele['rdfs_label'] for ele in tags ],
                 'description': [ ele['description'] for ele in tags ]
                 })

@@ -1,6 +1,6 @@
 {
     "encodeur" : "sentence-transformers/all-MiniLM-L6-v2",
-    "threshold_similarity_tag_chunk" : 0.40,
+    "threshold_similarity_tag_chunk" : 0.60,
     "threshold_similarity_tag" : 0.80,
     "batch_size" : 32,
 
@@ -8,11 +8,18 @@
         "ontologies": {
             "mesh_link" : {
                 "mesh": {
-                    "filepath" : "data/mesh/2024.ttl",
+                    "filepath" : "data/mesh/mesh_concept.nt",
                     "prefix": "http://id.nlm.nih.gov/mesh/",
-                    "format": "turtle",
+                    "format": "nt",
                     "label" : "<http://www.w3.org/2000/01/rdf-schema#label>",
-                    "properties": ["<http://www.w3.org/2000/01/rdf-schema#comment>"]
+                    "properties": ["<http://id.nlm.nih.gov/mesh/vocab#scopeNote>"]
+                },
+                "mesh_descriptor": {
+                    "filepath" : "data/mesh/mesh_descriptor.nt",
+                    "prefix": "http://id.nlm.nih.gov/mesh/",
+                    "format": "nt",
+                    "label" : "<http://www.w3.org/2000/01/rdf-schema#label>",
+                    "properties": ["<http://id.nlm.nih.gov/mesh/vocab#annotation>"]
                 }
             }
         },
@@ -26,7 +33,7 @@
         "abstracts_per_file" : 50,
         
         "from_ncbi_api" : {
-            "ncbi_api_chunk_size" : 200,
+            "ncbi_api_chunk_size" : 20,
             "debug_nb_ncbi_request" : -1,
             "retmax" : 20,
             "selected_term" : [

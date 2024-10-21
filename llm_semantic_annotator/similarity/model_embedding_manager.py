@@ -91,7 +91,7 @@ class ModelEmbeddingManager:
         return f"{self.retention_dir}/{name_embeddings}-{self.model_suffix}.pth"
     
     def load_filepth(self,filename_embeddings):
-        return torch.load(filename_embeddings,weights_only=True)
+        return torch.load(filename_embeddings,weights_only=False)
 
     def load_pth(self,name_embeddings):
         filename = self.get_filename_pth(name_embeddings)
@@ -100,7 +100,7 @@ class ModelEmbeddingManager:
 
         if os.path.exists(filename):
             print(f"load embeddings - {filename}")
-            tag_embeddings = torch.load(filename,weights_only=True)
+            tag_embeddings = torch.load(filename,weights_only=False)
         return tag_embeddings
 
     def save_pth(self,tag_embeddings,name_embeddings):
@@ -209,7 +209,11 @@ class ModelEmbeddingManager:
         tags_embedding={}
         print("set encoding.....")
         for idx,item in tqdm(enumerate(embeddings)):
-            tags_embedding[tags[idx]['label']] = item
+            tags_embedding[tags[idx]['term']] = { 
+                                                 'ontology' : tags[idx]['ontology'] ,
+                                                 'label' : tags[idx]['rdfs_label'] , 
+                                                 'group' : tags[idx]['group'] ,
+                                                 'emb' : item }
 
         return tags_embedding
     
@@ -282,11 +286,9 @@ class ModelEmbeddingManager:
         
         return results_complete_similarities
     
-        return distance
-    
     def remove_similar_tags_by_doi(self, tag_embeddings, complete_similarities):
         tag_list = list(tag_embeddings.keys())
-        tag_embeddings_matrix = np.array([tag_embeddings[tag].cpu().numpy() for tag in tag_list])
+        tag_embeddings_matrix = np.array([tag_embeddings[tag]['emb'].cpu().numpy() for tag in tag_list])
 
         # Filtrage des tags similaires
         if len(complete_similarities) > 1:
