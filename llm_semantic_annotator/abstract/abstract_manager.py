@@ -116,7 +116,11 @@ class AbstractManager:
         
         print(f"Total abstract :{abstract_count}")
 
-    def get_ncbi_abstracts_from_file(self):
+    def get_ncbi_abstracts_from_files(self):
+        
+        if 'json_files' not in self.config['from_file']:
+            return
+        
         files_to_parse = self.config['from_file']['json_files']
         file_index = self._get_index_abstract()
         
@@ -126,13 +130,37 @@ class AbstractManager:
                 continue
             self._link_to_json_file_with_index(file, file_index)
             file_index+=1
+            
+    def get_ncbi_abstracts_from_directory(self):
+        import glob
         
-
+        if 'json_dir' not in self.config['from_file']:
+            return
+        
+        directory_to_parse = self.config['from_file']['json_dir']
+        file_index = self._get_index_abstract()
+        
+        for file in glob.glob(os.path.join(directory_to_parse, "*.json")):
+            self._link_to_json_file_with_index(file, file_index)
+            file_index+=1
+        
     def _set_embedding_abstract_file(self):
         for filename in os.listdir(self.config['retention_dir']):
             
             if filename.startswith('abstracts_') and filename.endswith('.json'):
-                results = load_results(os.path.join(self.config['retention_dir'], filename))
+                json_f = os.path.join(self.config['retention_dir'], filename)
+                try:
+                    results = load_results(json_f)
+                except Exception as e:
+                    results = []
+
+                    with open(json_f, 'r') as fichier:
+                        for ligne in fichier:
+                            # Charger chaque ligne comme un dictionnaire JSON
+                            dictionnaire = json.loads(ligne)
+                            results.append(dictionnaire)
+                            continue
+                    
                 genname = filename.split('.json')[0]
                 self.mem.save_pth(self.mem.encode_abstracts(results,genname),genname)
 
@@ -142,14 +170,11 @@ class AbstractManager:
         
         if 'from_ncbi_api' in self.config :
             self.get_ncbi_abstracts_from_api()
-        else:
-            print("No abstracts source 'from_api' selected")
-
+        
         if 'from_file' in self.config :
-            self.get_ncbi_abstracts_from_file()
-        else:
-            print("No abstracts source 'from_file' selected")
-
+            self.get_ncbi_abstracts_from_files()
+            self.get_ncbi_abstracts_from_directory()
+        
         self._set_embedding_abstract_file()
 
 
