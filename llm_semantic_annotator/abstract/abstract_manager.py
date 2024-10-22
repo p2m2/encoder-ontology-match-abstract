@@ -246,7 +246,8 @@ class AbstractManager:
                         'pmid' : pmid_list,
                         'reference_id' : reference_id_list
                     })
-                    outf = self.config['retention_dir']+f"/QueryResultEntry_{abstracts_gen}.csv"
-                    print(outf)
-                    df.to_csv(outf, index=False)
+                    if not df.empty:
+                        outf = self.config['retention_dir']+f"/QueryResultEntry_{abstracts_gen}.csv"
+                        print(outf)
+                        df.to_csv(outf, index=False)
                 
