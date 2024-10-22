@@ -149,8 +149,17 @@ class AbstractManager:
             
             if filename.startswith('abstracts_') and filename.endswith('.json'):
                 json_f = os.path.join(self.config['retention_dir'], filename)
+                genname = filename.split('.json')[0]
+                pth_filename = self.mem.get_filename_pth(genname)
+                if os.path.exists(pth_filename):
+                    print(f"{pth_filename} already exists !")
+                    continue
                 try:
                     results = load_results(json_f)
+                    # fix bug if abstracts is a dict
+                    if isinstance(results, dict):
+                        results = [results]
+                        
                 except Exception as e:
                     results = []
 
@@ -160,8 +169,6 @@ class AbstractManager:
                             dictionnaire = json.loads(ligne)
                             results.append(dictionnaire)
                             continue
-                    
-                genname = filename.split('.json')[0]
                 self.mem.save_pth(self.mem.encode_abstracts(results,genname),genname)
 
     def manage_abstracts(self):

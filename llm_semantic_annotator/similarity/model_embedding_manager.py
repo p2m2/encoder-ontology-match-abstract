@@ -229,10 +229,14 @@ class ModelEmbeddingManager:
         chunks_toencode = []
         chunks_doi_ref = []
         lcount = 0
-        print("Flat abstracts to build batch.....")
+            
+        print("Flat abstracts to build batch.....",genname)
         for item in tqdm(abstracts):
             if 'abstract' in item and item['abstract'].strip() != '':
                 if 'title' in item and item['title'].strip() != '':
+                    if 'doi' not in item:
+                        print(f"doi not found : {item['title']}")
+                        continue
                     sentences = re.split(r'(?<=[.!?])\s+(?=[A-Z])', item['abstract'])
                     # title
                     chunks_doi_ref.append(item['doi'])
