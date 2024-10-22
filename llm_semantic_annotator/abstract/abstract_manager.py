@@ -4,6 +4,7 @@ from rich import print
 from llm_semantic_annotator import load_results
 import xml.etree.ElementTree as ET
 from pathlib import Path
+import pandas as pd
 
 class AbstractManager:
     def __init__(self, config, model_embedding_manager):
@@ -143,6 +144,24 @@ class AbstractManager:
         for file in glob.glob(os.path.join(directory_to_parse, "*.json")):
             self._link_to_json_file_with_index(file, file_index)
             file_index+=1
+    
+    def _get_data_abstracts_file(self,json_f):
+        try:
+            results = load_results(json_f)
+            # fix bug if abstracts is a dict
+            if isinstance(results, dict):
+                results = [results]
+                
+        except Exception as e:
+            results = []
+
+            with open(json_f, 'r') as fichier:
+                for ligne in fichier:
+                    # Charger chaque ligne comme un dictionnaire JSON
+                    dictionnaire = json.loads(ligne)
+                    results.append(dictionnaire)
+                    continue
+        return results
         
     def _set_embedding_abstract_file(self):
         for filename in os.listdir(self.config['retention_dir']):
@@ -154,21 +173,7 @@ class AbstractManager:
                 if os.path.exists(pth_filename):
                     print(f"{pth_filename} already exists !")
                     continue
-                try:
-                    results = load_results(json_f)
-                    # fix bug if abstracts is a dict
-                    if isinstance(results, dict):
-                        results = [results]
-                        
-                except Exception as e:
-                    results = []
-
-                    with open(json_f, 'r') as fichier:
-                        for ligne in fichier:
-                            # Charger chaque ligne comme un dictionnaire JSON
-                            dictionnaire = json.loads(ligne)
-                            results.append(dictionnaire)
-                            continue
+                results = self._get_data_abstracts_file(json_f)
                 self.mem.save_pth(self.mem.encode_abstracts(results,genname),genname)
 
     def manage_abstracts(self):
@@ -200,9 +205,48 @@ class AbstractManager:
         
         return matching_files
     
-    def get_abstracts(self):
-        results = []
-        for filename in os.listdir(self.config['retention_dir']):
-            if filename.startswith('abstract_') and filename.endswith('.json'):
-                results.extend(load_results(os.path.join(self.config['retention_dir'], filename)))
-        return [dict(t) for t in {tuple(d.items()) for d in results}]
+    def build_dataset_abstracts_annotations(self):
+        import re,os
+        
+        pattern = re.compile("abstracts_\\d+.json")
+        for root, dirs, files in os.walk(self.config['retention_dir']):
+            for filename in files:
+                if pattern.search(filename):
+                    abstracts_json = os.path.join(root, filename)
+                    abstracts_gen = filename.split('.json')[0]
+                    abstracts_scores = self.mem.get_filename_pth(abstracts_gen).split('.pth')[0]+"_scores.json"
+                    print(abstracts_json)
+                    abstracts_data = self._get_data_abstracts_file(abstracts_json)
+                    abstracts_annot = load_results(abstracts_scores)
+                    doi_list = []
+                    topicalDescriptor_list = []
+                    pmid_list = []
+                    reference_id_list = []
+                    for abstract in abstracts_data:
+                        if 'doi' not in abstract:
+                            continue
+                        doi = abstract['doi']
+                        if doi in abstracts_annot:
+                            for tag in abstracts_annot[doi]:
+                                topicalDescriptor_list.append(tag)
+                                doi_list.append(doi)
+                                
+                                if 'reference_id' in abstract:
+                                    reference_id_list.append(abstract['reference_id'])
+                                else:
+                                    reference_id_list.append(None)
+                                if 'pmid' in abstract:
+                                    pmid_list.append(abstract['pmid'])
+                                else:
+                                    pmid_list.append(None)
+        
+                    df = pd.DataFrame({
+                        'doi': doi_list,
+                        'topicalDescriptor': topicalDescriptor_list,
+                        'pmid' : pmid_list,
+                        'reference_id' : reference_id_list
+                    })
+                    outf = self.config['retention_dir']+f"/QueryResultEntry_{abstracts_gen}.csv"
+                    print(outf)
+                    df.to_csv(outf, index=False)
+                

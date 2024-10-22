@@ -52,7 +52,6 @@ def main_populate_abstract_embeddings(config_all):
     
     config = setup_general_config(config_all,'populate_abstract_embeddings')
     mem = ModelEmbeddingManager(config_all)
-
     AbstractManager(config,mem).manage_abstracts()
 
 def main_compute_tag_chunk_similarities(config_all):
@@ -208,3 +207,8 @@ def main_build_graph(config_all):
 
             except json.JSONDecodeError:
                 print("Erreur de décodage JSON")
+
+def main_build_dataset_abstracts_annotation(config_all):
+    config = setup_general_config(config_all,'build_dataset_abstracts_annotation')
+    mem = ModelEmbeddingManager(config_all)
+    AbstractManager(config,mem).build_dataset_abstracts_annotations()

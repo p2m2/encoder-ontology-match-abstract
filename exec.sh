@@ -36,8 +36,9 @@ execute_command() {
         3) run_command python3 -m llm_semantic_annotator "$conffile" populate_abstract_embeddings ;;
         4) run_command python3 -m llm_semantic_annotator "$conffile" compute_tag_chunk_similarities ;;
         5) run_command python3 -m llm_semantic_annotator "$conffile" display_summary ;; 
-        6) run_command python3 -m llm_semantic_annotator "$conffile" build_graph ;;
-        7) run_command python3 -m llm_semantic_annotator "$conffile" evaluate_encoder ;;  
+        6) run_command python3 -m llm_semantic_annotator "$conffile" build_rdf_graph ;;
+        7) run_command python3 -m llm_semantic_annotator "$conffile" build_dataset_abstracts_annotations ;; 
+        8) run_command python3 -m llm_semantic_annotator "$conffile" evaluate_encoder ;;   
 	*) echo "Invalid option" ;;
     esac
 }
@@ -53,8 +54,9 @@ echo "4. populate_abstract_embeddings"
 echo "5. compute similarities between tags and chunks abstracts"
 echo "6. display similarities information"
 echo "7. build turtle knowledge graph"
-echo "8. evaluate encoder with mesh descriptors (experimental)"
-read -p "Enter your choice (1-8): " choice
+echo "8. build dataset abstracts annotations"
+echo "9. evaluate encoder with mesh descriptors (experimental)"
+read -p "Enter your choice (1-9): " choice
 
 case $choice in
     1)
@@ -62,10 +64,10 @@ case $choice in
         #run_command python3 -m llm_semantic_annotator "$conffile" populate_ncbi_taxon_tag_embeddings
         run_command python3 -m llm_semantic_annotator "$conffile" populate_abstract_embeddings
         run_command python3 -m llm_semantic_annotator "$conffile" compute_tag_chunk_similarities
-        run_command python3 -m llm_semantic_annotator "$conffile" build_graph
+        run_command python3 -m llm_semantic_annotator "$conffile" build_rdf_graph
         run_command python3 -m llm_semantic_annotator "$conffile" display_summary
         ;;
-    2|3|4|5|6|7|8)
+    2|3|4|5|6|7|8|9)
         execute_command $((choice - 1))
         ;;
     *)

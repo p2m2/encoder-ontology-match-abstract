@@ -9,6 +9,7 @@ from llm_semantic_annotator import main_compute_tag_chunk_similarities
 from llm_semantic_annotator import similarity_evaluator_main
 from llm_semantic_annotator import main_display_summary
 from llm_semantic_annotator import main_build_graph
+from llm_semantic_annotator import main_build_dataset_abstracts_annotation
 
 from rich import print
 import argparse
@@ -40,7 +41,8 @@ def parse_arguments():
                 "populate_abstract_embeddings",
                 "compute_tag_chunk_similarities",
                 "display_summary",
-                "build_graph",
+                "build_rdf_graph",
+                "build_dataset_abstracts_annotations",
                 "evaluate_encoder"],
         help="Type d'exécution à effectuer."
     )
@@ -74,8 +76,10 @@ def main():
         main_compute_tag_chunk_similarities(config)
     elif args.execution_type == "display_summary":
         main_display_summary(config)
-    elif args.execution_type == "build_graph":
+    elif args.execution_type == "build_rdf_graph":
         main_build_graph(config)
+    elif args.execution_type == "build_dataset_abstracts_annotations":
+        main_build_dataset_abstracts_annotation(config)
     elif args.execution_type == "evaluate_encoder":
         similarity_evaluator_main(config)
     else:
