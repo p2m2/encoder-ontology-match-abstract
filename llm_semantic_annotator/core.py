@@ -94,6 +94,10 @@ def main_compute_tag_chunk_similarities(config_all):
     results_complete_similarities = {}
         
     for abstracts_pth_file in abstracts_pth_files:
+        json_f = str(os.path.splitext(abstracts_pth_file)[0])+"_scores.json"
+        if os.path.exists(json_f) :
+            print(json_f," already exists !")
+            continue
         chunk_embeddings = mem.load_filepth(abstracts_pth_file)
         
         for doi,res in mem.compare_tags_with_chunks(tag_embeddings, chunk_embeddings).items():
@@ -111,7 +115,6 @@ def main_compute_tag_chunk_similarities(config_all):
             if doi in results_complete_similarities:                
                 results_complete_similarities[doi] = mem.remove_similar_tags_by_doi(keep_tag_embeddings,results_complete_similarities[doi])
 
-        json_f = str(os.path.splitext(abstracts_pth_file)[0])+"_scores.json"
         
         with open(json_f, "w") as fichier:
             json.dump(results_complete_similarities, fichier)

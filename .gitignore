@@ -1,0 +1,64 @@
+# Fichiers bytecode Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+*.egg
+
+# Environnements virtuels
+venv/
+env/
+.venv/
+.env/
+
+# IDEs et éditeurs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Fichiers de logs
+*.log
+
+# Fichiers de cache
+.cache/
+.pytest_cache/
+
+# Fichiers de configuration locaux
+*.ini
+*.cfg
+config.py
+
+# Fichiers de base de données
+*.db
+*.sqlite3
+
+# Fichiers système
+.DS_Store
+Thumbs.db
+
+# Fichiers de couverture de tests
+.coverage
+htmlcov/
+
+# Fichiers de documentation générés
+docs/_build/
+
+# Fichiers de dépendances
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Environnements pyenv
+.python-version
+
+# Fichiers de sauvegarde
+*.bak
+
+*_workdir/
