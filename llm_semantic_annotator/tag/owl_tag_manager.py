@@ -31,13 +31,15 @@ class OwlTagManager:
         for ontology in self.get_ontologies(ontologies):
             self.build_corpus(ontology, ontology_group_name,ontologies[ontology],self.debug_nb_terms_by_ontology)
             
-
+    def _get_local_filepath_ontology(self,ontology,format):
+        return self.retention_dir+"/"+ontology+"."+format
+    
     # Charger le fichier OWL local
     def get_ontologies(self,list_ontologies):
         
         for ontology,values in list_ontologies.items():
             
-            filepath = self.retention_dir+"/"+ontology+"."+values['format']
+            filepath = self._get_local_filepath_ontology(ontology,values['format'])
                     
             # utilisation d'un fichier local
             if 'filepath' in values:
@@ -184,3 +186,27 @@ class OwlTagManager:
                 results.append(load_results(os.path.join(self.retention_dir, filename)))
         # Remove duplicates
         return [dict(t) for t in {tuple(d.items()) for d in results}]
+    
+    def get_graphs_ontologies(self):
+        graphs = []
+        
+        for link_name,ontologies in self.ontologies_by_link.items():
+            for ontology,values in ontologies.items():
+                g = Graph()
+                if 'filepath' in values:
+                    g.parse(values['filepath'], format=values['format'])
+                else:
+                    filepath = self._get_local_filepath_ontology(ontology,values['format'])
+                    if not os.path.exists(filepath):
+                        raise FileNotFoundError(f"Le fichier '{filepath}' n'existe pas.")
+                    
+                    g.parse(filepath, format=values['format'])
+                
+                graphs.append({
+                    'g' : g,
+                    'link_name' : link_name,
+                    'prefix' : values['prefix'],
+                    'properties' : values['properties'],
+                    'label' : values['label']
+                })
+        return graphs

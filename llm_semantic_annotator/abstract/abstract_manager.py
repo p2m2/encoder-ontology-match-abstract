@@ -5,13 +5,17 @@ from llm_semantic_annotator import load_results
 import xml.etree.ElementTree as ET
 from pathlib import Path
 import pandas as pd
-
+import rdflib 
+from collections import defaultdict 
+        
 class AbstractManager:
-    def __init__(self, config, model_embedding_manager):
+    def __init__(self, config,model_embedding_manager,tags_manager):
         self.config = config
     
         self.abstracts_per_file=config.get('abstracts_per_file', 100)
         self.mem = model_embedding_manager
+        self.tags_manager = tags_manager
+        
         if 'from_ncbi_api' in config:
             self.retmax = self.config.get('from_ncbi_api').get('retmax',10000)
             self.debug_nb_req = self.config.get('from_ncbi_api').get('debug_nb_ncbi_request',-1)
@@ -205,9 +209,52 @@ class AbstractManager:
         
         return matching_files
     
+    
+    def build_ascendants_terms(self,ascendants_dict,graphs):
+        
+        for graph in graphs:
+            g = graph['g']
+            prefix = graph['prefix']
+            query = """ SELECT ?term ?ascendant WHERE { 
+                ?term rdfs:subClassOf* ?ascendant . 
+                FILTER(STRSTARTS(STR(?term), '"""+ prefix + """'))
+                FILTER(STRSTARTS(STR(?ascendant), '"""+ prefix + """'))
+            } """ # Exécuter la requête 
+            
+            results = g.query(query) # Remplir le dictionnaire avec les résultats 
+            for row in results: 
+                term = str(row.term) 
+                ascendant = str(row.ascendant) 
+                if term != ascendant: # Éviter d'ajouter le terme lui-même comme ascendant 
+                    ascendants_dict[term].append(ascendant) # Afficher le dictionnaire 
+            
+            # we add ascendants of ascendants to avoid future requests
+            ascendants_dict_to_add = {}
+            for term in ascendants_dict:
+                listAscendants = ascendants_dict[term]
+                liste_asc = listAscendants.copy()
+
+                while liste_asc:
+                    ascendant = liste_asc.pop(0)
+                    if ascendant not in ascendants_dict:
+                        ascendants_dict_to_add[ascendant] = liste_asc.copy()
+            
+            ascendants_dict.update(ascendants_dict_to_add)
+            
+        print("update dictionnary size :",len(ascendants_dict))    
+        return ascendants_dict
+        
+    
     def build_dataset_abstracts_annotations(self):
         import re,os
-        
+        import time
+        graphs = self.tags_manager.get_graphs_ontologies()
+        ascendants_dict = defaultdict(list)
+        debut = time.time()
+        self.build_ascendants_terms(ascendants_dict,graphs)
+        duree = time.time() - debut
+        print(f"loading terms with ancestors : {duree:.4f} secondes")
+
         pattern = re.compile("abstracts_\\d+.json")
         for root, dirs, files in os.walk(self.config['retention_dir']):
             for filename in files:
@@ -228,18 +275,29 @@ class AbstractManager:
                         doi = abstract['doi']
                         if doi in abstracts_annot:
                             for tag in abstracts_annot[doi]:
+                                if 'reference_id' in abstract:
+                                    reference_id=abstract['reference_id']
+                                else:
+                                    reference_id=None
+                                
+                                if 'pmid' in abstract:
+                                    pmid=abstract['pmid']
+                                else:
+                                    pmid=None
+                                    
+                                # the tag is the term            
                                 topicalDescriptor_list.append(tag)
                                 doi_list.append(doi)
+                                reference_id_list.append(reference_id)
+                                pmid_list.append(pmid)
                                 
-                                if 'reference_id' in abstract:
-                                    reference_id_list.append(abstract['reference_id'])
-                                else:
-                                    reference_id_list.append(None)
-                                if 'pmid' in abstract:
-                                    pmid_list.append(abstract['pmid'])
-                                else:
-                                    pmid_list.append(None)
-        
+                                # ancestors
+                                for ancestor in ascendants_dict[tag]:
+                                    topicalDescriptor_list.append(ancestor)
+                                    doi_list.append(doi)
+                                    reference_id_list.append(reference_id)
+                                    pmid_list.append(pmid)
+                              
                     df = pd.DataFrame({
                         'doi': doi_list,
                         'topicalDescriptor': topicalDescriptor_list,

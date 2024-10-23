@@ -22,6 +22,9 @@ def evaluate_abstracts(results_score_abstracts, abstracts):
     for abstract in abstracts:
         doi = abstract['doi']
         
+        if 'descriptor' not in abstract:
+            continue
+        
         actual_terms = abstract['descriptor']
         if doi in results_score_abstracts:
             predicted_terms = [ str(desc).split("/").pop() for desc in results_score_abstracts[doi].keys() ]
