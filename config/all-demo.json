@@ -1,0 +1,84 @@
+{
+    "encodeur" : "sentence-transformers/all-MiniLM-L6-v2",
+    "threshold_similarity_tag_chunk" : 0.60,
+    "threshold_similarity_tag" : 0.80,
+    "batch_size" : 32,
+
+    "populate_owl_tag_embeddings" : {
+        "ontologies": {
+            "planteome_link" : {
+                "peco": {
+                    "url": "http://purl.obolibrary.org/obo/peco.owl",
+                    "prefix": "http://purl.obolibrary.org/obo/PECO_",
+                    "format": "xml",
+                    "label" : "<http://www.w3.org/2000/01/rdf-schema#label>",
+                    "properties": ["<http://purl.obolibrary.org/obo/IAO_0000115>"]
+                },
+                "po": {
+                    "url": "http://purl.obolibrary.org/obo/po.owl",
+                    "prefix": "http://purl.obolibrary.org/obo/PO_",
+                    "format": "xml",
+                    "label" : "<http://www.w3.org/2000/01/rdf-schema#label>",
+                    "properties": ["<http://purl.obolibrary.org/obo/IAO_0000115>"]
+                },
+                "pso": {
+                    "url": "http://purl.obolibrary.org/obo/pso.owl",
+                    "prefix": "http://purl.obolibrary.org/obo/PSO_",
+                    "format": "xml",
+                    "label" : "<http://www.w3.org/2000/01/rdf-schema#label>",
+                    "properties": ["<http://purl.obolibrary.org/obo/IAO_0000115>"]
+                },
+                "to": {
+                    "url": "http://purl.obolibrary.org/obo/to.owl",
+                    "prefix": "http://purl.obolibrary.org/obo/TO_",
+                    "format": "xml",
+                    "label" : "<http://www.w3.org/2000/01/rdf-schema#label>",
+                    "properties": ["<http://purl.obolibrary.org/obo/IAO_0000115>"]
+                }
+            },
+            "technology_link" : {
+                "ms": {
+                    "url": "http://purl.obolibrary.org/obo/ms.owl",
+                    "prefix": "http://purl.obolibrary.org/obo/MS_",
+                    "format": "xml",
+                    "label" : "<http://www.w3.org/2000/01/rdf-schema#label>",
+                    "properties": ["<http://purl.obolibrary.org/obo/IAO_0000115>"]
+                }
+            },
+            "mesh_link" : {
+               "mesh": {
+                    "filepath" : "data/mesh/mesh_concept.nt",
+                    "prefix": "http://id.nlm.nih.gov/mesh/",
+                    "format": "nt",
+                    "label" : "<http://www.w3.org/2000/01/rdf-schema#label>",
+                    "properties": ["<http://id.nlm.nih.gov/mesh/vocab#scopeNote>"]
+                }
+            },
+            "chemical_link" : {
+                "chmo" : {
+                    "url": "http://purl.obolibrary.org/obo/chmo.owl",
+                    "prefix": "http://purl.obolibrary.org/obo/CHMO_",
+                    "format": "xml",
+                    "label" : "<http://www.w3.org/2000/01/rdf-schema#label>",
+                    "properties": ["<http://purl.obolibrary.org/obo/IAO_0000115>"]
+                    
+                }
+            }
+        },
+        "debug_nb_terms_by_ontology" : -1
+    },
+    "populate_ncbi_taxon_tag_embeddings" : {
+        "regex" : "(assic.*)|(arab.*)" ,
+        "tags_per_file" : 2000
+    },
+    "populate_abstract_embeddings" : {
+        "abstracts_per_file" : 5,
+        "from_file" : {
+            "json_files" : [
+                "data/abstracts/abstracts_1.json",
+                "data/abstracts/abstracts_2.json"
+            ]
+        }
+        
+    }
+}
