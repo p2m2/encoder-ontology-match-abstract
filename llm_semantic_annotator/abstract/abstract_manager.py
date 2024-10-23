@@ -4,13 +4,18 @@ from rich import print
 from llm_semantic_annotator import load_results
 import xml.etree.ElementTree as ET
 from pathlib import Path
-
+import pandas as pd
+import rdflib 
+from collections import defaultdict 
+        
 class AbstractManager:
-    def __init__(self, config, model_embedding_manager):
+    def __init__(self, config,model_embedding_manager,tags_manager):
         self.config = config
     
         self.abstracts_per_file=config.get('abstracts_per_file', 100)
         self.mem = model_embedding_manager
+        self.tags_manager = tags_manager
+        
         if 'from_ncbi_api' in config:
             self.retmax = self.config.get('from_ncbi_api').get('retmax',10000)
             self.debug_nb_req = self.config.get('from_ncbi_api').get('debug_nb_ncbi_request',-1)
@@ -116,7 +121,11 @@ class AbstractManager:
         
         print(f"Total abstract :{abstract_count}")
 
-    def get_ncbi_abstracts_from_file(self):
+    def get_ncbi_abstracts_from_files(self):
+        
+        if 'json_files' not in self.config['from_file']:
+            return
+        
         files_to_parse = self.config['from_file']['json_files']
         file_index = self._get_index_abstract()
         
@@ -126,14 +135,49 @@ class AbstractManager:
                 continue
             self._link_to_json_file_with_index(file, file_index)
             file_index+=1
+            
+    def get_ncbi_abstracts_from_directory(self):
+        import glob
         
+        if 'json_dir' not in self.config['from_file']:
+            return
+        
+        directory_to_parse = self.config['from_file']['json_dir']
+        file_index = self._get_index_abstract()
+        
+        for file in glob.glob(os.path.join(directory_to_parse, "*.json")):
+            self._link_to_json_file_with_index(file, file_index)
+            file_index+=1
+    
+    def _get_data_abstracts_file(self,json_f):
+        try:
+            results = load_results(json_f)
+            # fix bug if abstracts is a dict
+            if isinstance(results, dict):
+                results = [results]
+                
+        except Exception as e:
+            results = []
 
+            with open(json_f, 'r') as fichier:
+                for ligne in fichier:
+                    # Charger chaque ligne comme un dictionnaire JSON
+                    dictionnaire = json.loads(ligne)
+                    results.append(dictionnaire)
+                    continue
+        return results
+        
     def _set_embedding_abstract_file(self):
         for filename in os.listdir(self.config['retention_dir']):
             
             if filename.startswith('abstracts_') and filename.endswith('.json'):
-                results = load_results(os.path.join(self.config['retention_dir'], filename))
+                json_f = os.path.join(self.config['retention_dir'], filename)
                 genname = filename.split('.json')[0]
+                pth_filename = self.mem.get_filename_pth(genname)
+                if os.path.exists(pth_filename):
+                    print(f"{pth_filename} already exists !")
+                    continue
+                results = self._get_data_abstracts_file(json_f)
                 self.mem.save_pth(self.mem.encode_abstracts(results,genname),genname)
 
     def manage_abstracts(self):
@@ -142,14 +186,11 @@ class AbstractManager:
         
         if 'from_ncbi_api' in self.config :
             self.get_ncbi_abstracts_from_api()
-        else:
-            print("No abstracts source 'from_api' selected")
-
+        
         if 'from_file' in self.config :
-            self.get_ncbi_abstracts_from_file()
-        else:
-            print("No abstracts source 'from_file' selected")
-
+            self.get_ncbi_abstracts_from_files()
+            self.get_ncbi_abstracts_from_directory()
+        
         self._set_embedding_abstract_file()
 
 
@@ -168,9 +209,103 @@ class AbstractManager:
         
         return matching_files
     
-    def get_abstracts(self):
-        results = []
-        for filename in os.listdir(self.config['retention_dir']):
-            if filename.startswith('abstract_') and filename.endswith('.json'):
-                results.extend(load_results(os.path.join(self.config['retention_dir'], filename)))
-        return [dict(t) for t in {tuple(d.items()) for d in results}]
+    
+    def build_ascendants_terms(self,ascendants_dict,graphs):
+        
+        for graph in graphs:
+            g = graph['g']
+            prefix = graph['prefix']
+            query = """ SELECT ?term ?ascendant WHERE { 
+                ?term rdfs:subClassOf* ?ascendant . 
+                FILTER(STRSTARTS(STR(?term), '"""+ prefix + """'))
+                FILTER(STRSTARTS(STR(?ascendant), '"""+ prefix + """'))
+            } """ # Exécuter la requête 
+            
+            results = g.query(query) # Remplir le dictionnaire avec les résultats 
+            for row in results: 
+                term = str(row.term) 
+                ascendant = str(row.ascendant) 
+                if term != ascendant: # Éviter d'ajouter le terme lui-même comme ascendant 
+                    ascendants_dict[term].append(ascendant) # Afficher le dictionnaire 
+            
+            # we add ascendants of ascendants to avoid future requests
+            ascendants_dict_to_add = {}
+            for term in ascendants_dict:
+                listAscendants = ascendants_dict[term]
+                liste_asc = listAscendants.copy()
+
+                while liste_asc:
+                    ascendant = liste_asc.pop(0)
+                    if ascendant not in ascendants_dict:
+                        ascendants_dict_to_add[ascendant] = liste_asc.copy()
+            
+            ascendants_dict.update(ascendants_dict_to_add)
+            
+        print("update dictionnary size :",len(ascendants_dict))    
+        return ascendants_dict
+        
+    
+    def build_dataset_abstracts_annotations(self):
+        import re,os
+        import time
+        graphs = self.tags_manager.get_graphs_ontologies()
+        ascendants_dict = defaultdict(list)
+        debut = time.time()
+        self.build_ascendants_terms(ascendants_dict,graphs)
+        duree = time.time() - debut
+        print(f"loading terms with ancestors : {duree:.4f} secondes")
+
+        pattern = re.compile("abstracts_\\d+.json")
+        for root, dirs, files in os.walk(self.config['retention_dir']):
+            for filename in files:
+                if pattern.search(filename):
+                    abstracts_json = os.path.join(root, filename)
+                    abstracts_gen = filename.split('.json')[0]
+                    abstracts_scores = self.mem.get_filename_pth(abstracts_gen).split('.pth')[0]+"_scores.json"
+                    print(abstracts_json)
+                    abstracts_data = self._get_data_abstracts_file(abstracts_json)
+                    abstracts_annot = load_results(abstracts_scores)
+                    doi_list = []
+                    topicalDescriptor_list = []
+                    pmid_list = []
+                    reference_id_list = []
+                    for abstract in abstracts_data:
+                        if 'doi' not in abstract:
+                            continue
+                        doi = abstract['doi']
+                        if doi in abstracts_annot:
+                            for tag in abstracts_annot[doi]:
+                                if 'reference_id' in abstract:
+                                    reference_id=abstract['reference_id']
+                                else:
+                                    reference_id=None
+                                
+                                if 'pmid' in abstract:
+                                    pmid=abstract['pmid']
+                                else:
+                                    pmid=None
+                                    
+                                # the tag is the term            
+                                topicalDescriptor_list.append(tag)
+                                doi_list.append(doi)
+                                reference_id_list.append(reference_id)
+                                pmid_list.append(pmid)
+                                
+                                # ancestors
+                                for ancestor in ascendants_dict[tag]:
+                                    topicalDescriptor_list.append(ancestor)
+                                    doi_list.append(doi)
+                                    reference_id_list.append(reference_id)
+                                    pmid_list.append(pmid)
+                              
+                    df = pd.DataFrame({
+                        'doi': doi_list,
+                        'topicalDescriptor': topicalDescriptor_list,
+                        'pmid' : pmid_list,
+                        'reference_id' : reference_id_list
+                    })
+                    if not df.empty:
+                        outf = self.config['retention_dir']+f"/QueryResultEntry_{abstracts_gen}.csv"
+                        print(outf)
+                        df.to_csv(outf, index=False)
+                

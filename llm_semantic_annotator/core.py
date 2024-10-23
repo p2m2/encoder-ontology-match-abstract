@@ -24,64 +24,57 @@ def setup_general_config(config_all,methode):
     
     return config
 
-def main_populate_owl_tag_embeddings(config_all):
-    """Fonction principale pour générer et stocker les embeddings de tags dans une base."""
+def get_owl_tag_manager(config_all):
     config = setup_general_config(config_all,'populate_owl_tag_embeddings')
-
-    # Utilisez les paramètres de config ici
-    print(f"Ontologies : {config['ontologies']}")
-    print(f"Nb terms to compute : {config['debug_nb_terms_by_ontology']}")
-    
     mem = ModelEmbeddingManager(config_all)
-    
-    OwlTagManager(config,mem).manage_tags()
+    return OwlTagManager(config,mem)
 
-def main_populate_gbif_taxon_tag_embeddings(config_all):
+def get_gbif_taxon_tag_manager(config_all):
     config = setup_general_config(config_all,'populate_gbif_taxon_tag_embeddings')
     mem = ModelEmbeddingManager(config_all)
+    return TaxonTagManager(config,mem)
 
-    TaxonTagManager(config,mem).manage_gbif_taxon_tags()
-
-def main_populate_ncbi_taxon_tag_embeddings(config_all):
+def get_ncbi_taxon_tag_manager(config_all):
     config = setup_general_config(config_all,'populate_ncbi_taxon_tag_embeddings')
     mem = ModelEmbeddingManager(config_all)
+    return TaxonTagManager(config,mem)
 
-    TaxonTagManager(config,mem).manage_ncbi_taxon_tags()
-
-def main_populate_abstract_embeddings(config_all):
-    
+def get_abstract_manager(config_all):
     config = setup_general_config(config_all,'populate_abstract_embeddings')
     mem = ModelEmbeddingManager(config_all)
+    return AbstractManager(config,mem,get_owl_tag_manager(config_all))
 
-    AbstractManager(config,mem).manage_abstracts()
+def main_populate_owl_tag_embeddings(config_all):
+    """Fonction principale pour générer et stocker les embeddings de tags dans une base."""
+    get_owl_tag_manager(config_all).manage_tags()
+
+def main_populate_gbif_taxon_tag_embeddings(config_all):
+    get_gbif_taxon_tag_manager(config_all).manage_gbif_taxon_tags()
+
+def main_populate_ncbi_taxon_tag_embeddings(config_all):
+    get_ncbi_taxon_tag_manager(config_all).manage_ncbi_taxon_tags()
+
+def main_populate_abstract_embeddings(config_all):
+    get_abstract_manager(config_all).manage_abstracts()
 
 def main_compute_tag_chunk_similarities(config_all):
     """Fonction principale pour calculer la similarité entre tous les tags et chunks."""
-    config_owl = setup_general_config(config_all,'populate_owl_tag_embeddings')
-    config_abstract = setup_general_config(config_all,'populate_abstract_embeddings')
-    
-    mem = ModelEmbeddingManager(config_all)
-
-    
-    tags_pth_files = OwlTagManager(config_owl,mem).get_files_tags_embeddings()
+    tags_pth_files = get_owl_tag_manager(config_all).get_files_tags_embeddings()
     
     if len(tags_pth_files) == 0:
         raise FileNotFoundError("No tags embeddings found")
     
-    tags_taxon_pth_files = TaxonTagManager(config_owl,mem).get_files_tags_ncbi_taxon_embeddings()
-    
-    if len(tags_taxon_pth_files) == 0:
-        warnings.warn("No tags taxon embeddings found")
-
+    tags_taxon_pth_files = get_ncbi_taxon_tag_manager(config_all).get_files_tags_ncbi_taxon_embeddings()
     tags_pth_files.extend(tags_taxon_pth_files)
     
-    abstracts_pth_files = AbstractManager(config_abstract,mem).get_files_abstracts_embeddings()
+    abstracts_pth_files = get_abstract_manager(config_all).get_files_abstracts_embeddings()
 
     if len(abstracts_pth_files) == 0:
         raise FileNotFoundError("No abstracts embeddings found")
     
     ### Loading tags embeddings
     ### -----------------------
+    mem = ModelEmbeddingManager(config_all)
     tag_embeddings_all = {}
     tag_embeddings = {}
 
@@ -133,26 +126,21 @@ def get_scores_files(retention_dir):
     return scores_files
 
 def get_results_complete_similarities_and_tags_embedding(config_all):
+    mem = ModelEmbeddingManager(config_all)
+    
     scores_files = []
     retention_dir = config_all['retention_dir']
-    mem = ModelEmbeddingManager(config_all)
-    config_owl = setup_general_config(config_all,'populate_owl_tag_embeddings')
-    config_abstract = setup_general_config(config_all,'populate_abstract_embeddings')
     
     scores_files = get_scores_files(retention_dir)
-    
-    tags_pth_files = OwlTagManager(config_owl,mem).get_files_tags_embeddings()
+    tags_pth_files = get_owl_tag_manager(config_all).get_files_tags_embeddings()
          
     if len(tags_pth_files) == 0:
         raise FileNotFoundError("No tags embeddings found")
     
-    tags_taxon_pth_files = TaxonTagManager(config_owl,mem).get_files_tags_ncbi_taxon_embeddings()
-    
-    if len(tags_taxon_pth_files) == 0:
-        warnings.warn("No tags taxon embeddings found")
-
+    tags_taxon_pth_files = get_ncbi_taxon_tag_manager(config_all).get_files_tags_ncbi_taxon_embeddings()
     tags_pth_files.extend(tags_taxon_pth_files)
-    abstracts_pth_files = AbstractManager(config_abstract,mem).get_files_abstracts_embeddings()
+    
+    abstracts_pth_files = get_abstract_manager(config_all).get_files_abstracts_embeddings()
 
     if len(abstracts_pth_files) == 0:
         raise FileNotFoundError("No abstracts embeddings found")
@@ -208,3 +196,6 @@ def main_build_graph(config_all):
 
             except json.JSONDecodeError:
                 print("Erreur de décodage JSON")
+
+def main_build_dataset_abstracts_annotation(config_all):
+    get_abstract_manager(config_all).build_dataset_abstracts_annotations()

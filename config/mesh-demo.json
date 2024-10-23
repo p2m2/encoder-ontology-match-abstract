@@ -1,18 +1,18 @@
 {
     "encodeur" : "sentence-transformers/all-MiniLM-L6-v2",
-    "threshold_similarity_tag_chunk" : 0.40,
+    "threshold_similarity_tag_chunk" : 0.60,
     "threshold_similarity_tag" : 0.80,
     "batch_size" : 32,
 
     "populate_owl_tag_embeddings" : {
         "ontologies": {
             "mesh_link" : {
-                "mesh_descriptor": {
-                    "filepath" : "data/mesh/mesh_descriptor.nt",
+                "mesh": {
+                    "filepath" : "data/mesh/mesh_concept.nt",
                     "prefix": "http://id.nlm.nih.gov/mesh/",
                     "format": "nt",
                     "label" : "<http://www.w3.org/2000/01/rdf-schema#label>",
-                    "properties": ["<http://id.nlm.nih.gov/mesh/vocab#annotation>"]
+                    "properties": ["<http://id.nlm.nih.gov/mesh/vocab#scopeNote>"]
                 }
             }
         },
@@ -20,13 +20,10 @@
     },
     "populate_abstract_embeddings" : {
         "abstracts_per_file" : 50,
-        
-        "from_ncbi_api" : {
-            "ncbi_api_chunk_size" : 20,
-            "debug_nb_ncbi_request" : -1,
-            "retmax" : 20,
-            "selected_term" : [
-                "Crops%2C+Agricultural%2Fmetabolism%5BMeSH%5D"
+        "from_file" : {
+            "json_files" : [
+                "data/abstracts/abstracts_1.json",
+                "data/abstracts/abstracts_2.json"
             ]
         }
     }

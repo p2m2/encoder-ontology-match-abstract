@@ -15,15 +15,7 @@ source ./check_slurm_memory.sh
 . env/bin/activate
 
 conffile=config/igepp.json
-#export TOKENIZERS_PARALLELISM=false
-#rm -rf igepp_w*/
 
-check_slurm_memory
-python -m llm_semantic_annotator $conffile populate_owl_tag_embeddings
-check_slurm_memory
-python -m llm_semantic_annotator $conffile populate_gbif_taxon_tag_embeddings
-check_slurm_memory
-python -m llm_semantic_annotator $conffile populate_abstract_embeddings
-check_slurm_memory
-python -m llm_semantic_annotator $conffile compute_tag_chunk_similarities
+python -m llm_semantic_annotator $conffile 1
+
 

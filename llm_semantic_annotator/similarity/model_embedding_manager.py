@@ -48,7 +48,15 @@ from tqdm import tqdm
 # https://huggingface.co/spaces/mteb/leaderboard
 # mixedbread-ai/mxbai-embed-large-v1
 
-class ModelEmbeddingManager:
+class Singleton(type):
+    _instances = {}
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super().__call__(*args, **kwargs)
+        return cls._instances[cls]
+
+
+class ModelEmbeddingManager(metaclass=Singleton):
     def __init__(self,config):
         self.config=config
         self.retention_dir = config['retention_dir']
@@ -229,10 +237,14 @@ class ModelEmbeddingManager:
         chunks_toencode = []
         chunks_doi_ref = []
         lcount = 0
-        print("Flat abstracts to build batch.....")
+            
+        print("Flat abstracts to build batch.....",genname)
         for item in tqdm(abstracts):
             if 'abstract' in item and item['abstract'].strip() != '':
                 if 'title' in item and item['title'].strip() != '':
+                    if 'doi' not in item:
+                        print(f"doi not found : {item['title']}")
+                        continue
                     sentences = re.split(r'(?<=[.!?])\s+(?=[A-Z])', item['abstract'])
                     # title
                     chunks_doi_ref.append(item['doi'])

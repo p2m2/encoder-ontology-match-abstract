@@ -7,9 +7,23 @@
     "populate_owl_tag_embeddings" : {
         "ontologies": {
             "planteome_link" : {
+                "peco": {
+                    "url": "http://purl.obolibrary.org/obo/peco.owl",
+                    "prefix": "http://purl.obolibrary.org/obo/PECO_",
+                    "format": "xml",
+                    "label" : "<http://www.w3.org/2000/01/rdf-schema#label>",
+                    "properties": ["<http://purl.obolibrary.org/obo/IAO_0000115>"]
+                },
                 "po": {
                     "url": "http://purl.obolibrary.org/obo/po.owl",
                     "prefix": "http://purl.obolibrary.org/obo/PO_",
+                    "format": "xml",
+                    "label" : "<http://www.w3.org/2000/01/rdf-schema#label>",
+                    "properties": ["<http://purl.obolibrary.org/obo/IAO_0000115>"]
+                },
+                "pso": {
+                    "url": "http://purl.obolibrary.org/obo/pso.owl",
+                    "prefix": "http://purl.obolibrary.org/obo/PSO_",
                     "format": "xml",
                     "label" : "<http://www.w3.org/2000/01/rdf-schema#label>",
                     "properties": ["<http://purl.obolibrary.org/obo/IAO_0000115>"]
@@ -26,15 +40,17 @@
         "debug_nb_terms_by_ontology" : -1
     },
     "populate_ncbi_taxon_tag_embeddings" : {
-        "regex" : "rassica.*" ,
+        "regex" : "(assic.*)|(arab.*)" ,
         "tags_per_file" : 2000
     },
     "populate_abstract_embeddings" : {
-        "abstracts_per_file" : 50,
-        "from_file" : {
-            "json_files" : [
-                "data/abstracts/abstracts_1.json",
-                "data/abstracts/abstracts_2.json"
+        "abstracts_per_file" : 500,
+        "from_ncbi_api" : {
+            "ncbi_api_chunk_size" : 200,
+            "debug_nb_ncbi_request" : -1,
+            "retmax" : 2000,
+            "selected_term" : [
+                "Crops%2C+Agricultural%2Fmetabolism%5BMeSH%5D"
             ]
         }
         
