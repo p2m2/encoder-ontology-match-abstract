@@ -260,8 +260,10 @@ class AbstractManager:
             for filename in files:
                 if pattern.search(filename):
                     abstracts_json = os.path.join(root, filename)
-                    abstracts_gen = filename.split('.json')[0]
-                    abstracts_scores = self.mem.get_filename_pth(abstracts_gen).split('.pth')[0]+"_scores.json"
+                    abstracts_origin_gen = filename.split('.json')[0]
+                    abstracts_gen = self.mem.get_filename_pth(abstracts_origin_gen).split('.pth')[0]
+                    abstracts_scores = abstracts_gen+"_scores.json"
+                    abstracts_annotations_results_file = abstracts_gen+"_queryresults.json"
                     print(abstracts_json)
                     abstracts_data = self._get_data_abstracts_file(abstracts_json)
                     abstracts_annot = load_results(abstracts_scores)
@@ -305,7 +307,6 @@ class AbstractManager:
                         'reference_id' : reference_id_list
                     })
                     if not df.empty:
-                        outf = self.config['retention_dir']+f"/QueryResultEntry_{abstracts_gen}.csv"
-                        print(outf)
-                        df.to_csv(outf, index=False)
+                        print(abstracts_annotations_results_file)
+                        df.to_csv(abstracts_annotations_results_file, index=False)
                 

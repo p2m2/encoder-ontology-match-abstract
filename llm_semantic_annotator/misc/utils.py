@@ -1,61 +1,59 @@
-import os,csv,json
+import os, csv, json
 from pathlib import Path
 
-def save_results(data,filename):
+def save_results(data, filename):
     """
-    Sauvegarde les résultats dans un fichier JSON.
+    Saves the results to a JSON file.
     """
     with open(filename, 'w') as f:
         json.dump(data, f)
-    print(f"Résultats sauvegardés dans {filename}")
+    print(f"Results saved in {filename}")
 
 def load_results(filename):
     """
-    Charge les résultats depuis un fichier JSON s'il existe.
+    Loads the results from a JSON file if it exists.
     """
     if os.path.exists(filename):
         with open(filename, 'r') as f:
             return json.load(f)
-    return None
+    raise FileNotFoundError(f"The file {filename} does not exist.")
 
 def list_of_dicts_to_csv(data, filename):
-    # Vérifier si la liste n'est pas vide
+    # Check if the list is not empty
     if not data:
-        print("La liste est vide.")
+        print("The list is empty.")
         return
 
-    # Obtenir les en-têtes (toutes les clés uniques de tous les dictionnaires)
+    # Get headers (all unique keys from all dictionaries)
     headers = set().union(*(d.keys() for d in data))
 
-    # Ouvrir le fichier en mode écriture
+    # Open the file in write mode
     with open(filename, 'w', newline='') as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=headers)
         
-        # Écrire les en-têtes
+        # Write the headers
         writer.writeheader()
         
-        # Écrire les données
+        # Write the data
         for row in data:
             writer.writerow(row)
 
-
-
 def dict_to_csv(dictionary, filename):
-    # Déterminer les en-têtes (clés du dictionnaire)
+    # Determine the headers (keys of the dictionary)
     headers = list(dictionary.keys())
 
-    # Ouvrir le fichier en mode écriture
+    # Open the file in write mode
     with open(filename, 'w', newline='') as csvfile:
-        # Créer un objet writer CSV
+        # Create a CSV writer object
         writer = csv.DictWriter(csvfile, fieldnames=headers)
 
-        # Écrire les en-têtes
+        # Write the headers
         writer.writeheader()
 
-        # Écrire les données
+        # Write the data
         writer.writerow(dictionary)
 
-def get_retention_dir(config_file) :
+def get_retention_dir(config_file):
     config_base_name = os.path.basename(config_file)
     config_name_without_ext = os.path.splitext(config_base_name)[0]
     retention_dir = os.path.join(os.getcwd(), f"{config_name_without_ext}_workdir")

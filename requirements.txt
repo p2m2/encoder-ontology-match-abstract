@@ -11,3 +11,4 @@ pandas
 tabulate
 np
 pytest
+colorama
