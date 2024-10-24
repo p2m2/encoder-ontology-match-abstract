@@ -59,90 +59,96 @@ example can be found :
 
 ## Configuration main keys
 
-### General config
+### General Structure
 
 ```json
-    "encodeur" : "sentence-transformers/all-MiniLM-L6-v2",
-    "threshold_similarity_tag_chunk" : 0.65,
-    "threshold_similarity_tag" : 0.80,
-    "batch_size" : 32,
-```
-
-#### encoder
-
-- sentence-transformers/all-MiniLM-L6-v2
-
-### Managing Ontology : populate_owl_tag_embeddings
-
-```json
-"populate_owl_tag_embeddings" : {
-        "ontologies": {
-            "<name_ontology_groupe>" : {
-                 "<ontology>": {
-                    "url": <string>,
-                    "prefix": <string>,
-                    "format": <string>,
-                    "label" :<string>,
-                    "properties": [<string>,..]
-                },
-                ...
-            }
-        }
+{
+    "encoder": string,
+    "threshold_similarity_tag_chunk": number,
+    "threshold_similarity_tag": number,
+    "batch_size": number,
+    "populate_owl_tag_embeddings": object,
+    "populate_abstract_embeddings": object
 }
 ```
 
+### Main Parameters
 
-### Specific management of NCBI Taxon : populate_ncbi_taxon_tag_embeddings
+- encoder: (string) Specifies the encoding model to use.
+- threshold_similarity_tag_chunk: (number) Similarity threshold for computing owl tag / chunk tags.
+- threshold_similarity_tag: (number) Similarity threshold between tags (keeps the best above this value).
+- batch_size: (number) Batch size for processing.
 
-```json
- "populate_ncbi_taxon_tag_embeddings" : {
-        "regex" : "rassica.*" ,
-        "tags_per_file" : 2000
-    },
-```
 
-### Managing Abstract : populate_abstract_embeddings
+## populate_owl_tag_embeddings
 
-```json
-"populate_abstract_embeddings" : {
-        "abstracts_per_file" : 50,
-        "from_file" : <from_file>
-    }
-```
-
-#### <from_file>
+ This section configures the ontologies to be used for populating OWL tag embeddings. 
 
 ```json
-"from_file" : {
-        "json_files" : [
-            "data/abstracts/abstracts_1.json",
-            "data/abstracts/abstracts_2.json"
-        ]
-    }
-```
-
-```json
-"from_file" :{
-        "json_dir" : "some_directory"
-    }
-```
-
-```json
-"from_ncbi_api" : {
-            "ncbi_api_chunk_size" : 200,
-            "debug_nb_ncbi_request" : -1,
-            "retmax" : 2000,
-            "selected_term" : [
-                "Crops%2C+Agricultural%2Fmetabolism%5BMeSH%5D"
-            ]
+"populate_owl_tag_embeddings": {
+    "ontologies": {
+        "group_link": {
+            "ontology_name": {
+                "url": string,
+                "prefix": string,
+                "format": string,
+                "label": string,
+                "properties": [string],
+                "constraints": object
+            }
         }
+    }
+}
+```
+### Ontology Parameters
+
+- url: (string) URL of the ontology.
+- prefix: (string) Prefix of the ontology.
+- format: (string) Format of the ontology (e.g., "xml").
+- label: (string) Property used as a label (*Used to build embeddings*).
+- properties: (array of strings) Additional properties to include (*Used to build embeddings*).
+- constraints: (object) Constraints to apply on the ontology.
+
+
+## populate_abstract_embeddings
+
+ This section configures the population of abstract embeddings. 
+
+```json
+"populate_abstract_embeddings": {
+    "abstracts_per_file": number,
+    "from_ncbi_api": object,
+    "from_file": object
+}
 ```
 
-### Tests Execution
+### from_ncbi_api
 
+Configures fetching abstracts from the NCBI API.
+
+- ncbi_api_chunk_size: (number) Chunk size for NCBI requests.
+- debug_nb_ncbi_request: (number) Number of requests for debugging (-1 for unlimited).
+- retmax: (number) Maximum number of results to return.
+- selected_term: (array of strings) Selected search terms.
+
+### from_file
+
+Configures fetching abstracts from local files.
+
+- json_files: (array of strings) List of JSON files to use.
+- json_dir: (string) Directory containing JSON files.
+
+
+## Running Tests
+
+ To execute the test suite, you can use the following commands: 
 
 ```bash
 python -m unittest discover
-python -m unittest tests/similarity/test_model_embedding_manager.py
 ```
 
+Run a specific test file
+
+```bash
+python -m unittest tests/similarity/test_model_embedding_manager.py
+```

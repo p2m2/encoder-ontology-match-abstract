@@ -99,23 +99,30 @@ class OwlTagManager:
 
         if 'properties' not in ontology_config or len(ontology_config['properties'])<=0:
             warnings.warn("'properties' is not defined ["+ontology+"]", UserWarning)
-            return []
 
         if 'label' not in ontology_config:
             ontology_config['label'] = "<http://www.w3.org/2000/01/rdf-schema#label>"
 
-        if len(ontology_config['properties'])<1:
-            raise ValueError(f"OWL TAG : At least one property is required :{ontology_config['properties']}")
-
         if len(ontology_config['properties'])>1:
             raise ValueError(f"OWL TAG : Only one property is supported :{ontology_config['properties']}")
 
+        len_properties = len(ontology_config['properties'])
+        var_properties = ' '.join([ f"?prop{i}" for i in range(len_properties) ])
+        query_properties = ' '.join([ f"?term {ontology_config['properties'][i]} ?prop{i} .\n" for i in range(len_properties) ])
+        filter_properties = ' '.join([ f"FILTER(LANG(?prop{i}) = 'en' || LANG(?prop{i}) = '') .\n" for i in range(len_properties) ])
+        
+        constraints_query = ""
+        if 'constraints' in ontology_config:
+            for property,value in ontology_config['constraints'].items():
+                constraints_query += f"?term {property} {value} .\n"
+        
         query_base = """
-        SELECT ?term ?labelLeaf ?prop0 WHERE { 
+        SELECT ?term ?labelLeaf """+var_properties+""" WHERE { 
             ?term """+ontology_config['label']+""" ?labelLeaf .
             FILTER(LANG(?labelLeaf) = "en" || LANG(?labelLeaf) = "") .
-            ?term """+ontology_config['properties'][0]+""" ?prop0 .
-            FILTER(LANG(?prop0) = "en" || LANG(?prop0) = "") .
+            """+query_properties+"""
+            """+filter_properties+"""
+            """+constraints_query+"""
         }
         """
         print(query_base)
@@ -126,9 +133,12 @@ class OwlTagManager:
         nb_record=0
         print(f"Ontology {ontology} NB RECORDS:{len(results)}")
         for row in tqdm(results):
-
-            descriptionLeaf = '\n'.join([ row.get(prop.replace('?',''), '') for prop in ["?prop0"] ])
+            
+            descriptionLeaf = '\n'.join([ row.get(prop.replace('?',''), '') for prop in var_properties.split(' ') ])
             labelLeaf = row.labelLeaf
+            
+            descriptionLeaf = descriptionLeaf.strip()
+            labelLeaf = labelLeaf.strip()
             
             if "obsolete" in labelLeaf:
                 continue

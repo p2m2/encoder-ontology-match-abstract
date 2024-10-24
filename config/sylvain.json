@@ -63,7 +63,7 @@
         "abstracts_per_file" : 50,
         "from_file" : {
             "json_files" : [
-		"data/abstracts/sylvain.json"
+		       "data/abstracts/sylvain.json"
             ]
         }
     }

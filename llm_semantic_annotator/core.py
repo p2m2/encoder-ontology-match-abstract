@@ -115,6 +115,7 @@ def main_compute_tag_chunk_similarities(config_all):
             if doi in results_complete_similarities:                
                 results_complete_similarities[doi] = mem.remove_similar_tags_by_doi(keep_tag_embeddings,results_complete_similarities[doi])
 
+        results_complete_similarities = {k: v for k, v in results_complete_similarities.items() if v }
         
         with open(json_f, "w") as fichier:
             json.dump(results_complete_similarities, fichier)
