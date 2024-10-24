@@ -69,8 +69,7 @@ class OwlTagManager:
             
         return list_ontologies
 
-    def remove_prefix_tags(self,prefix_tag,text):
-        escaped_prefix = re.escape(prefix_tag.upper())
+    def remove_prefix_tags(self,text):
         pattern = r'\([A-Z]+:\d+\)'
 
         v = re.sub(pattern, '', text)
@@ -108,8 +107,16 @@ class OwlTagManager:
 
         len_properties = len(ontology_config['properties'])
         var_properties = ' '.join([ f"?prop{i}" for i in range(len_properties) ])
-        query_properties = ' '.join([ f"?term {ontology_config['properties'][i]} ?prop{i} .\n" for i in range(len_properties) ])
-        filter_properties = ' '.join([ f"FILTER(LANG(?prop{i}) = 'en' || LANG(?prop{i}) = '') .\n" for i in range(len_properties) ])
+        
+        query_properties = ""
+        for i in range(len_properties):
+            query_properties += "OPTIONAL { "+f"""
+                ?term {ontology_config['properties'][i]} ?prop{i} .
+                FILTER(LANG(?prop{i}) = 'en' || LANG(?prop{i}) = '') .
+            """ + "}\n"
+
+        filter_prefix = f"FILTER(STRSTARTS(STR(?term), '{ontology_config['prefix']}' )) .\n"
+        
         
         constraints_query = ""
         if 'constraints' in ontology_config:
@@ -119,9 +126,9 @@ class OwlTagManager:
         query_base = """
         SELECT ?term ?labelLeaf """+var_properties+""" WHERE { 
             ?term """+ontology_config['label']+""" ?labelLeaf .
+            """+filter_prefix+"""
             FILTER(LANG(?labelLeaf) = "en" || LANG(?labelLeaf) = "") .
             """+query_properties+"""
-            """+filter_properties+"""
             """+constraints_query+"""
         }
         """
@@ -133,8 +140,11 @@ class OwlTagManager:
         nb_record=0
         print(f"Ontology {ontology} NB RECORDS:{len(results)}")
         for row in tqdm(results):
-            
-            descriptionLeaf = '\n'.join([ row.get(prop.replace('?',''), '') for prop in var_properties.split(' ') ])
+            #print(row)
+            descriptionLeaf = '\n'.join([
+                str(row.get(prop.replace('?',''), '')) for prop in var_properties.split(' ')
+            ])
+            #print("----")
             labelLeaf = row.labelLeaf
             
             descriptionLeaf = descriptionLeaf.strip()
@@ -149,7 +159,7 @@ class OwlTagManager:
                     'ontology' : ontology,
                     'term': str(row.term),
                     'rdfs_label': labelLeaf,
-                    'description' : self.remove_prefix_tags(ontology,descriptionLeaf),
+                    'description' : self.remove_prefix_tags(descriptionLeaf),
                     'group': ontology_group_name
                 })
             
