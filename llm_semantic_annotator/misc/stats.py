@@ -4,9 +4,13 @@ from rich.table import Table
 from rich.panel import Panel
 from rich.text import Text
 
-def display_ontologies_distribution(data, keep_tag_embeddings):
+def display_ontologies_distribution(data, keep_tag_embeddings,total_doi_file):
     console = Console()
 
+    nb_doi = 0
+    with open(total_doi_file, 'r') as file:
+        nb_doi = int(file.read()) 
+    
     # Extract key prefixes
     ontologies = []
     labels = []
@@ -21,14 +25,13 @@ def display_ontologies_distribution(data, keep_tag_embeddings):
     distributionLabels = Counter(labels)
 
     # General statistics
-    nb_abstracts = len(data)
-    nb_annotated = sum(1 for item in data.values() if len(item) > 0)
+    nb_annotated = len(data)
     total_labels = sum(distributionOntologies.values())
 
     # Display general statistics
     console.print(Panel(
         f"[bold cyan]General Statistics[/bold cyan]\n"
-        f"Total number of abstracts: [green]{nb_abstracts}[/green]\n"
+        f"Total number of abstracts: [green]{nb_doi}[/green]\n"
         f"Number of annotated abstracts: [green]{nb_annotated}[/green]\n"
         f"Total number of labels used: [green]{total_labels}[/green]",
         title="Summary",

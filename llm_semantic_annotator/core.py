@@ -57,6 +57,9 @@ def main_populate_ncbi_taxon_tag_embeddings(config_all):
 def main_populate_abstract_embeddings(config_all):
     get_abstract_manager(config_all).manage_abstracts()
 
+def get_doi_file(config_all):
+    return config_all['retention_dir']+"/total_doi.txt"
+    
 def main_compute_tag_chunk_similarities(config_all):
     """Fonction principale pour calculer la similarité entre tous les tags et chunks."""
     tags_pth_files = get_owl_tag_manager(config_all).get_files_tags_embeddings()
@@ -92,7 +95,7 @@ def main_compute_tag_chunk_similarities(config_all):
     ### -----------------------  
     keep_tag_embeddings = {}
     results_complete_similarities = {}
-        
+    total_doi = 0
     for abstracts_pth_file in abstracts_pth_files:
         json_f = str(os.path.splitext(abstracts_pth_file)[0])+"_scores.json"
         if os.path.exists(json_f) :
@@ -101,6 +104,7 @@ def main_compute_tag_chunk_similarities(config_all):
         chunk_embeddings = mem.load_filepth(abstracts_pth_file)
         
         for doi,res in mem.compare_tags_with_chunks(tag_embeddings, chunk_embeddings).items():
+            total_doi+=1
             if doi not in results_complete_similarities:
                 results_complete_similarities[doi] = res
                 for tag in res.keys():
@@ -119,6 +123,9 @@ def main_compute_tag_chunk_similarities(config_all):
         
         with open(json_f, "w") as fichier:
             json.dump(results_complete_similarities, fichier)
+        
+        with open(get_doi_file(config_all), "w") as fichier:
+            fichier.write(str(total_doi))
 
 def get_scores_files(retention_dir):
     scores_files = []
@@ -170,14 +177,14 @@ def get_results_complete_similarities_and_tags_embedding(config_all):
     return results_complete_similarities,tag_embeddings
 
 def main_display_summary(config_all):
-    
+    doi_file = get_doi_file(config_all)
     results_complete_similarities,tag_embeddings = get_results_complete_similarities_and_tags_embedding(config_all)    
     retention_dir = config_all['retention_dir']
     
     if len(results_complete_similarities)>0:
         display_best_similarity_abstract_tag(results_complete_similarities,tag_embeddings,retention_dir)
         display_ontologies_summary(results_complete_similarities,tag_embeddings,retention_dir)
-        display_ontologies_distribution(results_complete_similarities,tag_embeddings)
+        display_ontologies_distribution(results_complete_similarities,tag_embeddings,doi_file)
     else:
         print("No results found")
   

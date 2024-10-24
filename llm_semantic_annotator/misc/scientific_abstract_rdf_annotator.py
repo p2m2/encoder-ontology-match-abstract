@@ -46,7 +46,7 @@ def create_rdf_graph(results_complete_similarities,
     abstracts_processed = len(results_complete_similarities)
 
     for doi, complete_similarities in results_complete_similarities.items():
-        doi_uri = URIRef(urllib.parse.quote(f"https://doi.org/{doi}"))
+        doi_uri = URIRef("https://doi.org/"+urllib.parse.quote(doi))
         for tag, similarity in complete_similarities.items():
             tag_uri = URIRef(tag)
             annotation_node = BNode()
