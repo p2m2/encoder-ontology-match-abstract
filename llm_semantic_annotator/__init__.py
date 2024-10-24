@@ -26,24 +26,3 @@ from .core import get_scores_files
 
 from .similarity_evaluator import similarity_evaluator_main
 
-
-from colorama import init, Fore, Back, Style
-# Initialiser colorama
-init(autoreset=True)
-
-def custom_exception_handler(exc_type, exc_value, exc_traceback):
-    # Formater le message d'exception
-    error_msg = f"{exc_type.__name__}: {exc_value}"
-    
-    # Afficher le message en rouge
-    print(f"{Fore.RED}{Back.WHITE}{Style.BRIGHT}{error_msg}{Style.RESET_ALL}")
-    
-    # Afficher la traceback en jaune
-    import traceback
-    for line in traceback.format_tb(exc_traceback):
-        print(f"{Fore.YELLOW}{line}{Style.RESET_ALL}")
-
-# Remplacer le gestionnaire d'exceptions par défaut
-import sys
-sys.excepthook = custom_exception_handler
-
