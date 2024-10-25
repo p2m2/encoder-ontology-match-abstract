@@ -1,6 +1,6 @@
 {
     "encodeur" : "sentence-transformers/all-MiniLM-L6-v2",
-    "threshold_similarity_tag_chunk" : 0.65,
+    "threshold_similarity_tag_chunk" : 0.70,
     "threshold_similarity_tag" : 0.80,
     "batch_size" : 32,
 
@@ -9,29 +9,34 @@
             "rdfs" : "http://www.w3.org/2000/01/rdf-schema#",
             "obo" : "http://purl.obolibrary.org/obo/",
             "owl" : "http://www.w3.org/2002/07/owl#"
-        },
+            },
         "ontologies": {
-            "foodon_link" : {
-                "foodon": {
-                    "url": "https://github.com/FoodOntology/foodon/raw/refs/tags/v2024-07-12/foodon.owl",
-                    "prefix": "http://purl.obolibrary.org/obo/FOODON_",
+            "planteome_link" : {
+                "to": {
+                    "url": "http://purl.obolibrary.org/obo/to.owl",
+                    "prefix": "http://purl.obolibrary.org/obo/TO_",
+                    "selected_prefix_term": "http://purl.obolibrary.org/obo/TO_000039",
                     "format": "xml",
                     "label" : "rdfs:label",
-                    "properties": ["obo:IAO_0000115","rdfs:comment","owl:annotatedTarget"]
+                    "properties": ["obo:IAO_0000115","rdfs:comment","owl:annotatedTarget"],
+                    "constraints" : {
+                       "oboInOwl:hasOBONamespace" : "'plant_trait_ontology'"
+                    }
                 }
             }
         },
         "debug_nb_terms_by_ontology" : -1
     },
     "populate_abstract_embeddings" : {
-        "abstracts_per_file" : 50,
+        "abstracts_per_file" : 500,
         "from_ncbi_api" : {
             "ncbi_api_chunk_size" : 200,
             "debug_nb_ncbi_request" : -1,
             "retmax" : 2000,
             "selected_term" : [
-                "food"
+                "Crops%2C+Agricultural%2Fmetabolism%5BMeSH%5D"
             ]
         }
+        
     }
 }

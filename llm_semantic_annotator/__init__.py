@@ -24,5 +24,5 @@ from .core import main_build_graph
 from .core import main_build_dataset_abstracts_annotation
 from .core import get_scores_files
 
-from .similarity_evaluator import similarity_evaluator_main
+
 

@@ -152,3 +152,9 @@ Run a specific test file
 ```bash
 python -m unittest tests/similarity/test_model_embedding_manager.py
 ```
+
+
+
+```bash
+python -m llm_semantic_annotator.similarity_evaluator
+```

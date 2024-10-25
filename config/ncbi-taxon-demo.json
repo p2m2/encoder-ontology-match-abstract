@@ -4,9 +4,29 @@
     "threshold_similarity_tag" : 0.80,
     "batch_size" : 32,
 
-    "populate_ncbi_taxon_tag_embeddings" : {
-        "regex" : "(assic.*)|(arab.*)" ,
-        "tags_per_file" : 2000
+    "populate_owl_tag_embeddings" : {
+        "prefix" : {
+            "rdfs" : "http://www.w3.org/2000/01/rdf-schema#",
+            "obo" : "http://purl.obolibrary.org/obo/",
+            "owl" : "http://www.w3.org/2002/07/owl#",
+            "ncbitaxon" : "http://purl.obolibrary.org/obo/ncbitaxon#",
+            "NCBITaxon" : "http://purl.obolibrary.org/obo/NCBITaxon_"
+        },
+        "ontologies": {
+            "taxon_link" : {
+                "ncbitaxon": {
+                    "url": "http://purl.obolibrary.org/obo/ncbitaxon.owl",
+                    "prefix": "http://purl.obolibrary.org/obo/NCBITaxon_",
+                    "selected_prefix_term": "http://purl.obolibrary.org/obo/NCBITaxon_37",
+                    "format": "xml",
+                    "label" : "rdfs:label",
+                    "properties": ["obo:IAO_0000115","rdfs:comment","owl:annotatedTarget"],
+                    "constraints": {
+                        "ncbitaxon:has_rank" : "NCBITaxon:species"
+                    }
+                }
+            }
+        }
     },
     "populate_abstract_embeddings" : {
         "abstracts_per_file" : 50,

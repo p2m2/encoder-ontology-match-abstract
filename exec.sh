@@ -7,22 +7,19 @@ Usage: $0 <config_file> <int_commande>
 Commands:
   1. Pseudo workflow [2,4,5,6,7]
   2. Populate OWL tag embeddings
-  3. Populate NCBI Taxon tag embeddings
-  4. Populate abstract embeddings
-  5. Compute similarities between tags and abstract chunks
-  6. Display similarities information
-  7. Build turtle knowledge graph
-  8. Build dataset abstracts annotations CSV file
-  9. Evaluate encoder with MeSH descriptors (experimental)
+  3. Populate abstract embeddings
+  4. Compute similarities between tags and abstract chunks
+  5. Display similarities information
+  6. Build turtle knowledge graph
+  7. Build dataset abstracts annotations CSV file
 
 Details:
   2: Compute TAG embeddings for all ontologies defined in the populate_owl_tag_embeddings section
-  3: Compute TAG embeddings for NCBI Taxon
-  4: Compute ABSTRACT embeddings (title + sentences) for all abstracts in the dataset
-  5: Compute similarities between TAGS and ABSTRACTS
-  6: Display similarities information on the console
-  7: Generate turtle file with information {score, tag} for each DOI
-  8: Generate CSV file with [doi, tag, pmid, reference_id]
+  3: Compute ABSTRACT embeddings (title + sentences) for all abstracts in the dataset
+  4: Compute similarities between TAGS and ABSTRACTS
+  5: Display similarities information on the console
+  6: Generate turtle file with information {score, tag} for each DOI
+  7: Generate CSV file with [doi, tag, pmid, reference_id]
 
 EOF
 }
@@ -82,13 +79,11 @@ run_command() {
 execute_command() {
     case $1 in
         2) run_command python3 -m llm_semantic_annotator "$config_file" populate_owl_tag_embeddings ;;
-        3) run_command python3 -m llm_semantic_annotator "$config_file" populate_ncbi_taxon_tag_embeddings ;;
-        4) run_command python3 -m llm_semantic_annotator "$config_file" populate_abstract_embeddings ;;
-        5) run_command python3 -m llm_semantic_annotator "$config_file" compute_tag_chunk_similarities ;;
-        6) run_command python3 -m llm_semantic_annotator "$config_file" display_summary ;; 
-        7) run_command python3 -m llm_semantic_annotator "$config_file" build_rdf_graph ;;
-        8) run_command python3 -m llm_semantic_annotator "$config_file" build_dataset_abstracts_annotations ;; 
-        9) run_command python3 -m llm_semantic_annotator "$config_file" evaluate_encoder ;;   
+        3) run_command python3 -m llm_semantic_annotator "$config_file" populate_abstract_embeddings ;;
+        4) run_command python3 -m llm_semantic_annotator "$config_file" compute_tag_chunk_similarities ;;
+        5) run_command python3 -m llm_semantic_annotator "$config_file" display_summary ;; 
+        6) run_command python3 -m llm_semantic_annotator "$config_file" build_rdf_graph ;;
+        7) run_command python3 -m llm_semantic_annotator "$config_file" build_dataset_abstracts_annotations ;; 
         *) echo "Invalid option" ;;
     esac
 }
@@ -99,13 +94,12 @@ create_venv_if_not_exists
 case $command in
     1)
         run_command python3 -m llm_semantic_annotator "$config_file" populate_owl_tag_embeddings
-        #run_command python3 -m llm_semantic_annotator "$config_file" populate_ncbi_taxon_tag_embeddings
         run_command python3 -m llm_semantic_annotator "$config_file" populate_abstract_embeddings
         run_command python3 -m llm_semantic_annotator "$config_file" compute_tag_chunk_similarities
         run_command python3 -m llm_semantic_annotator "$config_file" build_rdf_graph
         run_command python3 -m llm_semantic_annotator "$config_file" display_summary
         ;;
-    2|3|4|5|6|7|8|9)
+    2|3|4|5|6|7)
         execute_command $command
         ;;
     *)
