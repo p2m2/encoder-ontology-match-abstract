@@ -11,6 +11,7 @@ setup(
     entry_points={
         'console_scripts': [
             'llm-semantic-annotator=llm_semantic_annotator.__main__:main',
+            'llm-semantic-annotator-evaluator=llm_semantic_annotator.similarity_evaluator:similarity_evaluator_main',
         ],
     },
     # Autres métadonnées

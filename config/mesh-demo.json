@@ -1,18 +1,30 @@
 {
     "encodeur" : "sentence-transformers/all-MiniLM-L6-v2",
-    "threshold_similarity_tag_chunk" : 0.60,
+    "threshold_similarity_tag_chunk" : 0.70,
     "threshold_similarity_tag" : 0.80,
     "batch_size" : 32,
 
     "populate_owl_tag_embeddings" : {
+        "prefix" : {
+            "rdf" : "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+            "rdfs" : "http://www.w3.org/2000/01/rdf-schema#",
+            "mesh" : "http://id.nlm.nih.gov/mesh/D000478",
+            "meshv" : "http://id.nlm.nih.gov/mesh/vocab#",
+            "owl" : "http://www.w3.org/2002/07/owl#"
+        },
         "ontologies": {
             "mesh_link" : {
                 "mesh": {
-                    "filepath" : "data/mesh/mesh_concept.nt",
-                    "prefix": "http://id.nlm.nih.gov/mesh/",
+                    "filepath" : "data/mesh/mesh.nt",
+                    "prefix": "http://id.nlm.nih.gov/mesh/M",
                     "format": "nt",
-                    "label" : "<http://www.w3.org/2000/01/rdf-schema#label>",
-                    "properties": ["<http://id.nlm.nih.gov/mesh/vocab#scopeNote>"]
+                    "label" : "rdfs:label",
+                    "properties": ["<http://id.nlm.nih.gov/mesh/vocab#scopeNote>"],
+                    "constraints" : {
+                       "meshv:active" : "true",
+                       "rdf:type" : "meshv:Concept" 
+                    }
+                    
                 }
             }
         },

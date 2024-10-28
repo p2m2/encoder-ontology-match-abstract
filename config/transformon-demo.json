@@ -6,53 +6,23 @@
 
     "populate_owl_tag_embeddings" : {
         "ontologies": {
-            "planteome_link" : {
-                "peco": {
-                    "url": "http://purl.obolibrary.org/obo/peco.owl",
-                    "prefix": "http://purl.obolibrary.org/obo/PECO_",
+            "transform_link" : {
+                "transformon": {
+                    "url": " https://entrepot.recherche.data.gouv.fr/api/access/datafile/:persistentId?persistentId=doi:10.57745/X2ZFLG",
+                    "prefix": "http://opendata.inrae.fr/PO2/Ontology/TransformON/Component/",
                     "format": "xml",
-                    "label" : "<http://www.w3.org/2000/01/rdf-schema#label>",
-                    "properties": ["<http://purl.obolibrary.org/obo/IAO_0000115>"]
-                },
-                "po": {
-                    "url": "http://purl.obolibrary.org/obo/po.owl",
-                    "prefix": "http://purl.obolibrary.org/obo/PO_",
-                    "format": "xml",
-                    "label" : "<http://www.w3.org/2000/01/rdf-schema#label>",
-                    "properties": ["<http://purl.obolibrary.org/obo/IAO_0000115>"]
-                },
-                "pso": {
-                    "url": "http://purl.obolibrary.org/obo/pso.owl",
-                    "prefix": "http://purl.obolibrary.org/obo/PSO_",
-                    "format": "xml",
-                    "label" : "<http://www.w3.org/2000/01/rdf-schema#label>",
-                    "properties": ["<http://purl.obolibrary.org/obo/IAO_0000115>"]
-                },
-                "to": {
-                    "url": "http://purl.obolibrary.org/obo/to.owl",
-                    "prefix": "http://purl.obolibrary.org/obo/TO_",
-                    "format": "xml",
-                    "label" : "<http://www.w3.org/2000/01/rdf-schema#label>",
-                    "properties": ["<http://purl.obolibrary.org/obo/IAO_0000115>"]
+                    "label" : "skos:prefLabel",
+                    "properties": ["skos:scopeNote"]
                 }
             }
-        },
-        "debug_nb_terms_by_ontology" : -1
+        }
     },
-    "populate_ncbi_taxon_tag_embeddings" : {
-        "regex" : "(assic.*)|(arab.*)" ,
-        "tags_per_file" : 2000
-    },
-    "populate_abstract_embeddings" : {
-        "abstracts_per_file" : 500,
-        "from_ncbi_api" : {
+   "from_ncbi_api" : {
             "ncbi_api_chunk_size" : 200,
             "debug_nb_ncbi_request" : -1,
             "retmax" : 2000,
             "selected_term" : [
-                "Crops%2C+Agricultural%2Fmetabolism%5BMeSH%5D"
+                "food"
             ]
         }
-        
-    }
 }

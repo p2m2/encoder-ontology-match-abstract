@@ -5,7 +5,6 @@ from llm_semantic_annotator import load_results
 import xml.etree.ElementTree as ET
 from pathlib import Path
 import pandas as pd
-import rdflib 
 from collections import defaultdict 
         
 class AbstractManager:
@@ -149,7 +148,8 @@ class AbstractManager:
             self._link_to_json_file_with_index(file, file_index)
             file_index+=1
     
-    def _get_data_abstracts_file(self,json_f):
+    @staticmethod
+    def _get_data_abstracts_file(json_f):
         try:
             results = load_results(json_f)
             # fix bug if abstracts is a dict
@@ -209,7 +209,6 @@ class AbstractManager:
         
         return matching_files
     
-    
     def build_ascendants_terms(self,ascendants_dict,graphs):
         
         for graph in graphs:
@@ -244,8 +243,9 @@ class AbstractManager:
         print("update dictionnary size :",len(ascendants_dict))    
         return ascendants_dict
         
-    
+        
     def build_dataset_abstracts_annotations(self):
+        
         import re,os
         import time
         graphs = self.tags_manager.get_graphs_ontologies()
@@ -263,15 +263,18 @@ class AbstractManager:
                     abstracts_origin_gen = filename.split('.json')[0]
                     abstracts_gen = self.mem.get_filename_pth(abstracts_origin_gen).split('.pth')[0]
                     abstracts_scores = abstracts_gen+"_scores.json"
-                    abstracts_annotations_results_file = abstracts_gen+"_queryresults.json"
-                    print(abstracts_json)
+                    abstracts_annotations_results_file = abstracts_gen+"_queryresults.csv"
+                    print(abstracts_annotations_results_file)
+                    if os.path.exists(abstracts_annotations_results_file):
+                        print(f"{abstracts_annotations_results_file} already exists !")
+                        return
                     abstracts_data = self._get_data_abstracts_file(abstracts_json)
                     abstracts_annot = load_results(abstracts_scores)
                     doi_list = []
                     topicalDescriptor_list = []
                     pmid_list = []
                     reference_id_list = []
-                    for abstract in abstracts_data:
+                    for abstract in abstracts_data:                                         
                         if 'doi' not in abstract:
                             continue
                         doi = abstract['doi']
@@ -299,14 +302,13 @@ class AbstractManager:
                                     doi_list.append(doi)
                                     reference_id_list.append(reference_id)
                                     pmid_list.append(pmid)
-                              
+                                
                     df = pd.DataFrame({
                         'doi': doi_list,
                         'topicalDescriptor': topicalDescriptor_list,
                         'pmid' : pmid_list,
                         'reference_id' : reference_id_list
                     })
-                    if not df.empty:
-                        print(abstracts_annotations_results_file)
-                        df.to_csv(abstracts_annotations_results_file, index=False)
-                
+                    
+                    print(abstracts_annotations_results_file)
+                    df.to_csv(abstracts_annotations_results_file, index=False)

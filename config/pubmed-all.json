@@ -36,16 +36,12 @@
                     "properties": ["<http://purl.obolibrary.org/obo/IAO_0000115>"]
                 }
             }
-        },
-        "debug_nb_terms_by_ontology" : -1
-    },
-    "populate_ncbi_taxon_tag_embeddings" : {
-        "tags_per_file" : 10000
+        }
     },
     "populate_abstract_embeddings" : {
         "abstracts_per_file" : 500,
         "from_file" : {
-            "json_dir" : "data/msd/export-pubmed-20241014-4-planetome-tagging-sub-test"
+            "json_dir" : "/scratch/ofilangi/export-pubmed-20241014-4-planetome-tagging"
         }
     }
 }

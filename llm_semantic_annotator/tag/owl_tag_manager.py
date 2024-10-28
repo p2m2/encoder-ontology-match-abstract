@@ -18,7 +18,14 @@ class OwlTagManager:
 
         self.retention_dir = config['retention_dir']
         self.ontologies_by_link = config['ontologies']
+        
+        self.prefixes = {}
 
+        if 'prefix' in config:
+            self.prefixes = config['prefix']
+        else:
+            warnings.warn("'prefix' is not defined", UserWarning)
+            
         if 'force' not in config:
             config['force'] = False
         else:
@@ -81,29 +88,33 @@ class OwlTagManager:
             ontology_group_name, 
             ontology_config,
             debug_nb_terms_by_ontology):
-
+        
         tags_owl_path_filename = self.tags_owl_path_filename+ontology
         tag_embeddings = self.mem.load_pth(tags_owl_path_filename)
-
+        
         if (len(tag_embeddings)>0):
             return tag_embeddings
-
+        
         # Charger le fichier OWL local
 
         g = Graph()
+        print("loading ontology: ",ontology)
         g.parse(ontology_config['filepath'], format=ontology_config['format'])
 
         # Namespace pour rdfs
         RDFS = Namespace("http://www.w3.org/2000/01/rdf-schema#")
-
+        
+        prefixes_str = "\n".join(f"PREFIX {prefix}: <{uri}>" for prefix, uri in self.prefixes.items())
+        
         if 'properties' not in ontology_config or len(ontology_config['properties'])<=0:
             warnings.warn("'properties' is not defined ["+ontology+"]", UserWarning)
 
         if 'label' not in ontology_config:
             ontology_config['label'] = "<http://www.w3.org/2000/01/rdf-schema#label>"
 
-        if len(ontology_config['properties'])>1:
-            raise ValueError(f"OWL TAG : Only one property is supported :{ontology_config['properties']}")
+        filter_selected_prefix_term=""
+        if 'selected_prefix_term' in ontology_config:
+            filter_selected_prefix_term = f"FILTER(STRSTARTS(STR(?term), '{ontology_config['selected_prefix_term']}' )) .\n"
 
         len_properties = len(ontology_config['properties'])
         var_properties = ' '.join([ f"?prop{i}" for i in range(len_properties) ])
@@ -123,13 +134,14 @@ class OwlTagManager:
             for property,value in ontology_config['constraints'].items():
                 constraints_query += f"?term {property} {value} .\n"
         
-        query_base = """
+        query_base = prefixes_str + """
         SELECT ?term ?labelLeaf """+var_properties+""" WHERE { 
             ?term """+ontology_config['label']+""" ?labelLeaf .
+            """+constraints_query+"""
+            """+filter_selected_prefix_term+"""
             """+filter_prefix+"""
             FILTER(LANG(?labelLeaf) = "en" || LANG(?labelLeaf) = "") .
             """+query_properties+"""
-            """+constraints_query+"""
         }
         """
         print(query_base)
@@ -140,11 +152,12 @@ class OwlTagManager:
         nb_record=0
         print(f"Ontology {ontology} NB RECORDS:{len(results)}")
         for row in tqdm(results):
-            #print(row)
-            descriptionLeaf = '\n'.join([
-                str(row.get(prop.replace('?',''), '')) for prop in var_properties.split(' ')
-            ])
-            #print("----")
+            all_descr = [row.get(prop.replace('?',''), '') for prop in var_properties.split(' ')]
+            descriptionLeaf = '. '.join([str(desc).rstrip('.') for desc in all_descr if desc])
+            
+            if descriptionLeaf != '':
+                descriptionLeaf += '.'
+                
             labelLeaf = row.labelLeaf
             
             descriptionLeaf = descriptionLeaf.strip()
