@@ -263,7 +263,7 @@ class AbstractManager:
                     abstracts_origin_gen = filename.split('.json')[0]
                     abstracts_gen = self.mem.get_filename_pth(abstracts_origin_gen).split('.pth')[0]
                     abstracts_scores = abstracts_gen+"_scores.json"
-                    abstracts_annotations_results_file = abstracts_gen+"_queryresults.json"
+                    abstracts_annotations_results_file = abstracts_gen+"_queryresults.csv"
                     print(abstracts_annotations_results_file)
                     if os.path.exists(abstracts_annotations_results_file):
                         print(f"{abstracts_annotations_results_file} already exists !")

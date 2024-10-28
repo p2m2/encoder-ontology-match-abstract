@@ -45,8 +45,9 @@ class ModelEmbeddingManager(metaclass=Singleton):
     def __init__(self, config):
         self.config = config
         self.retention_dir = config['retention_dir']
-        self.model_suffix="all-MiniLM-L6-v2"
-        self.model_name = config.get('encodeur', 'sentence-transformers/all-MiniLM-L6-v2')
+        self.encoder=config['encodeur']
+        self.model_suffix=self.encoder.split('/')[-1]
+        self.model_name = config.get('encodeur', self.encoder)
         self.model = SentenceTransformer(self.model_name)
         self.model.similarity_fn_name = SimilarityFunction.MANHATTAN
         self.batch_size = config.get('batch_size', 32)
