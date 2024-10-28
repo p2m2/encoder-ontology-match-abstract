@@ -1,4 +1,4 @@
-import os, csv, json
+import os, csv, ujson
 from pathlib import Path
 
 def save_results(data, filename):
@@ -6,7 +6,7 @@ def save_results(data, filename):
     Saves the results to a JSON file.
     """
     with open(filename, 'w') as f:
-        json.dump(data, f)
+        ujson.dump(data, f)
     print(f"Results saved in {filename}")
 
 def load_results(filename):
@@ -15,7 +15,7 @@ def load_results(filename):
     """
     if os.path.exists(filename):
         with open(filename, 'r') as f:
-            return json.load(f)
+            return ujson.load(f)
     raise FileNotFoundError(f"The file {filename} does not exist.")
 
 def list_of_dicts_to_csv(data, filename):

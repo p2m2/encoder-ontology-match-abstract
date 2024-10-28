@@ -4,6 +4,7 @@ sentence_transformers
 tqdm
 rich
 rdflib
+ujson
 requests
 wget
 numpy<2.0

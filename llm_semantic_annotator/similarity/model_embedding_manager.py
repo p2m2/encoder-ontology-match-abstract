@@ -166,12 +166,12 @@ class ModelEmbeddingManager(metaclass=Singleton):
                 
         print("batch encoding.....")
 
-        df = pd.DataFrame({
-            'doi': chunks_doi_ref,
-            'chunks': chunks_toencode
-        })
+        #df = pd.DataFrame({
+        #    'doi': chunks_doi_ref,
+        #    'chunks': chunks_toencode
+        #})
         
-        df.to_csv(self.retention_dir+f"/{genname}.csv", index=False)
+        #df.to_csv(self.retention_dir+f"/{genname}.csv", index=False)
         
         embeddings = self.encode_text_batch(chunks_toencode)
         abstracts_embedding={}
