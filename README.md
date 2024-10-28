@@ -23,29 +23,24 @@ This approach aims to significantly enrich the metadata of scientific articles, 
 ## Run
 
 ```bash
-./exec.sh -h
 Usage: ./exec.sh <config_file> <int_commande>
 
 Commands:
   1. Pseudo workflow [2,4,5,6,7]
   2. Populate OWL tag embeddings
-  3. Populate NCBI Taxon tag embeddings
-  4. Populate abstract embeddings
-  5. Compute similarities between tags and abstract chunks
-  6. Display similarities information
-  7. Build turtle knowledge graph
-  8. Build dataset abstracts annotations CSV file
-  9. Evaluate encoder with MeSH descriptors (experimental)
+  3. Populate abstract embeddings
+  4. Compute similarities between tags and abstract chunks
+  5. Display similarities information
+  6. Build turtle knowledge graph
+  7. Build dataset abstracts annotations CSV file
 
 Details:
   2: Compute TAG embeddings for all ontologies defined in the populate_owl_tag_embeddings section
-  3: Compute TAG embeddings for NCBI Taxon
-  4: Compute ABSTRACT embeddings (title + sentences) for all abstracts in the dataset
-  5: Compute similarities between TAGS and ABSTRACTS
-  6: Display similarities information on the console
-  7: Generate turtle file with information {score, tag} for each DOI
-  8: Generate CSV file with [doi, tag, pmid, reference_id]
-
+  3: Compute ABSTRACT embeddings (title + sentences) for all abstracts in the dataset
+  4: Compute similarities between TAGS and ABSTRACTS
+  5: Display similarities information on the console
+  6: Generate turtle file with information {score, tag} for each DOI
+  7: Generate CSV file with [doi, tag, pmid, reference_id]
 ```
 
 ## Configuration file (json)  
