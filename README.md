@@ -139,17 +139,26 @@ Configures fetching abstracts from local files.
  To execute the test suite, you can use the following commands: 
 
 ```bash
+python3 -m venv llm_semantic_annotator_env
+pip install -r requirements.txt 
+source llm_semantic_annotator_env/bin/activate
 python -m unittest discover
 ```
 
 Run a specific test file
 
 ```bash
+python3 -m venv llm_semantic_annotator_env
+pip install -r requirements.txt 
+source llm_semantic_annotator_env/bin/activate
 python -m unittest tests/similarity/test_model_embedding_manager.py
 ```
 
 
 
 ```bash
+python3 -m venv llm_semantic_annotator_env
+pip install -r requirements.txt 
+source llm_semantic_annotator_env/bin/activate
 python -m llm_semantic_annotator.similarity_evaluator
 ```

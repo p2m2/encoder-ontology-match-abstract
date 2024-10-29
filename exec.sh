@@ -61,7 +61,7 @@ create_venv_if_not_exists() {
         echo "Creating virtual environment..."
         python3 -m venv "$venv_name"
         source "$venv_name/bin/activate"
-        pip install -r requirements.txt  # Assurez-vous d'avoir un fichier requirements.txt
+        pip install -r requirements.txt 
     else
         source "$venv_name/bin/activate"
     fi

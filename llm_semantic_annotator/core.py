@@ -62,6 +62,10 @@ def get_doi_file(config_all):
     
 def main_compute_tag_chunk_similarities(config_all):
     """Fonction principale pour calculer la similarité entre tous les tags et chunks."""
+    
+    if 'force' not in config_all:
+        config_all['force'] = False
+        
     tags_pth_files = get_owl_tag_manager(config_all).get_files_tags_embeddings()
     
     if len(tags_pth_files) == 0:
@@ -98,11 +102,11 @@ def main_compute_tag_chunk_similarities(config_all):
     total_doi = 0
     for abstracts_pth_file in abstracts_pth_files:
         json_f = str(os.path.splitext(abstracts_pth_file)[0])+"_scores.json"
-        if os.path.exists(json_f) :
+        if not config_all['force'] and os.path.exists(json_f) :
             print(json_f," already exists !")
             continue
         chunk_embeddings = mem.load_filepth(abstracts_pth_file)
-        
+        print("Processing ",abstracts_pth_file)
         for doi,res in mem.compare_tags_with_chunks(tag_embeddings, chunk_embeddings).items():
             total_doi+=1
             if doi not in results_complete_similarities:
