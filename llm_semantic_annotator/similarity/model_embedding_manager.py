@@ -33,18 +33,14 @@ from tqdm import tqdm
 
 # https://huggingface.co/spaces/mteb/leaderboard
 
-class Singleton(type):
-    _instances = {}
-    def __call__(cls, *args, **kwargs):
-        if cls not in cls._instances:
-            cls._instances[cls] = super().__call__(*args, **kwargs)
-        return cls._instances[cls]
 
-
-class ModelEmbeddingManager(metaclass=Singleton):
+class ModelEmbeddingManager():
     def __init__(self, config):
         self.config = config
-        self.retention_dir = config['retention_dir']
+        if 'retention_dir' not in config:
+            self.retention_dir = "/tmp"
+        else:
+            self.retention_dir = config['retention_dir']
         self.encoder=config['encodeur']
         self.model_suffix=self.encoder.split('/')[-1]
         self.model_name = config.get('encodeur', self.encoder)
@@ -134,7 +130,7 @@ class ModelEmbeddingManager(metaclass=Singleton):
 
         return tags_embedding
     
-    def encode_abstracts(self,abstracts,genname) :
+    def encode_abstracts(self,abstracts) :
         """
         abstract : {
                 'doi',
@@ -147,7 +143,6 @@ class ModelEmbeddingManager(metaclass=Singleton):
         chunks_doi_ref = []
         lcount = 0
             
-        print("Flat abstracts to build batch.....",genname)
         for item in tqdm(abstracts):
             if 'abstract' in item and item['abstract'].strip() != '':
                 if 'title' in item and item['title'].strip() != '':

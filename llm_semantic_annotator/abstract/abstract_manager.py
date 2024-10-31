@@ -178,7 +178,7 @@ class AbstractManager:
                     print(f"{pth_filename} already exists !")
                     continue
                 results = self._get_data_abstracts_file(json_f)
-                self.mem.save_pth(self.mem.encode_abstracts(results,genname),genname)
+                self.mem.save_pth(self.mem.encode_abstracts(results),genname)
 
     def manage_abstracts(self):
 

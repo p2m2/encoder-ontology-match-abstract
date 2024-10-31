@@ -41,7 +41,7 @@
     "populate_abstract_embeddings" : {
         "abstracts_per_file" : 500,
         "from_file" : {
-            "json_dir" : "/scratch/ofilangi/export-pubmed-20241014-4-planetome-tagging"
+            "json_file" : "data/msd/export-pubmed-20241014-4-planetome-tagging-sub-test/part-00016-6787be90-eb7f-4950-8ef0-98d9dbbbcd38-c000.json"
         }
     }
 }

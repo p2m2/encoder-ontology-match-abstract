@@ -1,6 +1,6 @@
 {
     "encodeur" : "sentence-transformers/all-MiniLM-L6-v2",
-    "threshold_similarity_tag_chunk" : 0.70,
+    "threshold_similarity_tag_chunk" : 0.10,
     "threshold_similarity_tag" : 0.80,
     "batch_size" : 32,
 
@@ -36,6 +36,9 @@
             "selected_term" : [
                 "Crops%2C+Agricultural%2Fmetabolism%5BMeSH%5D"
             ]
+        },
+        "from_file" : {
+            "json_file" : "data/msd/export-pubmed-20241014-4-planetome-tagging-sub-test/part-00016-6787be90-eb7f-4950-8ef0-98d9dbbbcd38-c000.json"
         }
         
     }

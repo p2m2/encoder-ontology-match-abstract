@@ -10,7 +10,7 @@
                 "transformon": {
                     "url": " https://entrepot.recherche.data.gouv.fr/api/access/datafile/:persistentId?persistentId=doi:10.57745/X2ZFLG",
                     "prefix": "http://opendata.inrae.fr/PO2/Ontology/TransformON/Component/",
-                    "format": "xml",
+                    "format": "turtle",
                     "label" : "skos:prefLabel",
                     "properties": ["skos:scopeNote"]
                 }

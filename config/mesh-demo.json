@@ -23,8 +23,7 @@
                     "constraints" : {
                        "meshv:active" : "true",
                        "rdf:type" : "meshv:Concept" 
-                    }
-                    
+                    }              
                 }
             }
         },

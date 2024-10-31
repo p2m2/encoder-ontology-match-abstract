@@ -16,8 +16,15 @@ class OwlTagManager:
         else:
             self.debug_nb_terms_by_ontology = -1
 
-        self.retention_dir = config['retention_dir']
-        self.ontologies_by_link = config['ontologies']
+        if 'retention_dir' not in config:
+            self.retention_dir = "/tmp"
+        else:
+            self.retention_dir = config['retention_dir']
+        
+        if 'ontologies' not in config:
+            self.ontologies_by_link = {}
+        else:
+            self.ontologies_by_link = config['ontologies']
         
         self.prefixes = {}
 
@@ -28,8 +35,8 @@ class OwlTagManager:
             
         if 'force' not in config:
             config['force'] = False
-        else:
-            self.force = config['force']
+        
+        self.force = config['force']
         
         self.mem = model_embedding_manager
         self.tags_owl_path_filename = f"tags_owl_"
@@ -81,13 +88,14 @@ class OwlTagManager:
 
         v = re.sub(pattern, '', text)
         return re.sub(r'\(\)', '', v)
-
+    
     def build_corpus(
             self,
             ontology,
             ontology_group_name, 
             ontology_config,
-            debug_nb_terms_by_ontology):
+            debug_nb_terms_by_ontology,
+            owl_content=None):
         
         tags_owl_path_filename = self.tags_owl_path_filename+ontology
         tag_embeddings = self.mem.load_pth(tags_owl_path_filename)
@@ -95,11 +103,35 @@ class OwlTagManager:
         if (len(tag_embeddings)>0):
             return tag_embeddings
         
+        tags = self.build_tags_from_owl(ontology,ontology_group_name,ontology_config,debug_nb_terms_by_ontology,owl_content)
+        
+        df = pd.DataFrame({
+            'ontology' : [ ele['ontology'] for ele in tags ],
+            'term' : [ ele['term'] for ele in tags ],
+            'rdfs:label': [ ele['rdfs_label'] for ele in tags ],
+            'description': [ ele['description'] for ele in tags ],
+            })
+        
+        df.to_csv(self.retention_dir+f"/tags_owl_{ontology}.csv", index=False)
+        self.mem.save_pth(self.mem.encode_tags(tags),tags_owl_path_filename)
+        return tags 
+    
+    def build_tags_from_owl(
+            self,
+            ontology,
+            ontology_group_name, 
+            ontology_config,
+            debug_nb_terms_by_ontology,
+            owl_content=None):
+        
         # Charger le fichier OWL local
 
         g = Graph()
         print("loading ontology: ",ontology)
-        g.parse(ontology_config['filepath'], format=ontology_config['format'])
+        if owl_content:
+            g.parse(data=owl_content, format=ontology_config['format'])
+        else:
+            g.parse(ontology_config['filepath'], format=ontology_config['format'])
 
         # Namespace pour rdfs
         RDFS = Namespace("http://www.w3.org/2000/01/rdf-schema#")
@@ -180,15 +212,6 @@ class OwlTagManager:
                 break
             nb_record+=1
 
-        df = pd.DataFrame({
-            'ontology' : [ ele['ontology'] for ele in tags ],
-            'term' : [ ele['term'] for ele in tags ],
-            'rdfs:label': [ ele['rdfs_label'] for ele in tags ],
-            'description': [ ele['description'] for ele in tags ],
-            })
-        
-        df.to_csv(self.retention_dir+f"/tags_owl_{ontology}.csv", index=False)
-        self.mem.save_pth(self.mem.encode_tags(tags),tags_owl_path_filename)
         return tags
 
     def manage_tags(self):
