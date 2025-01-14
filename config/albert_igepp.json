@@ -34,7 +34,7 @@
     "populate_abstract_embeddings" : {
         "abstracts_per_file" : 1000,
         "from_file" : {
-            "json_dir" : "/scratch/ofilangi/export-pubmed-20250114-planteome-tagging-extended"
+            "json_files" : ["data/abstracts/abstracts_Benjamin_Albert_IGEPP.json"]
         }
     }
 }
