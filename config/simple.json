@@ -1,6 +1,6 @@
 {
     "encodeur" : "sentence-transformers/all-MiniLM-L6-v2",
-    "threshold_similarity_tag_chunk" : 0.65,
+    "threshold_similarity_tag_chunk" : 0.60,
     "threshold_similarity_tag" : 0.80,
     "batch_size" : 32,
 
@@ -34,8 +34,7 @@
         "abstracts_per_file" : 50,
         "from_file" : {
             "json_files" : [
-                "data/abstracts/abstracts_1.json",
-                "data/abstracts/abstracts_2.json"
+                "data/abstracts/abstracts_3.json"
             ]
         }
         

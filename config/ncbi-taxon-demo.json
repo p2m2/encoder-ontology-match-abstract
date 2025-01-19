@@ -14,15 +14,16 @@
         },
         "ontologies": {
             "taxon_link" : {
-                "ncbitaxon": {
+                "ncbitaxon_brassicales": {
                     "url": "http://purl.obolibrary.org/obo/ncbitaxon.owl",
                     "prefix": "http://purl.obolibrary.org/obo/NCBITaxon_",
-                    "selected_prefix_term": "http://purl.obolibrary.org/obo/NCBITaxon_37",
+                    "selected_prefix_term": "http://purl.obolibrary.org/obo/NCBITaxon_",
                     "format": "xml",
                     "label" : "rdfs:label",
                     "properties": ["obo:IAO_0000115","rdfs:comment","owl:annotatedTarget"],
                     "constraints": {
-                        "ncbitaxon:has_rank" : "NCBITaxon:species"
+                        "ncbitaxon:has_rank" : "NCBITaxon:species",
+			"rdfs:subClassof*" : "NCBITaxon:3699" 
                     }
                 }
             }
