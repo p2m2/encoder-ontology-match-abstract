@@ -181,26 +181,39 @@ class ModelEmbeddingManager():
         return abstracts_embedding
 
     def compare_tags_with_chunks(self, tag_embeddings, chunks_embeddings):
-        # Convertir les embeddings en arrays NumPy pour une meilleure performance
+        import torch.nn.functional as F
+
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        
         tag_list = list(tag_embeddings.keys())
-        tag_embeddings_matrix = np.array([tag_embeddings[tag].cpu().numpy() for tag in tag_list])
+        tag_embeddings_matrix = torch.stack([tag_embeddings[tag] for tag in tag_list]).to(device)
         
         results_complete_similarities = {}
 
         for doi, chunks_embedding in tqdm(list(chunks_embeddings.items())):
-            # Convertir chunks_embedding en array NumPy
-            chunks_matrix = np.array([chunk.cpu().numpy() for chunk in chunks_embedding])
+            chunks_matrix = torch.stack(chunks_embedding).to(device)
+            print("----------------####################################-----------")
+            print(doi,chunks_matrix)
+            print("------------TTTT---------------")
+            print(tag_embeddings_matrix)
+            print("---------------------------")
+            # Calcul vectorisé des similarités sur GPU
+            # Normaliser les vecteurs pour le calcul de la similarité cosinus
+            chunks_norm = F.normalize(chunks_matrix, p=2, dim=1)
+            tags_norm = F.normalize(tag_embeddings_matrix, p=2, dim=1)
             
-            # Calcul vectorisé des similarités
-            similarities = 1 - cdist(chunks_matrix, tag_embeddings_matrix, metric='cosine')
-            max_similarities = np.max(similarities, axis=0)
+            # Calcul de la similarité cosinus
+            similarities = torch.mm(chunks_norm, tags_norm.t())
+            print(similarities)
+            max_similarities, _ = torch.max(similarities, dim=0)
 
             # Filtrage des similarités au-dessus du seuil
-            complete_similarities = {tag: sim for tag, sim in zip(tag_list, max_similarities) if sim >= self.threshold_similarity_tag_chunk}
+            complete_similarities = {tag: sim.item() for tag, sim in zip(tag_list, max_similarities) if sim >= self.threshold_similarity_tag_chunk}
             
             results_complete_similarities[doi] = complete_similarities
         
         return results_complete_similarities
+
     
     def remove_similar_tags_by_doi(self, tag_embeddings, complete_similarities):
         tag_list = list(tag_embeddings.keys())
