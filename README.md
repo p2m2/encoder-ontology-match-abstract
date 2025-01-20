@@ -23,14 +23,22 @@ This approach aims to significantly enrich the metadata of scientific articles, 
 
 ```bash
 pip install git+https://github.com/p2m2/encoder-ontology-match-abstract.git@alpha-20241031
+curl -O https://raw.githubusercontent.com/p2m2/encoder-ontology-match-abstract/refs/heads/main/llm_semantic_annotator.sh
 ```
 
 check [versions](https://github.com/p2m2/encoder-ontology-match-abstract/tags) available
 
-## Run
+### first exec
 
 ```bash
-Usage: ./exec.sh <config_file> <int_commande>
+curl -O https://raw.githubusercontent.com/p2m2/encoder-ontology-match-abstract/refs/heads/main/config/foodon-demo.json
+./llm_semantic_annotator.sh foodon-demo.json 1
+```
+
+## Help
+
+```bash
+Usage: ./llm_semantic_annotator.sh <config_file> <int_commande>
 
 Commands:
   1. Pseudo workflow [2,4,5,6,7]
