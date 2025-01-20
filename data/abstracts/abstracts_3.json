@@ -1,0 +1,11 @@
+[
+    {
+        "title": "Leaf status and environmental signals jointly regulate proline metabolism in winter oilseed rape",
+        "abstract": "Proline metabolism is an essential component of plant adaptation to multiple environmental stress conditions that is also known to participate in specific developmental phases, particularly in reproductive organs. Recent evidence suggested a possible role for proline catabolism in Brassica napus for nitrogen remobilization processes from source leaves at the vegetative stage. Here, we investigate transcript levels of Δ1-PYRROLINE-5-CARBOXYLATE SYNTHASE (P5CS) and PROLINE DEHYDROGENASE (ProDH) genes at the vegetative stage with respect to net proline biosynthesis and degradation fluxes in leaves having a different sink/source balance. We showed that the underexpression of three P5CS1 genes in source leaves was accompanied by a reduced commitment of de novo assimilated 15N towards proline biosynthesis and an overall depletion of free proline content. We found that the expression of ProDH genes was strongly induced by carbon starvation conditions (dark-induced senescence) compared with early senescing leaves. Our results suggested a role for proline catabolism in B. napus, but acting only at a late stage of senescence. In addition, we also identified some P5CS and ProDH genes that were differentially expressed during multiple processes (leaf status, dark to light transition, and stress response).", 
+        "doi": "10.1093/jxb/erz538",
+        "mesh" : [
+            " Brassica napus* / genetics","Brassica napus* / metabolism","Gene Expression Regulation, Plant",
+            "Nitrogen / metabolism",
+            "Plant Leaves / metabolism","Proline / metabolism "]
+    }
+]
