@@ -18,6 +18,11 @@ class TestAbstractPreparation(unittest.TestCase):
             "batch_size" : 32,
 
             "populate_owl_tag_embeddings" : {
+                "prefix" : {
+                    "rdfs" : "http://www.w3.org/2000/01/rdf-schema#",
+                    "obo" : "http://purl.obolibrary.org/obo/",
+                    "owl" : "http://www.w3.org/2002/07/owl#"
+                },
                 "ontologies": {
                     "animal_link" : {
                         "fake_animal" : {
