@@ -19,6 +19,13 @@ LLMSemanticAnnotator employs Semantic Textual Similarity (STS) to annotate scien
 
 This approach aims to significantly enrich the metadata of scientific articles, thereby facilitating experimental reproducibility, comparative analysis of studies, and large-scale knowledge extraction in the field of plant biology.
 
+## Install
+
+```bash
+pip install git+https://github.com/p2m2/encoder-ontology-match-abstract.git@alpha-20241031
+```
+
+check [versions](https://github.com/p2m2/encoder-ontology-match-abstract/tags) available
 
 ## Run
 
@@ -140,8 +147,8 @@ Configures fetching abstracts from local files.
 
 ```bash
 python3 -m venv llm_semantic_annotator_env
-pip install -r requirements.txt 
 source llm_semantic_annotator_env/bin/activate
+pip install -r requirements.txt 
 python -m unittest discover
 ```
 
@@ -149,8 +156,8 @@ Run a specific test file
 
 ```bash
 python3 -m venv llm_semantic_annotator_env
-pip install -r requirements.txt 
 source llm_semantic_annotator_env/bin/activate
+pip install -r requirements.txt 
 python -m unittest tests/similarity/test_model_embedding_manager.py
 ```
 
@@ -158,7 +165,7 @@ python -m unittest tests/similarity/test_model_embedding_manager.py
 
 ```bash
 python3 -m venv llm_semantic_annotator_env
-pip install -r requirements.txt 
 source llm_semantic_annotator_env/bin/activate
+pip install -r requirements.txt 
 python -m llm_semantic_annotator.similarity_evaluator
 ```
