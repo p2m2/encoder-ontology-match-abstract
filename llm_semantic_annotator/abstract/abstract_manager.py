@@ -251,7 +251,9 @@ class AbstractManager:
         graphs = self.tags_manager.get_graphs_ontologies()
         ascendants_dict = defaultdict(list)
         debut = time.time()
-        self.build_ascendants_terms(ascendants_dict,graphs)
+        
+        # inference desactivée !
+        #self.build_ascendants_terms(ascendants_dict,graphs)
         duree = time.time() - debut
         print(f"loading terms with ancestors : {duree:.4f} secondes")
 

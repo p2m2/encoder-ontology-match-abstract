@@ -22,7 +22,7 @@ This approach aims to significantly enrich the metadata of scientific articles, 
 ## Install
 
 ```bash
-pip install git+https://github.com/p2m2/encoder-ontology-match-abstract.git@alpha-20241031
+pip install git+https://github.com/p2m2/encoder-ontology-match-abstract.git@20250120
 curl -O https://raw.githubusercontent.com/p2m2/encoder-ontology-match-abstract/refs/heads/main/llm_semantic_annotator.sh
 ```
 
