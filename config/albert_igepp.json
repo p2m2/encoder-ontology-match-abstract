@@ -1,7 +1,7 @@
 {
     "encodeur" : "sentence-transformers/all-MiniLM-L6-v2",
     "threshold_similarity_tag_chunk" : 0.60,
-    "threshold_similarity_tag" : 0.95,
+    "threshold_similarity_tag" : 0.15,
     "batch_size" : 32,
 
     "populate_owl_tag_embeddings" : {

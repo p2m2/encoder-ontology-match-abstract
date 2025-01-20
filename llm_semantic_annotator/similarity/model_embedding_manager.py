@@ -192,11 +192,6 @@ class ModelEmbeddingManager():
 
         for doi, chunks_embedding in tqdm(list(chunks_embeddings.items())):
             chunks_matrix = torch.stack(chunks_embedding).to(device)
-            print("----------------####################################-----------")
-            print(doi,chunks_matrix)
-            print("------------TTTT---------------")
-            print(tag_embeddings_matrix)
-            print("---------------------------")
             # Calcul vectorisé des similarités sur GPU
             # Normaliser les vecteurs pour le calcul de la similarité cosinus
             chunks_norm = F.normalize(chunks_matrix, p=2, dim=1)
@@ -204,7 +199,6 @@ class ModelEmbeddingManager():
             
             # Calcul de la similarité cosinus
             similarities = torch.mm(chunks_norm, tags_norm.t())
-            print(similarities)
             max_similarities, _ = torch.max(similarities, dim=0)
 
             # Filtrage des similarités au-dessus du seuil
