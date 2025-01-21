@@ -54,20 +54,6 @@ if ! [[ "$command" =~ ^[0-9]+$ ]]; then
     exit 1
 fi
 
-venv_name="llm_semantic_annotator_env"
-
-# Fonction pour créer l'environnement virtuel s'il n'existe pas
-create_venv_if_not_exists() {
-    if [ ! -d "$venv_name" ]; then
-        echo "Creating virtual environment..."
-        python3 -m venv "$venv_name"
-        source "$venv_name/bin/activate"
-        pip install -r requirements.txt 
-    else
-        source "$venv_name/bin/activate"
-    fi
-}
-
 run_command() {
     "$@"
     local status=$?
@@ -88,9 +74,6 @@ execute_command() {
         *) echo "Invalid option" ;;
     esac
 }
-
-# Créer l'environnement virtuel s'il n'existe pas
-create_venv_if_not_exists
 
 case $command in
     1)

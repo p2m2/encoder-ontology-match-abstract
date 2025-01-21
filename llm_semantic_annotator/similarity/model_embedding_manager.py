@@ -181,6 +181,29 @@ class ModelEmbeddingManager():
         return abstracts_embedding
 
     def compare_tags_with_chunks(self, tag_embeddings, chunks_embeddings):
+        # Convertir les embeddings en arrays NumPy pour une meilleure performance
+        tag_list = list(tag_embeddings.keys())
+        tag_embeddings_matrix = np.array([tag_embeddings[tag].cpu().numpy() for tag in tag_list])
+        
+        results_complete_similarities = {}
+
+        for doi, chunks_embedding in tqdm(list(chunks_embeddings.items())):
+            # Convertir chunks_embedding en array NumPy
+            chunks_matrix = np.array([chunk.cpu().numpy() for chunk in chunks_embedding])
+            
+            # Calcul vectorisé des similarités
+            similarities = 1 - cdist(chunks_matrix, tag_embeddings_matrix, metric='cosine')
+            max_similarities = np.max(similarities, axis=0)
+
+            # Filtrage des similarités au-dessus du seuil
+            complete_similarities = {tag: sim for tag, sim in zip(tag_list, max_similarities) if sim >= self.threshold_similarity_tag_chunk}
+            
+            results_complete_similarities[doi] = complete_similarities
+        
+        return results_complete_similarities
+    
+    # todo : evaluate perfs....
+    def compare_tags_with_chunks_v2(self, tag_embeddings, chunks_embeddings):
         import torch.nn.functional as F
 
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

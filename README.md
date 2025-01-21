@@ -28,6 +28,50 @@ curl -O https://raw.githubusercontent.com/p2m2/encoder-ontology-match-abstract/r
 
 check [versions](https://github.com/p2m2/encoder-ontology-match-abstract/tags) available
 
+
+### mesocentre
+
+#### IDRIS / master
+
+```bash
+export LLM_SEMANTIC_ANNOTATOR_REPO=$WORK/encoder-ontology-match-abstract
+export LLM_SEMANTIC_ANNOTATOR_RELEASE=20250120
+
+module purge
+module load git
+module load python/3.11.5
+
+export PYTHONUSERBASE=$WORK/python_base
+export HF_HOME=$WORK/hg_cache/huggingface
+
+cd $LLM_SEMANTIC_ANNOTATOR_REPO
+git checkout $LLM_SEMANTIC_ANNOTATOR_RELEASE
+python3 -m venv $LLM_SEMANTIC_ANNOTATOR_RELEASE
+source $LLM_SEMANTIC_ANNOTATOR_REPO/$LLM_SEMANTIC_ANNOTATOR_RELEASE/bin/activate
+pip install -r requirements.txt
+
+```
+
+#### model HG
+
+```python
+from huggingface_hub import snapshot_download
+snapshot_download(repo_id="sentence-transformers/all-MiniLM-L6-v2")
+```
+
+#### ontology used
+
+
+```bash
+mkdir config_workdir
+pushd config_workdir
+wget http://purl.obolibrary.org/obo/po.owl
+wget http://purl.obolibrary.org/obo/pso.owl
+wget http://purl.obolibrary.org/obo/to.owl
+wget http://purl.obolibrary.org/obo/ncbitaxon.owl
+popd
+```
+
 ### first exec
 
 ```bash
