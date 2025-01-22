@@ -8,10 +8,12 @@ from llm_semantic_annotator import display_best_similarity_abstract_tag
 from llm_semantic_annotator import display_ontologies_summary
 from llm_semantic_annotator import create_rdf_graph,save_rdf_graph
 
-import warnings
 import json 
 import os 
 import re 
+
+import concurrent.futures
+from functools import partial
 
 def setup_general_config(config_all,methode):
     
@@ -59,6 +61,43 @@ def main_populate_abstract_embeddings(config_all):
 
 def get_doi_file(config_all):
     return config_all['retention_dir']+"/total_doi.txt"
+
+def process_abstract_file(abstracts_pth_file, mem, tag_embeddings, tag_embeddings_all, config_all):
+    json_f = str(os.path.splitext(abstracts_pth_file)[0]) + "_scores.json"
+    if not config_all['force'] and os.path.exists(json_f):
+        print(json_f, " already exists!")
+        return None, 0
+
+    chunk_embeddings = mem.load_filepth(abstracts_pth_file)
+    print("Processing ", abstracts_pth_file)
+    
+    results_complete_similarities = {}
+    keep_tag_embeddings = {}
+    total_doi = 0
+
+    for doi, res in mem.compare_tags_with_chunks(tag_embeddings, chunk_embeddings).items():
+        total_doi += 1
+        if doi not in results_complete_similarities:
+            results_complete_similarities[doi] = res
+            for tag in res.keys():
+                if tag not in keep_tag_embeddings:
+                    keep_tag_embeddings[tag] = tag_embeddings_all[tag]
+        else:
+            for tag, sim in res.items():
+                if tag not in results_complete_similarities[doi] or sim > results_complete_similarities[doi][tag]:
+                    results_complete_similarities[doi][tag] = sim
+                    if tag not in keep_tag_embeddings:
+                        keep_tag_embeddings[tag] = tag_embeddings_all[tag]
+        
+        if doi in results_complete_similarities:
+            results_complete_similarities[doi] = mem.remove_similar_tags_by_doi(keep_tag_embeddings, results_complete_similarities[doi])
+
+    results_complete_similarities = {k: v for k, v in results_complete_similarities.items() if v}
+    
+    with open(json_f, "w") as fichier:
+        json.dump(results_complete_similarities, fichier)
+
+    return results_complete_similarities, keep_tag_embeddings, total_doi
     
 def main_compute_tag_chunk_similarities(config_all):
     """Fonction principale pour calculer la similarité entre tous les tags et chunks."""
@@ -93,43 +132,31 @@ def main_compute_tag_chunk_similarities(config_all):
         
         # Mise à jour de tag_embeddings
         tag_embeddings.update({ele: current_embeddings[ele]['emb'] for ele in current_embeddings})
-
     
     ### Managing Abstracts
     ### -----------------------  
     keep_tag_embeddings = {}
     results_complete_similarities = {}
     total_doi = 0
-    for abstracts_pth_file in abstracts_pth_files:
-        json_f = str(os.path.splitext(abstracts_pth_file)[0])+"_scores.json"
-        if not config_all['force'] and os.path.exists(json_f) :
-            print(json_f," already exists !")
-            continue
-        chunk_embeddings = mem.load_filepth(abstracts_pth_file)
-        print("Processing ",abstracts_pth_file)
-        for doi,res in mem.compare_tags_with_chunks(tag_embeddings, chunk_embeddings).items():
-            total_doi+=1
-            if doi not in results_complete_similarities:
-                results_complete_similarities[doi] = res
-                for tag in res.keys():
-                    if tag not in keep_tag_embeddings:
-                        keep_tag_embeddings[tag] = tag_embeddings_all[tag]
-            else:
-                for tag,sim in res.items():
-                    if tag not in results_complete_similarities[doi] or sim>results_complete_similarities[doi][tag]:
-                        results_complete_similarities[doi][tag] = sim
-                        if tag not in keep_tag_embeddings:
-                            keep_tag_embeddings[tag] = tag_embeddings_all[tag]
-            if doi in results_complete_similarities:                
-                results_complete_similarities[doi] = mem.remove_similar_tags_by_doi(keep_tag_embeddings,results_complete_similarities[doi])
 
-        results_complete_similarities = {k: v for k, v in results_complete_similarities.items() if v }
-        
-        with open(json_f, "w") as fichier:
-            json.dump(results_complete_similarities, fichier)
-        
-        with open(get_doi_file(config_all), "w") as fichier:
-            fichier.write(str(total_doi))
+    # Créer une fonction partielle avec les arguments communs
+    process_file = partial(process_abstract_file, mem=mem, tag_embeddings=tag_embeddings, 
+                           tag_embeddings_all=tag_embeddings_all, config_all=config_all)
+
+    # Utiliser ThreadPoolExecutor pour le multithreading
+    with concurrent.futures.ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
+        future_results = list(executor.map(process_file, abstracts_pth_files))
+
+    # Traiter les résultats
+    for result, keep_tags, file_doi_count in future_results:
+        if result is not None:
+            results_complete_similarities.update(result)
+            keep_tag_embeddings.update(keep_tags)
+            total_doi += file_doi_count
+
+    # Écrire le nombre total de DOI
+    with open(get_doi_file(config_all), "w") as fichier:
+        fichier.write(str(total_doi))
 
 def get_scores_files(retention_dir):
     scores_files = []
