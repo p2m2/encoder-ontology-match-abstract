@@ -1,0 +1,41 @@
+{
+    "encodeur" : "sentence-transformers/all-MiniLM-L6-v2",
+    "threshold_similarity_tag_chunk" : 0.65,
+    "threshold_similarity_tag" : 0.80,
+    "batch_size" : 32,
+
+    "populate_owl_tag_embeddings" : {
+        "prefix" : {
+            "rdfs" : "http://www.w3.org/2000/01/rdf-schema#",
+            "obo" : "http://purl.obolibrary.org/obo/",
+            "owl" : "http://www.w3.org/2002/07/owl#",
+            "ncbitaxon" : "http://purl.obolibrary.org/obo/ncbitaxon#",
+            "NCBITaxon" : "http://purl.obolibrary.org/obo/NCBITaxon_"
+        },
+        "ontologies": {
+            "taxon_link" : {
+                "ncbitaxon_brassicales": {
+                    "url": "http://purl.obolibrary.org/obo/ncbitaxon.owl",
+                    "prefix": "http://purl.obolibrary.org/obo/NCBITaxon_",
+                    "selected_prefix_term": "http://purl.obolibrary.org/obo/NCBITaxon_",
+                    "format": "xml",
+                    "label" : "rdfs:label",
+                    "properties": ["obo:IAO_0000115","rdfs:comment","owl:annotatedTarget"],
+                    "constraints": {
+                        "ncbitaxon:has_rank" : "NCBITaxon:species",
+			"rdfs:subClassof*" : "NCBITaxon:3699" 
+                    }
+                }
+            }
+        }
+    },
+    "populate_abstract_embeddings" : {
+        "abstracts_per_file" : 50,
+        "from_file" : {
+            "json_files" : [
+                "data/abstracts/abstracts_1.json",
+                "data/abstracts/abstracts_2.json"
+            ]
+        }
+    }
+}
