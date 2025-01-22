@@ -35,6 +35,8 @@ from tqdm import tqdm
 
 
 class ModelEmbeddingManager():
+    _info_displayed = False
+    
     def __init__(self, config):
         self.config = config
         if 'retention_dir' not in config:
@@ -49,13 +51,16 @@ class ModelEmbeddingManager():
         self.batch_size = config.get('batch_size', 32)
         self.threshold_similarity_tag = config.get('threshold_similarity_tag', 0.75)
         self.threshold_similarity_tag_chunk = config.get('threshold_similarity_tag_chunk', 0.75)
-
-        print("------------------------------------")
-        print("Encoder:", self.model_name)
-        print("Threshold similarity tag:", self.threshold_similarity_tag)
-        print("Threshold similarity tag chunk:", self.threshold_similarity_tag_chunk)
-        print("Batch size:", self.batch_size)
-        print("------------------------------------")
+        
+        if not ModelEmbeddingManager._info_displayed :
+            print("------------------------------------")
+            print("Encoder:", self.model_name)
+            print("Threshold similarity tag:", self.threshold_similarity_tag)
+            print("Threshold similarity tag chunk:", self.threshold_similarity_tag_chunk)
+            print("Batch size:", self.batch_size)
+            print("------------------------------------")
+            ModelEmbeddingManager._info_displayed = True
+            
 
     def get_filename_pth(self, name_embeddings):
         return f"{self.retention_dir}/{name_embeddings}-{self.model_name.split('/')[-1]}.pth"
