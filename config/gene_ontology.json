@@ -1,6 +1,6 @@
 {
     "encodeur" : "sentence-transformers/all-MiniLM-L6-v2",
-    "threshold_similarity_tag_chunk" : 0.65,
+    "threshold_similarity_tag_chunk" : 0.60,
     "threshold_similarity_tag" : 0.80,
     "batch_size" : 32,
 
@@ -37,17 +37,9 @@
         }
     },
     "populate_abstract_embeddings" : {
-        "abstracts_per_file" : 500,
-        "from_ncbi_api" : {
-            "ncbi_api_chunk_size" : 200,
-            "debug_nb_ncbi_request" : -1,
-            "retmax" : 2000,
-            "selected_term" : [
-                "Crops%2C+Agricultural%2Fmetabolism%5BMeSH%5D"
-            ]
-        },
+        "abstracts_per_file" : 1000,
         "from_file" : {
-            "json_file" : "data/msd/export-pubmed-20241014-4-planetome-tagging-sub-test/part-00016-6787be90-eb7f-4950-8ef0-98d9dbbbcd38-c000.json"
+            "json_dir" : "/scratch/ofilangi/export-pubmed-20250114-planteome-tagging-extended"
         }
     }
 }
