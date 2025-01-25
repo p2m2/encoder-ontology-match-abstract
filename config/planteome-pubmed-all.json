@@ -1,0 +1,40 @@
+{
+    "encodeur" : "sentence-transformers/all-MiniLM-L6-v2",
+    "threshold_similarity_tag_chunk" : 0.60,
+    "threshold_similarity_tag" : 0.95,
+    "batch_size" : 32,
+
+    "populate_owl_tag_embeddings" : {
+        "ontologies": {
+            "planteome_link" : {
+                "po": {
+                    "url": "http://purl.obolibrary.org/obo/po.owl",
+                    "prefix": "http://purl.obolibrary.org/obo/PO_",
+                    "format": "xml",
+                    "label" : "<http://www.w3.org/2000/01/rdf-schema#label>",
+                    "properties": ["<http://purl.obolibrary.org/obo/IAO_0000115>"]
+                },
+                "pso": {
+                    "url": "http://purl.obolibrary.org/obo/pso.owl",
+                    "prefix": "http://purl.obolibrary.org/obo/PSO_",
+                    "format": "xml",
+                    "label" : "<http://www.w3.org/2000/01/rdf-schema#label>",
+                    "properties": ["<http://purl.obolibrary.org/obo/IAO_0000115>"]
+                },
+                "to": {
+                    "url": "http://purl.obolibrary.org/obo/to.owl",
+                    "prefix": "http://purl.obolibrary.org/obo/TO_",
+                    "format": "xml",
+                    "label" : "<http://www.w3.org/2000/01/rdf-schema#label>",
+                    "properties": ["<http://purl.obolibrary.org/obo/IAO_0000115>"]
+                }
+            }
+        }
+    },
+    "populate_abstract_embeddings" : {
+        "abstracts_per_file" : 1000,
+        "from_file" : {
+            "json_dir" : "/scratch/ofilangi/export-pubmed-20250114-planteome-tagging-extended"
+        }
+    }
+}
