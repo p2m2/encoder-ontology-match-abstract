@@ -1,0 +1,53 @@
+{
+    "encodeur" : "sentence-transformers/all-MiniLM-L6-v2",
+    "threshold_similarity_tag_chunk" : 0.65,
+    "threshold_similarity_tag" : 0.80,
+    "batch_size" : 32,
+
+    "populate_owl_tag_embeddings" : {
+        "prefix" : {
+            "rdfs" : "http://www.w3.org/2000/01/rdf-schema#",
+            "obo" : "http://purl.obolibrary.org/obo/",
+            "owl" : "http://www.w3.org/2002/07/owl#",
+            "oboInOwl" : "http://www.geneontology.org/formats/oboInOwl#"
+        },
+        "ontologies": {
+            "taxon_link" : {
+                "go_biological_process": {
+                    "url": "http://purl.obolibrary.org/obo/go.owl",
+                    "prefix": "http://purl.obolibrary.org/obo/GO_",
+                    "format": "xml",
+                    "label" : "rdfs:label",
+                    "properties": ["obo:IAO_0000115","oboInOwl:hasExactSynonym","rdfs:comment","owl:annotatedTarget"],
+                    "constraints": {
+                        "oboInOwl:hasOBONamespace" : "'biological_process'"
+                    }
+                },
+                "go_molecular_function": {
+                    "url": "http://purl.obolibrary.org/obo/go.owl",
+                    "prefix": "http://purl.obolibrary.org/obo/GO_",
+                    "format": "xml",
+                    "label" : "rdfs:label",
+                    "properties": ["obo:IAO_0000115","oboInOwl:hasExactSynonym","rdfs:comment","owl:annotatedTarget"],
+                    "constraints": {
+                        "oboInOwl:hasOBONamespace" : "'molecular_function'"
+                    }
+                }
+            }
+        }
+    },
+    "populate_abstract_embeddings" : {
+        "abstracts_per_file" : 500,
+        "from_ncbi_api" : {
+            "ncbi_api_chunk_size" : 200,
+            "debug_nb_ncbi_request" : -1,
+            "retmax" : 2000,
+            "selected_term" : [
+                "Crops%2C+Agricultural%2Fmetabolism%5BMeSH%5D"
+            ]
+        },
+        "from_file" : {
+            "json_file" : "data/msd/export-pubmed-20241014-4-planetome-tagging-sub-test/part-00016-6787be90-eb7f-4950-8ef0-98d9dbbbcd38-c000.json"
+        }
+    }
+}

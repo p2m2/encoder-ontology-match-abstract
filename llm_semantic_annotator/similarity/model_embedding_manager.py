@@ -66,15 +66,25 @@ class ModelEmbeddingManager():
         return f"{self.retention_dir}/{name_embeddings}-{self.model_name.split('/')[-1]}.pth"
     
     def load_filepth(self, filename_embeddings):
-        return torch.load(filename_embeddings,weights_only=True)
+        if torch.cuda.is_available():
+            dev=torch.device('gpu')
+        else:
+            dev=torch.device('cpu')
+            
+        return torch.load(filename_embeddings,weights_only=True,map_location=dev)
 
     def load_pth(self, name_embeddings):
+        if torch.cuda.is_available():
+            dev=torch.device('gpu')
+        else:
+            dev=torch.device('cpu')
+        
         filename = self.get_filename_pth(name_embeddings)
         
         tag_embeddings = {}
         if os.path.exists(filename):
             print(f"Loading embeddings from {filename}")
-            tag_embeddings = torch.load(filename,weights_only=True)
+            tag_embeddings = torch.load(filename,weights_only=True,map_location=dev)
         return tag_embeddings
 
     def save_pth(self, tag_embeddings, name_embeddings):
