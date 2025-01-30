@@ -1,0 +1,32 @@
+{
+    "encodeur" : "sentence-transformers/all-MiniLM-L6-v2",
+    "threshold_similarity_tag_chunk" : 0.60,
+    "threshold_similarity_tag" : 0.80,
+    "batch_size" : 32,
+
+    "populate_owl_tag_embeddings" : {
+        "prefix" : {
+            "rdfs" : "http://www.w3.org/2000/01/rdf-schema#",
+            "obo" : "http://purl.obolibrary.org/obo/",
+            "owl" : "http://www.w3.org/2002/07/owl#",
+            "oboInOwl" : "http://www.geneontology.org/formats/oboInOwl#"
+        },
+        "ontologies": {
+            "efo_link" : {
+                "experimental_factor": {
+                    "url": "http://www.ebi.ac.uk/efo/efo.owl",
+                    "prefix": "http://www.ebi.ac.uk/efo/EFO_",
+                    "format": "xml",
+                    "label" : "rdfs:label",
+                    "properties": ["obo:IAO_0000115","oboInOwl:hasExactSynonym"]
+                }
+            }
+        }
+    },
+    "populate_abstract_embeddings" : {
+        "abstracts_per_file" : 1000,
+        "from_file" : {
+            "json_dir" : "./data/abstracts"
+        }
+    }
+}
