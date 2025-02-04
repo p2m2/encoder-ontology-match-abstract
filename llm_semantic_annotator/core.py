@@ -94,6 +94,9 @@ def process_abstract_file(abstracts_pth_file, mem, tag_embeddings, tag_embedding
     with open(json_f, "w") as fichier:
         json.dump(results_complete_similarities, fichier)
 
+    del results_complete_similarities
+    del keep_tag_embeddings
+    del chunk_embeddings
     gc.collect()
     
 def main_compute_tag_chunk_similarities(config_all):
