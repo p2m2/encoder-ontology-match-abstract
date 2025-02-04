@@ -1,9 +1,10 @@
+import gc
+
 from llm_semantic_annotator import ModelEmbeddingManager
 from llm_semantic_annotator import OwlTagManager
 from llm_semantic_annotator import TaxonTagManager
 from llm_semantic_annotator import AbstractManager
 
-from llm_semantic_annotator import display_ontologies_distribution
 from llm_semantic_annotator import display_best_similarity_abstract_tag
 from llm_semantic_annotator import display_ontologies_summary
 from llm_semantic_annotator import create_rdf_graph,save_rdf_graph
@@ -71,10 +72,8 @@ def process_abstract_file(abstracts_pth_file, mem, tag_embeddings, tag_embedding
     
     results_complete_similarities = {}
     keep_tag_embeddings = {}
-    total_doi = 0
 
     for doi, res in mem.compare_tags_with_chunks(tag_embeddings, chunk_embeddings).items():
-        total_doi += 1
         if doi not in results_complete_similarities:
             results_complete_similarities[doi] = res
             for tag in res.keys():
@@ -95,7 +94,7 @@ def process_abstract_file(abstracts_pth_file, mem, tag_embeddings, tag_embedding
     with open(json_f, "w") as fichier:
         json.dump(results_complete_similarities, fichier)
 
-    return results_complete_similarities, keep_tag_embeddings, total_doi
+    gc.collect()
     
 def main_compute_tag_chunk_similarities(config_all):
     """Fonction principale pour calculer la similarité entre tous les tags et chunks."""
@@ -165,11 +164,6 @@ def get_results_complete_similarities_and_tags_embedding(config_all):
     
     tags_taxon_pth_files = get_ncbi_taxon_tag_manager(config_all).get_files_tags_ncbi_taxon_embeddings()
     tags_pth_files.extend(tags_taxon_pth_files)
-    
-    abstracts_pth_files = get_abstract_manager(config_all).get_files_abstracts_embeddings()
-
-    if len(abstracts_pth_files) == 0:
-        raise FileNotFoundError("No abstracts embeddings found")
     
     ### Loading tags embeddings
     ### -----------------------
