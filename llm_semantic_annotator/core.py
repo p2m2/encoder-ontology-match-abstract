@@ -59,8 +59,6 @@ def main_populate_ncbi_taxon_tag_embeddings(config_all):
 def main_populate_abstract_embeddings(config_all):
     get_abstract_manager(config_all).manage_abstracts()
 
-def get_doi_file(config_all):
-    return config_all['retention_dir']+"/total_doi.txt"
 
 def process_abstract_file(abstracts_pth_file, mem, tag_embeddings, tag_embeddings_all, config_all):
     json_f = str(os.path.splitext(abstracts_pth_file)[0]) + "_scores.json"
@@ -135,9 +133,6 @@ def main_compute_tag_chunk_similarities(config_all):
     
     ### Managing Abstracts
     ### -----------------------  
-    keep_tag_embeddings = {}
-    results_complete_similarities = {}
-    total_doi = 0
 
     # Créer une fonction partielle avec les arguments communs
     process_file = partial(process_abstract_file, mem=mem, tag_embeddings=tag_embeddings, 
@@ -145,18 +140,7 @@ def main_compute_tag_chunk_similarities(config_all):
 
     # Utiliser ThreadPoolExecutor pour le multithreading
     with concurrent.futures.ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
-        future_results = list(executor.map(process_file, abstracts_pth_files))
-
-    # Traiter les résultats
-    for result, keep_tags, file_doi_count in future_results:
-        if result is not None:
-            results_complete_similarities.update(result)
-            keep_tag_embeddings.update(keep_tags)
-            total_doi += file_doi_count
-
-    # Écrire le nombre total de DOI
-    with open(get_doi_file(config_all), "w") as fichier:
-        fichier.write(str(total_doi))
+        executor.map(process_file, abstracts_pth_files)
 
 def get_scores_files(retention_dir):
     scores_files = []
@@ -208,14 +192,13 @@ def get_results_complete_similarities_and_tags_embedding(config_all):
     return results_complete_similarities,tag_embeddings
 
 def main_display_summary(config_all):
-    doi_file = get_doi_file(config_all)
     results_complete_similarities,tag_embeddings = get_results_complete_similarities_and_tags_embedding(config_all)    
     retention_dir = config_all['retention_dir']
     
     if len(results_complete_similarities)>0:
         display_best_similarity_abstract_tag(results_complete_similarities,tag_embeddings,retention_dir)
         display_ontologies_summary(results_complete_similarities,tag_embeddings,retention_dir)
-        display_ontologies_distribution(results_complete_similarities,tag_embeddings,doi_file)
+        #display_ontologies_distribution(results_complete_similarities,tag_embeddings,doi_file)
     else:
         print("No results found")
   
