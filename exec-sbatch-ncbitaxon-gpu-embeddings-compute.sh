@@ -17,7 +17,7 @@ conffile=./config/ncbi-taxon-pubmed-all.json
 # ontology embedding
 ./exec.sh $conffile 2
 # abstract ## embedding
-./exec.sh $conffile 3
+#./exec.sh $conffile 3
 
 ### Execution time: 16h 42m 59.59s
 
