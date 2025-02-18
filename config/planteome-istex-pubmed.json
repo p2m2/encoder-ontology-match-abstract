@@ -11,7 +11,8 @@
             "owl" : "http://www.w3.org/2002/07/owl#",
             "PO" : "http://purl.obolibrary.org/obo/PO_",
             "TO" : "http://purl.obolibrary.org/obo/TO_",
-            "PSO" : "http://purl.obolibrary.org/obo/PSO_"
+            "PSO" : "http://purl.obolibrary.org/obo/PSO_",
+            "oboInOwl" : "http://www.geneontology.org/formats/oboInOwl#"
         },
         "ontologies": {
             "planteome_link" : {
@@ -35,6 +36,26 @@
                     "format": "xml",
                     "label" : "<http://www.w3.org/2000/01/rdf-schema#label>",
                     "properties": ["<http://purl.obolibrary.org/obo/IAO_0000115>"]
+                },
+                "go_biological_process": {
+                    "url": "http://purl.obolibrary.org/obo/go.owl",
+                    "prefix": "http://purl.obolibrary.org/obo/GO_",
+                    "format": "xml",
+                    "label" : "rdfs:label",
+                    "properties": ["obo:IAO_0000115","oboInOwl:hasExactSynonym","rdfs:comment","owl:annotatedTarget"],
+                    "constraints": {
+                        "oboInOwl:hasOBONamespace" : "'biological_process'"
+                    }
+                },
+                "go_molecular_function": {
+                    "url": "http://purl.obolibrary.org/obo/go.owl",
+                    "prefix": "http://purl.obolibrary.org/obo/GO_",
+                    "format": "xml",
+                    "label" : "rdfs:label",
+                    "properties": ["obo:IAO_0000115","oboInOwl:hasExactSynonym","rdfs:comment","owl:annotatedTarget"],
+                    "constraints": {
+                        "oboInOwl:hasOBONamespace" : "'molecular_function'"
+                    }
                 }
             }
         }
@@ -42,7 +63,10 @@
     "populate_abstract_embeddings" : {
         "abstracts_per_file" : 1000,
         "from_file" : {
-            "json_dir" : "data/istex/metabolomics"
+            "json_dir" : [ 
+                 "data/istex",
+                 "/scratch/ofilangi/export-pubmed-20250114-planteome-tagging-extended"
+                ]
         }
     }
 }
