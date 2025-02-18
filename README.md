@@ -221,3 +221,14 @@ source llm_semantic_annotator_env/bin/activate
 pip install -r requirements.txt 
 python -m llm_semantic_annotator.similarity_evaluator
 ```
+
+# Use ISTEX corpus // format export 
+
+ - '-a' max article 
+ - 1m : scroll time
+ - o : output directory
+ - 200 article par fichiers de sortie
+```bash
+.  ./llm_semantic_annotator_env/bin/activate
+python llm_semantic_annotator/misc/get_istex_corpus.py metabolomics -s 1m -o data/istex/metabolomics -a 200
+```
