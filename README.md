@@ -227,8 +227,10 @@ python -m llm_semantic_annotator.similarity_evaluator
  - '-a' max article 
  - 1m : scroll time
  - o : output directory
- - 200 article par fichiers de sortie
+ - 1000 article par fichiers de sortie
 ```bash
 .  ./llm_semantic_annotator_env/bin/activate
-python llm_semantic_annotator/misc/get_istex_corpus.py metabolomics -s 1m -o data/istex/metabolomics -a 200
+python llm_semantic_annotator/misc/get_istex_corpus.py metabolomics -s 1m -o data/istex/metabolomics -a 1000
 ```
+
+check config/planteome-istex-metabolomics.json
