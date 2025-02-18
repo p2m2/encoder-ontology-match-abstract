@@ -230,7 +230,7 @@ python -m llm_semantic_annotator.similarity_evaluator
  - 1000 article par fichiers de sortie
 ```bash
 .  ./llm_semantic_annotator_env/bin/activate
-python llm_semantic_annotator/misc/get_istex_corpus.py metabolite -s 1m -o data/istex -a 1000
+python llm_semantic_annotator/misc/get_istex_corpus.py metabolite -s 20m -o data/istex -a 5000
 ```
 
 check config/planteome-istex-pubmed.json
