@@ -13,7 +13,7 @@ def search_istex(query, scroll_time='30s', max_results=None):
     params = {
         'q': query,
         'scroll': scroll_time,
-        'size': 100,
+        'size': 5000,
         'output': 'title,abstract,doi,keywords.teeft'
     }
     
