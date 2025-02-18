@@ -140,8 +140,13 @@ def main_compute_tag_chunk_similarities(config_all):
     process_file = partial(process_abstract_file, mem=mem, tag_embeddings=tag_embeddings, 
                            tag_embeddings_all=tag_embeddings_all, config_all=config_all)
 
+
+    num_threads = int(os.environ.get('OMP_NUM_THREADS', os.cpu_count()))
+    
+    print(f"*************** NUM THREAD={num_threads} *********************")
+    
     # Utiliser ThreadPoolExecutor pour le multithreading
-    with concurrent.futures.ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=num_threads) as executor:
         executor.map(process_file, abstracts_pth_files)
 
 def get_scores_files(retention_dir):
