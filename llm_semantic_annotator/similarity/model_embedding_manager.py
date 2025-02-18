@@ -67,7 +67,7 @@ class ModelEmbeddingManager():
     
     def load_filepth(self, filename_embeddings):
         if torch.cuda.is_available():
-            dev=torch.device('gpu')
+            dev=torch.device('cuda')
         else:
             dev=torch.device('cpu')
             
@@ -75,7 +75,7 @@ class ModelEmbeddingManager():
 
     def load_pth(self, name_embeddings):
         if torch.cuda.is_available():
-            dev=torch.device('gpu')
+            dev=torch.device('cuda')
         else:
             dev=torch.device('cpu')
         
